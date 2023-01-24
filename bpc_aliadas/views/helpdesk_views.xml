@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="helpdesk_ticket_view_form_aliadas">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='email_cc']" position="after">
+                <label for="contract" string="Contrato N°"/>
+                <div>
+                    <field name="contract" class="oe_inline"/>
+                    <button name="view_subscription_by_contract" attrs="{'invisible': [('contract','=',False)]}"
+                            class="btn btn-link ml-2" string="Ver contrato"
+                            title="Ver contrato"
+                            icon="fa-arrow-circle-o-right"
+                            type="object"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="helpdesk_tickets_view_tree_aliadas">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='ticket_type_id']" position="before">
+                <field name="contract"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

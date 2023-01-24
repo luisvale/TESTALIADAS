@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_bpc" model="ir.ui.view">
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="bidding,draft,sent,pending,approved,purchase" readonly="1"/>
+            </xpath>
+            <xpath expr="//button[@name='button_cancel']" position="attributes">
+                <attribute name="string">NO APROBADO</attribute>
+                <attribute name="states">bidding,draft,to approve,sent,purchase</attribute>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Ordenes de Licitación">
+                    <field name="get_purchase" invisible="1"/>
+                    <field name="purchase_o_ids" nolabel="1"/>
+                    <field name="requisition_request_id" invisible="1"/>
+                    <field name="requisition_request_status" invisible="1"/>
+                </page>
+            </xpath>
+
+            <xpath expr="//page[@name='purchase_delivery_invoice']" position="inside">
+                <group>
+                    <group id="info_left" string="Información Aliadas">
+                        <field name="force_budget"/>
+                        <field name="limit_budget"/>
+                        <field name="approval_request_advance"/>
+                        <field name="approval_request_advance_status"/>
+                        <field name="force_purchase" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"/>
+                        <field name="exist_budget" />
+                    </group>
+                    <group id="info_right"/>
+                </group>
+            </xpath>
+            <xpath expr="//header" position="inside">
+<!--                <button name="button_evaluation_to_draft" states="evaluation" string="APROBAR" type="object"-->
+<!--                        confirm="Está seguro de aprobar la órden?. Pasará a estado Presupuesto"/>-->
+                <button name="button_bidding_to_draft" states="bidding" string="PRESUPUESTO" type="object" data-hotkey="l"
+                        confirm="Está seguro de pasar a presupuesto?"/>
+                <button name="button_draft_to_bidding" states="draft" string="LICITACIÓN" type="object"
+                        confirm="Está seguro de pasar a proceso de licitación?"/>
+                <button name="action_continue_process" string="Continuar proceso" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','!=','approved')]}"/>
+                  <button name="button_exist_budget" string="Disponibilidad presupuesto" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','!=','on_hold')]}"/>
+                <button name="refresh_state" string="Consultar aprobación" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','not in',['pending','evaluation'])]}"/>
+                <button name="button_bidding_to_purchase" states="bidding" string="PEDIDO FORZADO" type="object" data-hotkey="l"
+                        confirm="Está seguro de pasar a pedido de compra?" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"
+                        style="background: #e09507;color: white;"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='account_analytic_id']" position="attributes">
+                <attribute name="optional">show</attribute>
+                <attribute name="attrs">{'readonly': [('state', 'in', ('purchase', 'to approve','done', 'cancel'))],
+                                         'required': [('display_type', '=', False)]}</attribute>
+<!--                <attribute name="required">True</attribute>-->
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='account_analytic_id']" position="after">
+                <field name="account_id"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='product_qty']" position="after">
+                <field name="brand_name"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='product_id']" position="before">
+                <field name="check_purchase" string="Sel."/>
+                <field name="is_advance" optional="hide"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Solicitudes aprobación">
+                    <group>
+                        <field name="approval_pending_count"/>
+                        <field name="approval_approved_count"/>
+                        <field name="approval_cancel_count"/>
+                    </group>
+                    <field name="approval_request_ids" nolabel="1"/>
+                </page>
+            </xpath>
+            <xpath expr="//div[@name='reminder']" position="after">
+                <field name="advance_check"/>
+                <field name="advance_payment_method" attrs="{'required': [('advance_check','=',True)], 'invisible': [('advance_check','!=',True)]}"/>
+                <field name="advance_amount" attrs="{'required': [('advance_check','=',True)], 'invisible': [('advance_check','!=',True)]}"/>
+            </xpath>
+            <xpath expr="//field[@name='id']" position="after">
+                <field name="commercial_ids" invisible="1"/>
+                <field name="commercial_id" domain="[('id','in',commercial_ids)]"/>
+                <field name="department_id"/>
+
+            </xpath>
+            <xpath expr="//field[@name='effective_date']" position="after">
+                <field name="currency_rate"/>
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send'][1]" position="attributes">
+                <attribute name="states">bidding,draft,sent,pending,approved,purchase</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send'][3]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='tax_totals_json']" position="after">
+                <field name="amount_total_without_check"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="row" attrs="{'invisible': [('state','!=','on_hold')]}">
+                    <div class="col-12">
+                        <div class="alert alert-danger" role="alert">
+                            <h3 class="text-danger">
+                                <field name="message_budget" nolabel="1" readonly="1"/>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_bidding_process" model="ir.actions.act_window">
+        <field name="name">Ordenes en proceso licitación</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph,calendar,activity</field>
+        <field name="view_id" ref="purchase.purchase_order_view_tree"/>
+        <field name="search_view_id" ref="purchase.purchase_order_view_search"/>
+        <field name="context">{'default_state': 'bidding'}</field>
+        <field name="domain">[('state','=','bidding')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Podrá crear órdenes en proceso de licitación!
+            </p>
+
+        </field>
+    </record>
+
+    <menuitem action="purchase_bidding_process" id="menu_purchase_bidding_form_action" parent="purchase.menu_procurement_management" sequence="50"/>
+
+</odoo>

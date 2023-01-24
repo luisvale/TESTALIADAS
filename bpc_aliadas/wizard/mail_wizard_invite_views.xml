@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_wizard_invite_form_aliadas" model="ir.ui.view">
+        <field name="model">mail.wizard.invite</field>
+        <field name="inherit_id" ref="mail.mail_wizard_invite_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_ids']" position="before">
+                <field name="partner_prospect_id" placeholder="Add contacts to notify..."/>
+<!--                <label for="partner_prospect_id"/>-->
+<!--                <div class="o_row">-->
+<!--                    <field name="partner_prospect_id" class="oe_inline"/>-->
+<!--                    <button-->
+<!--                            type="object"-->
+<!--                            name="add_partner_id"-->
+<!--                            class="btn btn-link ml-2"-->
+<!--                            string="Añadir seguidor"-->
+<!--                            title="Añadir seguidor"/>-->
+<!--                </div>-->
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

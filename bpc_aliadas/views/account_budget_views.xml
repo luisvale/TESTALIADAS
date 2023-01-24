@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crossovered_budget_view_form_bpc" model="ir.ui.view">
+        <field name="model">crossovered.budget</field>
+        <field name="inherit_id" ref="account_budget.crossovered_budget_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='crossovered_budget_line']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='crossovered_budget_line']" position="before">
+                <group>
+                    <field name="check_control"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='crossovered_budget_line']//tree/field[@name='general_budget_id']" position="before">
+                <field name="check_control"/>
+            </xpath>
+            <xpath expr="//field[@name='crossovered_budget_line']//tree/field[@name='planned_amount']" position="before">
+                <field name="purchase_ids" widget="many2many_tags" string="Ordenes" optional="hide"/>
+                <field name="purchase_line_ids" widget="many2many_tags" string="Líneas órdenes" optional="hide"/>
+                <field name="reserved_amount"/>
+                <field name="amount_pending" string="Residual" optional="hide"/>
+                <field name="reserved_amount_total" optional="hide"/>
+                <field name="info" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='crossovered_budget_line']//tree" position="attributes">
+                <attribute name="decoration-danger">is_above_budget and planned_amount &lt; 0 or amount_pending &lt; 0</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

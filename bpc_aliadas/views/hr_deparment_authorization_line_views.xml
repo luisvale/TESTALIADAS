@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+         <!-- SEARCH -->
+        <record id="view_department_authorization_line_search" model="ir.ui.view">
+        <field name="name">department.authorization.line.search</field>
+        <field name="model">department.authorization.line</field>
+        <field name="arch" type="xml">
+            <search string="Búsqueda de autorizaciones">
+                <field name="user_id" string="Usuario" filter_domain="[('user_id', 'ilike', self)]"/>
+                <field name="department_id" string="Departamento" filter_domain="[('department_id', 'ilike', self)]"/>
+                <group expand="1" string="Agrupar por">
+                    <filter string="Usuario" name="group_user_id" context="{'group_by':'user_id'}"/>
+                    <filter string="Departemento" name="group_dep_id" context="{'group_by':'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+        <!-- TREE -->
+        <record model="ir.ui.view" id="view_department_authorization_line_tree">
+            <field name="name">department.authorization.line.tree</field>
+            <field name="model">department.authorization.line</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree sample="1">
+                    <field name="user_id" optional="show"/>
+                    <field name="department_id" optional="show"/>
+                    <field name="department_user_id" optional="show"/>
+                    <field name="level_id" optional="show"/>
+                    <field name="company_id" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- FORM -->
+        <record id="view_department_authorization_line_form" model="ir.ui.view">
+            <field name="name">department.authorization.line.form</field>
+            <field name="model">department.authorization.line</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="existing_user_ids" invisible="1"/>
+                                <field name="user_id"/>
+                                <field name="department_id"/>
+                                <field name="department_user_id"/>
+                            </group>
+                            <group>
+                                <field name="level_id"/>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Intervalos">
+                                <field name="amount_lines" context="{'default_authorization_id': id}">
+                                    <tree editable="bottom">
+                                        <field name="authorization_id" invisible="1"/>
+                                        <field name="company_id" invisible="1"/>
+                                        <field name="currency_id"/>
+                                        <field name="amount_from"/>
+                                        <field name="amount_to"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- ACTIONS -->
+        <record id="action_department_authorization_line" model="ir.actions.act_window">
+            <field name="name">Autorización por departamento</field>
+            <field name="res_model">department.authorization.line</field>
+            <field name="search_view_id" ref="view_department_authorization_line_search"/>
+            <field name="view_mode">tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_department_authorization_line_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_department_authorization_line_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    -
+                </p>
+            </field>
+        </record>
+
+        <menuitem
+                id="menu_parent_hr_department"
+                parent="hr.menu_human_resources_configuration"
+                name="Departamentos"
+                sequence="2"/>
+
+        <menuitem
+                id="hr.menu_hr_department_tree"
+                action="hr.hr_department_tree_action"
+                parent="menu_parent_hr_department"
+                sequence="1"
+                groups="hr.group_hr_user"/>
+
+        <menuitem
+                id="menu_department_authorization_line"
+                action="action_department_authorization_line"
+                parent="menu_parent_hr_department"
+                sequence="2"
+                groups="bpc_aliadas.group_aliadas_hr_department_authorizations"/>
+
+
+        <menuitem
+                id="approvals_department_authorization_line"
+                parent="approvals.approvals_menu_config"
+                action="action_department_authorization_line"
+                groups="bpc_aliadas.group_aliadas_hr_department_authorizations"
+                sequence="20"/>
+
+
+    </data>
+</odoo>

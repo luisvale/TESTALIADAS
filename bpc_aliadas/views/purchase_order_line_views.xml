@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="purchase_order_line_pivot">
+        <field name="name">purchase.order.line.pivot</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Detalle de orden de compra" display_quantity="1" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="amount_total_order" type="measure" string="Total orden"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="purchase_line_act" model="ir.actions.act_window">
+        <field name="name">Detalle de pedidos</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree,form,pivot</field>
+        <field name="view_id" ref="purchase.purchase_order_line_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Podrá crear órdenes en proceso de licitación!
+            </p>
+
+        </field>
+    </record>
+
+    <menuitem action="purchase_line_act" id="menu_purchase_line_act_action" parent="purchase.menu_procurement_management" sequence="100"/>
+
+</odoo>

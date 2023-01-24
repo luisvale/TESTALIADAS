@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- equiment.request : views -->
+        <record id="hr_equipment_periodic_view_search" model="ir.ui.view">
+            <field name="name">equipment.periodic.search</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="arch" type="xml">
+                <search string="">
+                    <field name="name" string="Código"/>
+                    <field name="user_id"/>
+                    <field name="parent_id"/>
+                    <field name="state"/>
+                    <field name="maintenance_team_id"/>
+                    <filter string="Mis mantenimientos" name="my_maintenances" domain="[('user_id', '=', uid)]"/>
+                    <separator/>
+                    <filter string="Borrador" name="todo" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Espera de productos" name="to_pending" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Procesando picking" name="to_done" domain="[('state', '=', 'done')]"/>
+                    <filter string="En Proceso" name="to_process" domain="[('state', '=', 'process')]"/>
+                    <filter string="Terminado" name="to_finished" domain="[('state', '=', 'finished')]"/>
+                    <filter string="Cancelado" name="to_cancel" domain="[('state', '=', 'cancel')]"/>
+                    <separator/>
+                    <filter string="Alta prioridad" name="high_priority" domain="[('priority', '=', '3')]"/>
+                    <separator/>
+                    <filter string="Con fecha" name="cheduled" domain="[('date_start', '=', False)]"/>
+                    <filter string="Sin fecha" name="unscheduled" domain="[('date_start', '=', False)]"/>
+                    <separator/>
+                    <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+                    <group expand='0' string='Agrupar por...'>
+                        <filter string='Asignado a' name="assigned" domain="[]" context="{'group_by': 'user_id'}"/>
+                        <filter string='Equipo' name="maintenance_team" domain="[]" context="{'group_by' : 'maintenance_team_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- TREE -->
+        <record model="ir.ui.view" id="view_maintenance_periodic_tree">
+            <field name="name">maintenance.periodic.tree</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree sample="1">
+                    <field name="date_start" optional="show"/>
+                    <field name="date_end" optional="show"/>
+                    <field name="name"/>
+                    <field name="description" optional="show"/>
+                    <field name="user_id"/>
+                    <field name="maintenance_type" optional="show"/>
+                    <field name="maintenance_team_id" optional="show"/>
+                    <field name="state" optional="show"/>
+                    <field name="parent_id" optional="show"/>
+                    <field name="purchase_requisition_id" optional="show"/>
+                    <field name="picking_id" optional="show"/>
+                    <field name="currency_id" optional="show"/>
+                    <field name="total_cost_material" optional="show"/>
+                    <field name="total_cost_work" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- FORM -->
+        <record id="view_maintenance_periodic_form" model="ir.ui.view">
+            <field name="name">maintenance_periodic.form</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="state_draft" string="Borrador" type="object" class="btn btn-secondary"
+                                attrs="{'invisible': [('state', '!=', 'cancel')]}"/>
+
+                        <button name="state_cancel" string="Cancelar" type="object" class="btn btn-secondary"
+                                attrs="{'invisible': [('state', 'in', ('draft','cancel'))]}"/>
+
+                        <button name="state_pending" string="Revisar productos" type="object" class="btn btn-secondary"
+                                attrs="{'invisible': ['|',('is_master','=',True),('state', '!=', 'draft')]}"/>
+
+                        <button name="consult_stock" string="Consultar disponibilidad" type="object" class="btn btn-secondary"
+                                attrs="{'invisible': ['|',('is_master','=',True),('state', '!=', 'pending')]}"/>
+
+                        <button name="state_process" id="process_periodic" string="Procesar" type="object" class="btn btn-primary"
+                                attrs="{'invisible': ['|',('is_master','=',True),('state', '!=', 'done')]}"/>
+
+                        <button name="state_finished" string="Terminar" type="object" class="btn btn-primary"
+                                attrs="{'invisible': ['|',('is_master','=',True),('state', '!=', 'process')]}"/>
+
+                        <!--PARA MASTER-->
+                        <button name="state_process" id="process_master" string="Procesar" type="object" class="btn btn-primary"
+                                attrs="{'invisible': ['|',('is_master','=',False),('state', '!=', 'draft')]}"/>
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,pending,done,process,finished,cancel"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Código"/>
+                            <h1>
+                                <field name="name" class="oe_inline"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <label for="parent_id" string="Origen" attrs="{'invisible': [('is_master','=',True)]}" />
+                                <div >
+                                    <field name="parent_id" class="oe_inline" nolabel="1" domain="[('state','=','process'), ('is_master','=',True)]"
+                                           options="{'no_open': True, 'no_create': True}"/>
+                                    <button name="complete_data" attrs="{'invisible': [('parent_id','=',False)]}"
+                                            class="btn btn-link ml-2" string="Cargar datos"
+                                            title="Cargar datos a partir de esta tarea MASTER"
+                                            icon="fa-arrow-circle-o-right"
+                                            type="object" confirm="Esto generará el autocompletado de datos para el próximo Mant.Periódico. Está seguro de continuar?"/>
+                                </div>
+
+
+                                <!--                                <field name="parent_id" attrs="{'invisible': [('is_master','=',True)]}" domain="[('state','=','process'), ('is_master','=',True)]"-->
+                                <!--                                       required="1"/>-->
+                                <!--                                <button name="complete_data"-->
+                                <!--                                        class="btn btn-link ml-2" string="Crear"-->
+                                <!--                                        icon="fa-arrow-circle-o-right"-->
+                                <!--                                        type="object"/>-->
+                                <field name="date_start"/>
+                                <field name="date_end" attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <field name="description"/>
+                                <field name="is_master" attrs="{'invisible': [('is_master','=',False)]}"/>
+                                <field name="maintenance_type"/>
+                                <field name="maintenance_team_id"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="priority" widget="priority"/>
+
+                                <!--                                <field name="picking_id" attrs="{'invisible': [('is_master','=',True)]}"/>-->
+                                <label for="picking_id" string="Picking" attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <div attrs="{'invisible': [('is_master','=',True)]}">
+                                    <field name="picking_id" class="oe_inline" nolabel="1"/>
+                                    <button name="state_done"
+                                            class="btn btn-link ml-2" string="Crear picking"
+                                            icon="fa-arrow-circle-o-right"
+                                            type="object" attrs="{'invisible': [('picking_id','!=',False)]}"
+                                            help="Generará un picking de emergencia"/>
+                                </div>
+                                <field name="purchase_requisition_id" attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <field name="purchase_requisition_ids" attrs="{'invisible': ['|',('is_master','=',True),('purchase_requisition_ids','=',[])]}"
+                                       widget="many2many_tags"/>
+                                <field name="company_id"/>
+                                <field name="currency_id"/>
+                            </group>
+
+                        </group>
+                        <group>
+                            <group string="Periodicidad" name="group_periodicity" attrs="{'invisible': [('is_master','=',False)]}">
+                                <field name="periodicity_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="level_id"/>
+                                        <field name="days"/>
+                                        <field name="interval" optional="hide"/>
+                                        <field name="interval_start" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Equipos activos" name="equipment_actives">
+                                <field name="equipment_line_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="maintenance_id" invisible="1"/>
+                                        <field name="maintenance_state" invisible="1"/>
+                                        <field name="maintenance_is_master" invisible="1"/>
+                                        <field name="equipment_id"/>
+                                        <field name="note"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group attrs="{'invisible': [('is_master','=',True)]}" string="Costos">
+                                <field name="total_cost_material"/>
+                                <field name="total_cost_work"/>
+                                <field name="total_amount"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="page_materials" string="Lista materiales">
+                                <field name="material_line_ids">
+                                    <tree editable="bottom" decoration-danger="stock &lt;= 0"
+                                          decoration-success="stock &gt;= 0 and stock &gt;= quantity">
+                                        <field name="product_id"/>
+                                        <field name="uom_id"/>
+                                        <field name="warehouse_ids" optional="hide"/>
+                                        <field name="warehouse_id" optional="show"/>
+                                        <field name="stock" optional="show"/>
+                                        <field name="mode" optional="show"/>
+                                        <field name="currency_id" optional="show"/>
+                                        <field name="quantity"/>
+                                        <field name="cost"/>
+                                        <field name="subtotal"/>
+                                    </tree>
+
+                                </field>
+                            </page>
+                            <page name="page_works" string="Tareas">
+                                <div class="mb-3">
+                                    <button type="object" name="get_contract_by_employee" string="Actualizar contratos" icon="fa-arrow-right" class="btn-primary"
+                                            title="Actualizar contratos de los empleados seleccionados"
+                                            attrs="{'invisible': ['|',('is_master','=',True),('state', '!=', 'process')]}"/>
+                                </div>
+
+                                <field name="analytic_line_ids" attrs="{'readonly': [('state','not in',('draft','process'))]}">
+                                    <tree editable="bottom" default_order="date">
+                                        <field name="company_id" invisible="1"/>
+                                        <field name="employee_id"/>
+                                        <field name="contract_id" optional="show"/>
+                                        <field name="date"/>
+                                        <field name="project_id"/>
+                                        <field name="task_id" context="{'default_project_id': project_id}"/>
+                                        <field name="name"/>
+                                        <field name="level_id"/>
+                                        <field name="maintenance_team_id"/>
+                                        <field name="hours_estimated" widget="float_time"/>
+                                        <field name="unit_amount" widget="float_time" string="Horas reales"/>
+                                        <field name="maintenance_state" optional="hide"/>
+                                        <field name="maintenance_parent_id" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="page_locations" string="Ubicaciones">
+                                <group>
+                                    <group>
+                                        <field name="location_init_id"/>
+                                        <field name="location_end_id"/>
+                                    </group>
+                                    <group/>
+                                </group>
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- GRAPH -->
+        <record id="maintenance_periodic_view_graph" model="ir.ui.view">
+            <field name="name">maintenance.periodic.graph</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="arch" type="xml">
+                <graph sample="1">
+                    <field name="user_id"/>
+                    <field name="state"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- PIVOT -->
+        <record id="maintenance_periodic_view_pivot" model="ir.ui.view">
+            <field name="name">maintenance.periodic.pivot</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="arch" type="xml">
+                <pivot sample="1">
+                    <field name="user_id"/>
+                    <field name="state"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- CALENDAR -->
+        <record id="maintenance_periodic_view_calendar" model="ir.ui.view">
+            <field name="name">maintenance.periodic.calendar</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="arch" type="xml">
+                <calendar date_start="date_start" date_delay="date_end" color="user_id" event_limit="5">
+                    <field name="user_id" filters="1"/>
+                    <field name="priority"/>
+                    <field name="maintenance_type"/>
+                </calendar>
+            </field>
+        </record>
+
+
+        <!-- ACTIONS INCLUDE IN KANBAN -->
+        <record id="hr_equipment_todo_periodic_action_from_dashboard" model="ir.actions.act_window">
+            <field name="name">Mantenimiento periódico</field>
+            <field name="res_model">maintenance.periodic</field>
+            <field name="view_mode">tree,form,pivot,graph,calendar</field>
+            <field name="context">{
+                'default_maintenance_team_id': active_id,
+                }
+            </field>
+            <field name="domain">[('maintenance_team_id', '=', active_id), ('maintenance_type', 'in', context.get('maintenance_type', ['preventive', 'corrective']))]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Add a new maintenance request
+                </p>
+                <p>
+                    Follow the process of the request and communicate with the collaborator.
+                </p>
+            </field>
+        </record>
+
+        <!-- FORM TEAM-->
+        <record id="maintenance_team_view_form_aliadas" model="ir.ui.view">
+            <field name="model">maintenance.team</field>
+            <field name="inherit_id" ref="maintenance.maintenance_team_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="todo_periodic_ids" invisible="1"/>
+                    <field name="todo_periodic_count" invisible="1"/>
+                    <field name="todo_periodic_count_date" invisible="1"/>
+                    <field name="todo_periodic_count_high_priority" invisible="1"/>
+                    <field name="todo_periodic_count_unscheduled" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+         <record id="action_maintenance_master" model="ir.actions.act_window">
+            <field name="name">Tarea Maestra</field>
+            <field name="res_model">maintenance.periodic</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"default_is_master": True}</field>
+            <field name="domain">[('is_master','=', True)]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_maintenance_periodic_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_maintenance_periodic_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Tareas maestras
+                </p>
+            </field>
+        </record>
+
+         <record id="maintenance_periodic_action_reports" model="ir.actions.act_window">
+            <field name="name">Peticiones de mantenimiento</field>
+            <field name="res_model">maintenance.periodic</field>
+            <field name="view_mode">graph,pivot,tree,form,calendar</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Add a new maintenance request
+                </p>
+                <p>
+                    Follow the process of the request and communicate with the collaborator.
+                </p>
+            </field>
+        </record>
+
+
+        <!-- KANBAN TEAM-->
+        <record id="maintenance_team_view_kanban" model="ir.ui.view">
+            <field name="name">maintenance.team.kanban</field>
+            <field name="model">maintenance.team</field>
+            <field name="arch" type="xml">
+                <kanban class="oe_background_grey o_kanban_dashboard o_maintenance_team_kanban" create="0">
+                    <field name="name"/>
+                    <field name="color"/>
+                    <field name="todo_periodic_ids"/>
+                    <field name="todo_periodic_count"/>
+                    <field name="todo_periodic_count_date"/>
+                    <field name="todo_periodic_count_high_priority"/>
+                    <field name="todo_periodic_count_unscheduled"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''}">
+                                <div t-attf-class="o_kanban_card_header">
+                                    <div class="o_kanban_card_header_title">
+                                        <div class="o_primary">
+                                            <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action">
+                                                <field name="name"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_manage_button_section">
+                                        <a class="o_kanban_manage_toggle_button" href="#">
+                                            <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="container o_kanban_card_content">
+                                    <div class="row">
+                                        <div class="col-6 o_kanban_primary_left">
+                                            <button class="btn btn-primary" name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_todo': 1}">
+                                                <t t-esc="record.todo_periodic_count.value"/>
+                                                Por hacer
+                                            </button>
+                                        </div>
+                                        <div class="col-6 o_kanban_primary_right">
+                                            <div t-if="record.todo_periodic_count_date.raw_value > 0">
+                                                <a name="%(bpc_aliadas.action_maintenance_master)d" type="action" context="{'search_default_scheduled': 1}">
+                                                    <t t-esc="record.todo_periodic_count_date.value"/>
+                                                    Programada (Con fecha)
+                                                </a>
+                                            </div>
+                                            <div t-if="record.todo_periodic_count_high_priority.raw_value > 0">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_high_priority': 1}">
+                                                    <t t-esc="record.todo_periodic_count_high_priority.value"/>
+                                                    Prioritario
+                                                </a>
+                                            </div>
+                                            <div t-if="record.todo_periodic_count_unscheduled.raw_value > 0">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_unscheduled': 1}">
+                                                    <t t-esc="record.todo_periodic_count_unscheduled.value"/>
+                                                    Sin programar (Sin fecha)
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
+                                    <div class="row">
+                                        <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem" class="o_kanban_card_manage_title">
+                                                <span>Requests</span>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action">
+                                                    Todos
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_todo': 1}">
+                                                    Borrador
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_to_pending': 1}">
+                                                    En espera de productos
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_to_done': 1}">
+                                                    Procesando picking
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_to_process': 1}">
+                                                    En proceso
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_to_finished': 1}">
+                                                    Terminado
+                                                </a>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(hr_equipment_todo_periodic_action_from_dashboard)d" type="action" context="{'search_default_to_cancel': 1}">
+                                                    Cancelado
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 o_kanban_card_manage_section o_kanban_manage_new">
+                                            <div role="menuitem" class="o_kanban_card_manage_title">
+                                                <span>Reporting</span>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="%(bpc_aliadas.maintenance_periodic_action_reports)d" type="action" context="{'search_default_maintenance_team_id': active_id}">
+                                                    Maintenance Requests
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
+                                        <div class="col-8" role="menuitem" aria-haspopup="true">
+                                            <ul role="menu" class="oe_kanban_colorpicker" data-field="color"/>
+                                        </div>
+                                        <div role="menuitem" class="col-4">
+                                            <a type="edit" class="dropdown-item">Configuration</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+
+        <!-- ACTIONS -->
+        <record id="action_maintenance_periodic" model="ir.actions.act_window">
+            <field name="name">Mantenimientos períodicos</field>
+            <field name="res_model">maintenance.periodic</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"default_is_master": False}</field>
+            <field name="domain">[('is_master','=', False)]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_maintenance_periodic_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_maintenance_periodic_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Matenimientos periódicos
+                </p>
+            </field>
+        </record>
+
+
+
+        <record id="hr_equipment_periodic_action_cal" model="ir.actions.act_window">
+            <field name="name">Matenimiento periódico</field>
+            <field name="res_model">maintenance.periodic</field>
+            <field name="view_mode">calendar,tree,form,pivot,graph</field>
+            <field name="view_id" ref="maintenance_periodic_view_calendar"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Add a new maintenance request
+                </p>
+                <p>
+                    Follow the process of the request and communicate with the collaborator.
+                </p>
+            </field>
+        </record>
+
+        <record id="maintenance_team_action_dashboard" model="ir.actions.act_window">
+            <field name="name">Equipo de mantenimiento</field>
+            <field name="res_model">maintenance.team</field>
+            <field name="view_mode">kanban,form</field>
+            <field name="view_id" ref="maintenance_team_view_kanban"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Add a new stage in the maintenance request
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

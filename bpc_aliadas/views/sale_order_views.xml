@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="sale.res_partner_menu"
+              parent="sale.sale_order_menu"
+              action="account.res_partner_action_customer"
+              sequence="4" groups="bpc_aliadas.group_aliadas_crm_show_customer"
+    />
+
+    <record id="view_order_form_bpc" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,sent,pending,approved,compliance,sale"/>
+            </xpath>
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <label for="currency_rate"/>
+                <div class="text-nowrap">
+                    <field name="currency_rate" class="oe_inline"/>
+                    <field name="currency_id" class="ml-2"/>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='partner_details']" position="replace">
+                <group name="partner_details">
+                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}" context="{'default_state': 'draft', 'default_active': False}"/>
+                    <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
+                    <field name="partner_prospect_state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"
+                           attrs="{'invisible': ['|',('partner_prospect_id','=',False),('state','=','sale')]}"/>
+                    <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
+                    <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
+                    <field name="hide_columns_mim_max" invisible="1"/>
+                    <field name="not_project" invisible="1"/>
+                    <field name="perm_can_project" invisible="1"/>
+                    <field name="create_project_automatic_manual" invisible="1"/>
+                    <field name="invoice_payment" invisible="1"/>
+                    <field name="purchase_ids" widget="many2many_tags"/>
+                </group>
+            </xpath>
+            <!--            <xpath expr="//group[@name='partner_details']" position="inside">-->
+            <!--               -->
+            <!--            </xpath>-->
+            <xpath expr="//button[@name='action_confirm'][1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_quotation_send']" position="before">
+                <button name="create_project_manual" string="Crear proyecto" class="btn-primary" type="object"
+                        attrs="{'invisible': [('perm_can_project','=',False)]}"/>
+                <button name="action_continue_process" string="Continuar proceso" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','not in',['approved','sent'])]}"/>
+                <button name="refresh_state" string="Consultar aprobación" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','!=','pending')]}"/>
+                <button name="action_confirm_order" string="Confirmar orden" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state','!=','compliance')]}"/>
+                <button name="action_confirm_custom" data-hotkey="v"
+                        string="Confirmar" type="object"
+                        attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']" position="attributes">
+                <attribute name="style">max-width: 2047px !important; width: 2047px !important;</attribute>
+            </xpath>
+            <!--            <xpath expr="//field[@name='order_line']//tree/field[@name='product_id']" position="attributes">-->
+            <!--                <attribute name="style">max-width: 92px !important; width: 92px !important;</attribute>-->
+            <!--            </xpath>-->
+            <xpath expr="//field[@name='order_line']//tree/field[@name='price_unit']" position="before">
+                <field name="approved_required" optional="hide"/>
+                <field name="pricelist_id" optional="show"/>
+                <field name="not_update_price" optional="hide"/>
+                <field name="price_min" optional="hide"/>
+
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='price_subtotal']" position="before">
+                <field name="currency_external_id" optional="show"/>
+                <field name="currency_rate" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='price_subtotal']" position="after">
+                <field name="amount_convert" optional="show" widget='monetary' options="{'currency_field': 'currency_external_id'}"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//tree/field[@name='price_unit']" position="before">
+                <field name="amount_min" attrs="{'column_invisible': [('parent.hide_columns_mim_max','=',True)]}" groups="bpc_aliadas.group_aliadas_sale_min_max_editable"/>
+                <field name="amount_max" attrs="{'column_invisible': [('parent.hide_columns_mim_max','=',True)]}" groups="bpc_aliadas.group_aliadas_sale_min_max_editable"/>
+                <field name="percentage_sale"/>
+            </xpath>
+            <!--             <xpath expr="//field[@name='order_line']//tree" position="attributes">-->
+            <!--                 <attribute name="style">width: 2073px !important;</attribute>-->
+            <!--             </xpath>-->
+            <xpath expr="//field[@name='order_line']//tree/field[@name='product_id']" position="after">
+                <field name="subscription_template_id" optional="show"/>
+                <field name="document_type_sale_id" string="Tipo doc."/>
+                <field name="rental_type"/>
+            </xpath>
+             <xpath expr="//field[@name='order_line']//tree/field[@name='tax_id']" position="after">
+                <field name="price_tax" optional="show" />
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('state','in',('sale','approved'))]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="state" readonly="0"/>
+                <field name="accept_and_signed"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Check-list procesos" groups="bpc_aliadas.group_sale_check_list">
+                    <div class="mb-3">
+                        <button type="object" name="get_check_list" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"
+                                title="Traer pasos de checklist de forma automáctica" attrs="{'invisible': [('state','=','sale')]}"/>
+                    </div>
+                    <field name="check_list_lines">
+                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now or check == False and date_due != False">
+                            <field name="sale_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id)]"/>
+                            <field name="check_list_id_sequence" invisible="1"/>
+                            <field name="check"/>
+                            <field name="description"/>
+                            <field name="now" invisible="1"/>
+                            <field name="date_due" optional="show"/>
+                            <field name="user_ids" string="Usuarios" widget="many2many_tags" optional="show"/>
+                        </tree>
+                    </field>
+                </page>
+                 <page string="Check-list documentos" >
+                    <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">
+                         <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
+                            <field name="partner_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                             <field name="now" invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Solicitudes aprobación">
+                    <group>
+                        <field name="approval_pending_count"/>
+                        <field name="approval_approved_count"/>
+                        <field name="approval_cancel_count"/>
+                    </group>
+                    <field name="approval_request_ids" nolabel="1"/>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='tax_totals_json']" position="after">
+                <label for="margin_sale" groups="base.group_user" string="Margen(Ref.Compras)"/>
+                <div class="text-nowrap" groups="base.group_user">
+                    <field name="margin_sale" class="oe_inline"/>
+                    <span class="oe_inline">
+                        (<field name="margin_test" nolabel="1" class="oe_inline" widget="percentage"/>)
+                    </span>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='partner_details']" position="inside">
+                <field name="commercial_ids" invisible="1"/>
+                <field name="commercial_id" domain="[('id', 'in', commercial_ids)]" options="{'no_open': True, 'no_create': True}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_quotation_send'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_quotation_send'][1]" position="attributes">
+                <attribute name="states">draft,approved,sent,sale</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="rental_order_form_view_aliadas" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_renting.rental_order_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='pickup_date']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+                <attribute name="optional">show</attribute>
+                <attribute name="string">Inicia</attribute>
+            </xpath>
+            <xpath expr="//field[@name='return_date']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+                <attribute name="optional">show</attribute>
+                <attribute name="string">Termina</attribute>
+            </xpath>
+            <xpath expr="//field[@name='pickup_date']" position='before'>
+                <field name="pickup_date_format"/>
+                <field name="return_date_format"/>
+            </xpath>
+
+
+        </field>
+    </record>
+
+    <record id="view_order_tree_aliadas" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position='before'>
+                <field name="accept_and_signed"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_quotation_tree_aliadas" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position='before'>
+                <field name="accept_and_signed"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

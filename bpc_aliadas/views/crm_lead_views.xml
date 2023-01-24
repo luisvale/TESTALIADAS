@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="crm_lead_view_form_aliadas" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='stage_id']" position="attributes">
+                <attribute name="options">{}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='priority']" position="after">
+                <field name="is_paid"/>
+                <field name="is_firm"/>
+            </xpath>
+            <xpath expr="//button[@name='action_set_won_rainbowman']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+               <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="partner_prospect_id" context="{'default_state': 'draft', 'default_active': False}" required="True"/>
+                <field name="partner_prospect_state"  widget="badge" decoration-info="partner_prospect_id == 'draft'" decoration-success="partner_prospect_id == 'done'"
+                           attrs="{'invisible': [('partner_prospect_id','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_stage_form_aliadas" model="ir.ui.view">
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_title')]" position="replace">
+                <div class="oe_title">
+                    <label for="type_stage"/>
+                    <h1>
+                        <field name="type_stage"/>
+                    </h1>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='is_won']" position="before">
+                <field name="name"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_stage_tree_aliadas" model="ir.ui.view">
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="type_stage"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- TREE -->
+        <record model="ir.ui.view" id="view_approval_level_tree">
+            <field name="name">approval.level.tree</field>
+            <field name="model">approval.level</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom" sample="1">
+                    <field name="sequence" optional="show"/>
+                    <field name="name" optional="show"/>
+                    <field name="company_id" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_approval_level_form" model="ir.ui.view">
+            <field name="name">approval.level.form</field>
+            <field name="model">approval.level</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="sequence" invisible="1"/>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- ACTIONS -->
+        <record id="action_approval_level" model="ir.actions.act_window">
+            <field name="name">Niveles de aprobación</field>
+            <field name="res_model">approval.level</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_approval_level_tree"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Cree sus niveles de autorización
+                </p>
+            </field>
+        </record>
+
+
+        <menuitem
+                id="approvals_level_menu_config"
+                parent="approvals.approvals_menu_config"
+                name="Niveles de aprobación"
+                action="action_approval_level"
+                groups="approvals.group_approval_manager"
+                sequence="10"/>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_aliadas" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet//group/group[2]" position="inside">
+                <field name="check_retention"/>
+                <field name="now" string="Hoy" invisible="1"/>
+            </xpath>
+               <xpath expr="//span[@name='address_name']" position="before">
+                <field name="state" groups="bpc_aliadas.group_aliadas_general_active_customer"/>
+            </xpath>
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="attrs">{'required': [('state','=','done')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='email']" position="attributes">
+                <attribute name="attrs">{'required': [('state','=','done')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='website']" position="before">
+                <field name="email_supplier"/>
+            </xpath>
+
+            <xpath expr="//group[@name='sale']/field[@name='user_id']" position="before">
+                <field name="is_customer"/>
+            </xpath>
+             <xpath expr="//group[@name='sale']" position="inside">
+                <field name="user_payment_id"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Check list docs. cliente" id="checklist_sale" groups="bpc_aliadas.group_sale_check_list_documents"
+                      attrs="{'invisible': [('is_customer','=',False)]}">
+                    <div class="mb-3">
+                        <button type="object" name="get_check_list" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"
+                                title="Traer pasos de checklist de forma automáctica"/>
+                    </div>
+                    <field name="check_list_lines" context="{'default_type': 'sale'}" options="{'no_create': True}">
+                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; parent.now and check == False and date_due != False">
+                            <field name="partner_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                             <field name="now" invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Posición fiscal clientes" attrs="{'invisible': [('is_customer','=',False)]}">
+                    <field name="fiscal_customer_line_ids" nolabel="1" >
+                        <tree editable="bottom">
+                            <field name="partner_id" invisible="1"/>
+                            <field name="fiscal_id" domain="[('type','=','sale')]" context="{'default_type': 'sale', 'type': 'sale'}"/>
+                            <field name="fiscal_type" />
+                            <field name="date_end" />
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//span[@name='address_name']" position="before">
+                <field name="commercial_ids" widget="many2many_tags" context="{'default_partner_id': id, 'partner_id': id}"
+                       domain="[('partner_id','=','id')]"/>
+            </xpath>
+            <xpath expr="//field[@name='vat']" position="attributes">
+                <attribute name="string">RTN</attribute>
+                 <attribute name="attrs">{'required': [('state','=','done')]}</attribute>
+            </xpath>
+            <xpath expr="//group[1]" position="before">
+                <div class="row">
+                    <div class="col-4" />
+                    <div class="col-4 text-center">
+                        <div class="badge-pill badge-info">
+                            # CONTRATOS:
+                            <field name="contract_count" class="oe_inline"/>
+                            <button name="view_subscription_by_contract" attrs="{'invisible': [('contract_count','=',False)]}"
+                                    class="btn btn-link ml-2 text-danger" string="Ver contratos"
+                                    title="Ver subscripciones o contratos relacionados"
+                                    icon="fa-arrow-circle-o-right"
+                                    type="object"/>
+                        </div>
+                    </div>
+                    <div class="col-4" />
+                </div>
+            </xpath>
+               <xpath expr="//notebook" position="inside">
+                   <page name="page_exempt" string="Datos del adquiriente exonerado">
+                        <group>
+                            <field name="ex_number_purchase_order_exempt"/>
+                            <field name="ex_number_register_constancy"/>
+                            <field name="ex_number_sag"/>
+                            <field name="ex_number_diplomatic_card"/>
+                        </group>
+                   </page>
+               </xpath>
+
+            <xpath expr="//widget[@name='web_ribbon']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='web_ribbon']" position="after">
+                <widget name="web_ribbon" title="Confirmado" bg_color="bg-success" attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                <widget name="web_ribbon" title="Prospecto" bg_color="bg-info" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                <widget name="web_ribbon" title="Rechazado" bg_color="bg-danger" attrs="{'invisible': [('state', '!=', 'cancel')]}"/>
+                <widget name="web_ribbon" title="Inactivo" bg_color="bg-warning" attrs="{'invisible': [('state', '!=', 'inactive')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_property_form_aliadas" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="purchase.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <!--xpath no funciona para esta vista-->
+            <field name="property_purchase_currency_id" position="after">
+                <field name="advance_check"/>
+                <field name="advance_payment_method" attrs="{'required': [('advance_check','=',True)], 'invisible': [('advance_check','!=',True)]}"/>
+                <field name="advance_amount" attrs="{'required': [('advance_check','=',True)], 'invisible': [('advance_check','!=',True)]}"/>
+            </field>
+            <field name="property_supplier_payment_term_id" position="before">
+                <field name="is_supplier"/>
+            </field>
+        </field>
+    </record>
+
+    <!--    <record id="view_partner_property_form_aliadas_supplier" model="ir.ui.view">-->
+    <!--        <field name="model">res.partner</field>-->
+    <!--        <field name="inherit_id" ref="account.view_partner_property_form"/>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            &lt;!&ndash;xpath no funciona para esta vista&ndash;&gt;-->
+    <!--            <field name="property_supplier_payment_term_id" position="before">-->
+    <!--                <field name="is_supplier"/>-->
+    <!--            </field>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+    <record id="view_partner_form_aliadas_purchase" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="bpc_aliadas.view_partner_property_form_aliadas"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Check list docs. proveedor" groups="bpc_aliadas.group_sale_check_list_documents" attrs="{'invisible': [('is_supplier','=',False)]}">
+                    <div class="mb-3">
+                        <button type="object" name="get_check_list_purchase" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"
+                                title="Traer pasos de checklist de forma automáctica"/>
+                    </div>
+                    <field name="check_list_lines_supplier" context="{'default_type': 'purchase'}" options="{'no_create': True}">
+                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; parent.now and check == False and date_due != False">
+                            <field name="partner_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id),('type','=','purchase')]"
+                                   attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                            <field name="check" attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                            <field name="description" attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','purchase')]}"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Posición fiscal proveedores" attrs="{'invisible': [('is_supplier','=',False)]}">
+                    <field name="fiscal_supplier_line_ids" nolabel="1" >
+                        <tree editable="bottom" >
+                            <field name="partner_id" invisible="1"/>
+                            <field name="fiscal_id" domain="[('type','=','purchase')]" context="{'default_type': 'purchase', 'type': 'purchase  '}" />
+                            <field name="fiscal_type"/>
+                            <field name="date_end"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!--CUENTAS BANCARIAS-->
+     <record id="account_view_partner_property_form_aliadas" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+           <xpath expr="//field[@name='bank_ids']//tree/field[@name='acc_number']" position="before">
+                <field name="bank_bic_id" optional="show"/>
+                <field name="bank_aba_id" optional="show"/>
+                <field name="bank_address_id" optional="show"/>
+                <field name="bank_intermediary" optional="show"/>
+                <field name="bank_intermediary_address" optional="hide"/>
+                <field name="bank_direct" optional="show"/>
+                <field name="bank_direct_address" optional="hide"/>
+           </xpath>
+              <field name="property_supplier_payment_term_id" position="after">
+                <field name="pay_method_ids" widget="many2many_tags"/>
+            </field>
+        </field>
+    </record>
+
+<!--       <record id="account_view_partner_property_form_aliadas_payment" model="ir.ui.view">-->
+<!--        <field name="model">res.partner</field>-->
+<!--        <field name="inherit_id" ref="account_check_printing.view_partner_property_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--              <field name="property_payment_method_id" position="attributes">-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </field>-->
+<!--        </field>-->
+<!--    </record>-->
+
+
+
+</odoo>

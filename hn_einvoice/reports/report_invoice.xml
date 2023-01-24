@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_costa_rica" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='informations']" position="before">
+            <t t-if="o.check_cai">
+                <div id="info_cai">
+                    <t t-if="o.move_type in ('out_invoice','out_refund')">
+                        <t t-set="cai" t-value="o.cai_id"/>
+                    </t>
+                     <t t-elif="o.move_type in ('in_invoice','in_refund')">
+                        <t t-set="cai" t-value="o.cai_supplier_id"/>
+                    </t>
+                    <t t-else="">
+                        <t t-set="cai" t-value="False"/>
+                    </t>
+                    <div class="row">
+                        <div class="col-3">CAI:</div>
+                        <div class="col-9">
+                            <t t-esc="cai.cai" t-if="cai"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">Rango Autorizado:</div>
+                        <div class="col-9">
+                            Del
+                            <t t-esc="cai.range_start" t-if="cai"/>
+                            al
+                            <t t-esc="cai.range_end" t-if="cai"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">Fecha límite:</div>
+                        <div class="col-9">
+                            <t t-esc="cai.date_end" t-if="cai"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">Factura N°:</div>
+                        <div class="col-9">
+                            <t t-if="o.move_type in ('out_invoice','out_refund')">
+                                <span t-field="o.name"/>
+                            </t>
+                            <t t-elif="o.move_type in ('in_invoice','in_refund')">
+                                <span t-field="o.ref"/>
+                            </t>
+                            <t t-else="">
+                                <span>-</span>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//p[@name='incoterm']" position="before">
+            <t t-if="o.move_o_ids">
+                <div class="row">
+                    <div class="col-6">
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>Facturas relacionadas:</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.move_o_ids" t-as="invoice">
+                                    <tr>
+                                        <t t-if="o.move_type in ('out_invoice','out_refund')">
+                                            <td>
+                                                <span t-field="invoice.name"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td>
+                                                <span t-field="invoice.ref"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

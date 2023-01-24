@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+     <!--HIDE BUTTONS-->
+    <record id="crm_lead_view_form_helpdesk_aliadas" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_helpdesk.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(crm_helpdesk.crm_lead_convert2ticket_action)d']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+       <record id="crm_lead_view_form_enrich__aliadas" model="ir.ui.view">
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_iap_enrich.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='iap_enrich'][1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+              <xpath expr="//button[@name='iap_enrich'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    
+    <record id="view_res_partner_filter_aliadas" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='type_person']" position="before">
+                <filter string="Prospecto" name="customer_draft" domain="[('state', 'in', ['draft'])]"/>
+                <filter string="Rechazados" name="customer_cancel" domain="[('state', 'in', ['cancel'])]"/>
+            </xpath>
+            <xpath expr="//filter[@name='salesperson']" position="before">
+                <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_partner_form_temporal_aliadas" model="ir.actions.act_window">
+        <field name="name">Prospecto de clientes</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('active','=',False)]</field>
+        <field name="context">{'res_partner_search_mode': 'customer', 'active': False, 'default_state': 'draft', 'search_default_customer_draft': 1}</field>
+        <field name="search_view_id" ref="view_res_partner_filter_aliadas"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Contact in your address book
+            </p>
+            <p>
+                Odoo helps you track all activities related to your contacts.
+            </p>
+        </field>
+    </record>
+
+
+    <menuitem
+            id="crm.res_partner_menu_customer"
+            name="Customers"
+            parent="crm.crm_menu_sales"
+            action="base.action_partner_form"
+            groups="bpc_aliadas.group_aliadas_crm_show_customer"
+            sequence="5"/>
+
+    <menuitem
+            id="res_partner_menu_customer_temp"
+            parent="crm.crm_menu_sales"
+            action="action_partner_form_temporal_aliadas"
+            groups="bpc_aliadas.group_aliadas_crm_show_customer_temporal"
+            sequence="6"/>
+
+
+</odoo>

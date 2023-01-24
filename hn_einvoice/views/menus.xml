@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <menuitem id="menu_action_hn_document_type" action="action_document_type" sequence="10" parent="account.account_invoicing_menu"/>
+    <menuitem id="menu_action_hn_company_sucursal" action="action_company_sucursal" sequence="11" parent="account.account_invoicing_menu"/>
+    <menuitem id="menu_action_hn_company_terminal" action="action_company_terminal" sequence="12" parent="account.account_invoicing_menu"/>
+    <menuitem id="menu_action_hn_cai_customers" action="action_cai_customers" sequence="200" parent="account.menu_finance_receivables"/>
+    <menuitem id="menu_action_hn_cai_suppliers" action="action_cai_suppliers" sequence="200" parent="account.menu_finance_payables"/>
+</odoo>

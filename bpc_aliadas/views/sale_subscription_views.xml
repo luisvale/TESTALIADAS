@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_subscription_view_form_aliadas" model="ir.ui.view">
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(sale_subscription.wizard_action)d']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="contract_name" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='date_start']" position="after">
+                <field name="date_end"/>
+                <field name="check_pending_amount"/>
+            </xpath>
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='product_id']" position="after">
+                <field name="document_type_sale_id" optional="show"/>
+                <field name="rental_type" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='product_id']" position="before">
+                <button name="view_move_lines"
+                        string=""
+                        title="Ver facturación"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-list" width="0.1"
+                        options='{"warn": true}' style="color: #ae43ff;"/>
+                <button name="view_product_id"
+                        string=""
+                        title="Ver producto"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-wrench" width="0.1"
+                        options='{"warn": true}'/>
+            </xpath>
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='price_unit']" position="before">
+                <field name="amount_consumption" attrs="{'required': [('rental_type','in',('consumption','consumption_min','consumption_fixed'))]}"/>
+                <field name="amount_sale"/>
+                <field name="amount_min"/>
+                <field name="amount_max"/>
+                <field name="percentage_sale"/>
+                <field name="date_init" optional="hide"/>
+                <field name="date_end" optional="hide"/>
+            </xpath>
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='quantity']" position="before">
+                <field name="pickup_start" optional="show"/>
+                <field name="pickup_end" optional="show"/>
+            </xpath>
+            <!--            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='price_subtotal']" position="before">-->
+
+            <!--            </xpath>-->
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='price_subtotal']" position="after">
+                <field name="tax_ids" optional="show" widget="many2many_tags"/>
+                <field name="tax_amount" optional="show"/>
+                <field name="total_subscription" optional="show"/>
+                <field name="currency_pricelist" optional="show"/>
+                <field name="currency_external_id" optional="show"/>
+                <field name="currency_rate" optional="show"/>
+                <field name="amount_convert" optional="show" widget='monetary' options="{'currency_field': 'currency_external_id'}"/>
+                <field name="pending_amount" optional="show" widget='monetary' options="{'currency_field': 'currency_external_id'}"/>
+                <field name="approved_state" optional="hide"/>
+            </xpath>
+            <xpath expr="//page[@id='lines']/div[1]" position="before">
+                <div class="mb-3">
+                    <button type="object" name="manual_invoice" string="Facturas pendientes" icon="fa-arrow-right" class="btn-primary"
+                            title="Generar facturas pendientes" attrs="{'invisible': [('check_pending_amount','=',False)]}"/>
+                </div>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Historial">
+                    <field name="invoice_line_ids">
+                        <tree decoration-muted="parent_state == 'draft'">
+                            <field name="product_id" optional="show"/>
+                            <field name="note_tag" widget="many2many_tags" optional="hide"/>
+                            <field name="move_id" optional="show"/>
+                            <field name="parent_state" optional="show"/>
+                            <field name="subscription_period_start" optional="show"/>
+                            <field name="subscription_period_end" optional="show"/>
+                            <field name="subscription_next_invoiced" optional="show"/>
+                            <field name="subscription_is_pending" optional="show" string="Cobrado adicional"/>
+                            <field name="subscription_line_consumption" optional="show"/>
+                            <field name="subscription_line_sale" optional="show"/>
+                            <field name="subscription_line_percentage_sale" optional="hide"/>
+                            <field name="subscription_line_amount_min" optional="hide"/>
+                            <field name="subscription_line_amount_max" optional="hide"/>
+                            <field name="quantity" optional="show"/>
+                            <field name="price_unit" optional="show"/>
+                            <field name="tax_ids" optional="show" widget="many2many_tags"/>
+                            <field name="currency_id" optional="show"/>
+                            <field name="price_subtotal" optional="show"/>
+                            <field name="company_id" optional="hide"/>
+                            <field name="company_currency_id" optional="show"/>
+                            <field name="credit" optional="show" string="Crédito"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Solicitudes aprobación">
+                    <group>
+                        <field name="approval_pending_count"/>
+                        <field name="approval_approved_count"/>
+                        <field name="approval_cancel_count"/>
+                    </group>
+                    <field name="approval_request_ids" nolabel="1"/>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='template_id']" position="after">
+                <field name="local_ids" widget="many2many_tags"/>
+                <field name="maintenance_equipment_ids" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//field[@name='recurring_invoice_line_ids']//tree" position="attributes">
+                <attribute name="decoration-danger">approved_state == 'new'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="window_generate_contract_name" model="ir.actions.server">
+        <field name="name">Generar código contrato</field>
+        <field name="model_id" ref="sale_subscription.model_sale_subscription"/>
+        <field name="binding_model_id" ref="sale_subscription.model_sale_subscription"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.generate_contract_name_global_and_invoice()</field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_subscription_view_kanban_aliadas">
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <div attrs="{'invisible': [('contract_name','=', False)]}">
+                    <span>CONTRATO :</span>
+                    <field name="contract_name"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="sale_subscription_view_list_aliadas">
+        <field name="model">sale.subscription</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="contract_name"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

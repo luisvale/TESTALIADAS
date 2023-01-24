@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--Todo: Tree-->
+        <record model="ir.ui.view" id="view_res_cai_supplier_tree">
+            <field name="name">res.cai.supplier.tree</field>
+            <field name="model">res.cai</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree sample="1">
+                    <field name="company_id" invisible="1"/>
+                    <field name="type_use" invisible="1"/>
+                    <field name="partner_id"/>
+                    <field name="cai"/>
+                    <field name="range_start" optional="show"/>
+                    <field name="range_end" optional="show"/>
+                    <field name="date_start" optional="show"/>
+                    <field name="date_end" optional="show"/>
+                    <field name="terminal_code" optional="show"/>
+                    <field name="sucursal_code" optional="show"/>
+                    <field name="document_type_id" optional="show"/>
+                    <field name="state" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_res_cai_supplier_form" model="ir.ui.view">
+            <field name="name">res.cai.supplier.form</field>
+            <field name="model">res.cai</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="state_draft" string="Inactivar" type="object" class="btn btn-secondary"
+                                attrs="{'invisible': [('state', '=', 'draft')]}" data-hotkey="v"/>
+                        <button name="state_confirmed" string="Activar" type="object" class="oe_highlight"
+                                attrs="{'invisible': [('state', '=', 'done')]}" data-hotkey="w"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="type_use"/>
+                            <h1>
+                                <field name="type_use" class="oe_inline"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="cai"/>
+                                <field name="range_start"/>
+                                <field name="range_end"/>
+                                <field name="limit_init" invisible="1"/>
+                                <field name="limit_end" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="partner_id" attrs="{'required': [('type_use','=','purchase')]}"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="journal_id" invisible="1"/>
+                            </group>
+
+                        </group>
+                        <group invisible="1">
+                            <field name="sucursal_code"/>
+                            <field name="terminal_code"/>
+                            <field name="document_type_id"/>
+                            <field name="company_id"/>
+                        </group>
+
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_cai_suppliers" model="ir.actions.act_window">
+            <field name="name">C.A.I - Proveedores</field>
+            <field name="res_model">res.cai</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"default_type_use": 'purchase'}</field>
+            <field name="domain">[('type_use','=','purchase')]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_res_cai_supplier_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_res_cai_supplier_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Cree los C.A.I correspondientes a la empresa.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

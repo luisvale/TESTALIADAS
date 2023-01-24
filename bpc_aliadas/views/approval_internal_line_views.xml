@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- TREE -->
+        <record model="ir.ui.view" id="view_approval_interval_line_tree">
+            <field name="name">approval.interval.line.tree</field>
+            <field name="model">approval.interval.line</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree sample="1">
+                    <field name="approval_id" optional="show"/>
+                    <field name="category_id" optional="show"/>
+                    <field name="approval_type" optional="show"/>
+                    <field name="currency_id" optional="show"/>
+                    <field name="amount_from" optional="show"/>
+                    <field name="amount_to" optional="show"/>
+                    <field name="percentage_from" optional="show"/>
+                    <field name="percentage_to" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- FORM -->
+        <record id="view_approval_interval_line_form" model="ir.ui.view">
+            <field name="name">approval.interval.line.form</field>
+            <field name="model">approval.interval.line</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="approval_id"/>
+                                <field name="category_id"/>
+                                <field name="approval_type"/>
+                            </group>
+                            <group>
+                                <field name="currency_id" attrs="{'invisible': [('approval_type','!=','purchase_approved')]}"/>
+                                <field name="amount_from" attrs="{'invisible': [('approval_type','!=','purchase_approved')]}"/>
+                                <field name="amount_to" attrs="{'invisible': [('approval_type','!=','purchase_approved')]}"/>
+                                <field name="percentage_from" attrs="{'invisible': [('approval_type','!=','sale_margin')]}"/>
+                                <field name="percentage_to" attrs="{'invisible': [('approval_type','!=','sale_margin')]}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- ACTIONS -->
+        <record id="action_approval_interval_line" model="ir.actions.act_window">
+            <field name="name">Aprobación con intervalos</field>
+            <field name="res_model">approval.interval.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_approval_interval_line_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_approval_interval_line_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Información de aprobación con intervalos
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

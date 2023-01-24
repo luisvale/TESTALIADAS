@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="bpc_aliadas.template_helpdesk_aliadas" name="Ticket de Servico de Asistencia">
+            <t t-call="website.layout">
+                <t t-set="pageName" t-value="'template_helpdesk_aliadas'"/>
+                <div id="wrap" class="oe_structure oe_empty">
+                    <section class="s_website_form o_colored_level" data-vcss="001" data-snippet="s_website_form" data-name="Form" style="background-image: none;">
+                        <div class="container" bis_skin_checked="1">
+                            <form action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="helpdesk.ticket" data-success-page="">
+                                <div class="s_website_form_rows row s_col_no_bgcolor" bis_skin_checked="1">
+                                    <div bis_skin_checked="1" data-visibility-condition="" data-visibility-between="" class="form-group s_website_form_field col-12 s_website_form_required" data-type="char" data-name="Field">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor" bis_skin_checked="1">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="onib5gjjx26">
+                                                <span class="s_website_form_label_content">Asunto</span>
+                                                <span class="s_website_form_mark">*</span>
+                                            </label>
+                                            <div class="col-sm" bis_skin_checked="1">
+                                                <input type="text" class="form-control s_website_form_input" name="name" required="1" value="" placeholder="" id="onib5gjjx26" data-fill-with="undefined"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  <div class="form-group col-12 s_website_form_field s_website_form_model_required" data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 200px" for="helpdesk99">
+                                            <span class="s_website_form_label_content">Contrato</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-12">
+                                            <input id="helpdesk99" type="text" class="form-control s_website_form_input" name="contract" required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div data-visibility-condition="" data-visibility-between="" bis_skin_checked="1" class="form-group s_website_form_field col-12" data-type="html" data-name="Field">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor" bis_skin_checked="1">
+                                            <label class="col-form-label col-sm-auto s_website_form_label " style="width: 200px" for="o4cmqjwe9p3i">
+                                                <span class="s_website_form_label_content">Descripción</span>
+                                            </label>
+                                            <div class="col-sm" bis_skin_checked="1">
+                                                <textarea class="form-control s_website_form_input" name="description" placeholder="" id="o4cmqjwe9p3i" rows="3"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-visibility-condition="" data-visibility-between="" bis_skin_checked="1" class="form-group s_website_form_field col-12    " data-type="many2one" data-name="Field">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor" bis_skin_checked="1">
+                                            <label class=" col-sm-auto s_website_form_label " style="width: 200px" for="ow3q8fw3z7mk">
+                                                <span class="s_website_form_label_content">Archivo adjuntos principal</span>
+                                            </label>
+                                            <div class="col-sm" bis_skin_checked="1">
+                                                <input type="file" class="form-control-file s_website_form_input" name="message_main_attachment_id" id="ow3q8fw3z7mk" data-fill-with="undefined"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div bis_skin_checked="1" data-visibility-condition="" data-visibility-between="" class="form-group s_website_form_field col-12    " data-type="many2one" data-name="Field">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor" bis_skin_checked="1">
+                                            <label class="col-form-label col-sm-auto s_website_form_label " style="width: 200px" for="omq5oinra5j">
+                                                <span class="s_website_form_label_content">Equipo de servicio de asistencia</span>
+                                            </label>
+                                            <div class="col-sm" bis_skin_checked="1">
+                                                <select class="form-control s_website_form_input" name="team_id" id="omq5oinra5j" style="">
+                                                    <option value="1" selected="selected">Atención al cliente</option>
+                                                    <option value="3">Operaciones</option>
+                                                    <option value="2">Mantenimiento</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-12 s_website_form_submit" data-name="Submit Button" bis_skin_checked="1">
+                                        <div style="width: 200px;" class="s_website_form_label" bis_skin_checked="1"/>
+                                        <a href="#" role="button" class="btn btn-primary btn-lg s_website_form_send">Enviar</a>
+                                        <span id="s_website_form_result"/>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>

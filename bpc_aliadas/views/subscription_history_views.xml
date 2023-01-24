@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="move_line_history_tree" model="ir.ui.view">
+        <field name="name">account.move.line.tree.history</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <tree sample="1" default_order='create_date DESC' decoration-muted="parent_state == 'draft'" create="0" delete="0" edit="0">
+                <field name="subscription_id" optional="show"/>
+                <field name="subscription_line_ids" optional="show" widget="many2many_tags"/>
+                <field name="product_id" optional="show"/>
+                <field name="note_tag" widget="many2many_tags" optional="hide"/>
+                <field name="move_id" optional="show" />
+                <field name="parent_state" optional="show" />
+                <field name="subscription_period_start" optional="show"/>
+                <field name="subscription_period_end" optional="show"/>
+                <field name="subscription_next_invoiced" optional="show"/>
+                <field name="subscription_is_pending" optional="show" string="Es pendiente"/>
+                <field name="subscription_line_consumption" optional="show"/>
+                <field name="subscription_line_sale" optional="show"/>
+                <field name="subscription_line_percentage_sale" optional="hide"/>
+                <field name="subscription_line_amount_min" optional="hide"/>
+                <field name="subscription_line_amount_max" optional="hide"/>
+                <field name="quantity" optional="show"/>
+                <field name="price_unit" optional="show"/>
+                <field name="tax_ids" widget="many2many_tags" optional="show"/>
+                <field name="currency_id" optional="show"/>
+                <field name="price_subtotal" optional="show"/>
+                <field name="company_id" optional="hide"/>
+                <field name="company_currency_id" optional="show"/>
+                <field name="credit" optional="show" string="Crédito"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_move_line_history" model="ir.actions.act_window">
+        <field name="name">Historial de facturación</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[('subscription_line_ids', '!=', False)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'sequence': 1, 'view_id': ref('move_line_history_tree')})]"/>
+<!--        <field name="view_ids" eval="[(5, 0, 0),-->
+<!--            (0, 0, {'view_mode': 'tree', 'sequence': 1, 'view_id': ref('move_line_history_tree')}),-->
+<!--            (0, 0, {'view_mode': 'form', 'sequence': 2, 'view_id': ref('hr_contract_view_form_contract_templates')})]"/>-->
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Historial
+            </p>
+            <p>
+                Facturación por líneas de subscripción
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+            id="menuitem_move_line_history"
+            name="Historial facturación"
+            action="action_move_line_history"
+            parent="sale_subscription.menu_sale_subscription_report"
+            sequence="100"/>
+</odoo>

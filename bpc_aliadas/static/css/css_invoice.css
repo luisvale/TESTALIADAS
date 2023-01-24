@@ -1,0 +1,12 @@
+.border-table {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.space-left {
+     padding-left:9px;
+}
+
+.space-right {
+     padding-right:9px;
+}

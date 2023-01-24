@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="approval_template_approver_user" model="mail.template">
+            <field name="name">Email aprobación</field>
+            <field name="model_id" ref="model_approval_approver"/>
+            <field name="subject">Nueva aprobación: {{ object.request_id.name }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object.user_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola,
+                        <t t-out="object.user_id.name or ''"/>
+                        .
+                        <br/>
+                        <br/>
+                        La solcitud de aprobación  <strong t-out="object.request_id.name or ''"/> está en curso , perteneciente a
+                        "<strong t-out="object.request_id.category_id.name or ''"/>" ,
+                        relacionada a
+                        <t t-if="object.request_id.purchase_id">
+                            la orden de compra "<strong t-out="object.request_id.purchase_id.name or ''"/>"
+                        </t>
+                        <t t-elif="object.request_id.sale_id">
+                            la orden de venta "<strong t-out="object.request_id.sale_id.name or ''"/>"
+                        </t>
+                        <t t-elif="object.request_id.requisition_id">
+                            la licitación "<strong t-out="object.request_id.requisition_id.name or ''"/>"
+                        </t>
+                        <t t-elif="object.request_id.job_id">
+                            el puesto de trabajo "<strong t-out="object.request_id.job_id.name or ''"/>"
+                        </t>
+                        <t t-elif="object.request_id.pricelist_id">
+                            la lista de precios "<strong t-out="object.request_id.pricelist_id.name or ''"/>"
+                        </t>
+                        <t t-elif="object.request_id.subscription_id">
+                            la subscripción "<strong t-out="object.request_id.subscription_id.name or ''"/>"
+                        </t>
+                        <t t-else="">
+                            " - "
+                        </t>,
+                        del departamento
+                        <t t-if="object.request_id.department_id">
+                            "<strong t-out="object.request_id.department_id.name or ''"/>"
+                        </t>
+                        <t t-else="">
+                            " - "
+                        </t>.
+                        <br/>
+                        <br/>
+                        Ingrese al siguiente link para proceder con la aprobación:
+                        <t t-if="object.request_id.link_approval">
+                            <a t-att-href="object.request_id.link_approval"
+                               style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                Ver aprobación
+                            </a>
+                        </t>
+
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

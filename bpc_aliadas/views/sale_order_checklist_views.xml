@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--Todo: Attributes Tree-->
+        <record model="ir.ui.view" id="view_sale_order_checklist_tree">
+            <field name="name">sale.order.check_list.tree</field>
+            <field name="model">sale.order.check_list</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="sequence"  widget="handle"/>
+                    <field name="name"/>
+                    <field name="description"/>
+                    <field name="company_id"/>
+                    <field name="state_active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_sale_order_checklist_form" model="ir.ui.view">
+            <field name="name">sale.order.check_list.form</field>
+            <field name="model">sale.order.check_list</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="sequence"  widget="handle"/>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="state_active"/>
+                                <field name="company_id"/>
+                                <field name="description"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+
+
+        <record id="action_sale_order_checklist" model="ir.actions.act_window">
+            <field name="name">Check-list procesos</field>
+            <field name="res_model">sale.order.check_list</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_sale_order_checklist_tree"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Creae elemento para check list
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_check_document_aliadas">
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+        <div class="article o_report_layout_clean" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+            <t t-set="o" t-value="o.with_context(lang=lang)"/>
+            <div class="page" style="font-size:13px!important;font-weight: lighter !important;">
+                <div class="row mb-3">
+                    <div class="col-5 text-center">
+                        <h2>
+                            <t t-esc="company.name"/>
+                        </h2>
+                    </div>
+                    <div class="col-2"/>
+                    <div class="col-5 text-right">
+                        <h5>
+                            CHEQUE N°:
+                            <t t-esc="o.code_paycheck"/>
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-5">
+                        <span>Cuenta N° 98812121</span>
+                    </div>
+                    <div class="col-7">
+                        <h6 style="border-bottom: 1px solid black; ">
+                            <t t-esc="company.city"/>,
+                            <t t-esc="o.date"/>
+                        </h6>
+                        <p>Lugar y Fecha</p>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-10">
+                        <h6 style="border-bottom: 1px solid black; ">
+                            <t t-esc="o.partner_id.name"/>
+                        </h6>
+                        <p>Páguese a la orden de</p>
+                    </div>
+                    <div class="col-2">
+                        <t t-esc="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    </div>
+                </div>
+                <div class="row mt-4 mb-4">
+                    <t t-set="qty_letter" t-value="o.get_amount_text_custom()"/>
+                    <div class="col-10">
+                        <h6 style="border-bottom: 1px solid black; ">
+                            <t t-esc="qty_letter[0]"/>
+                        </h6>
+                        <p>Cantidad en letras</p>
+                    </div>
+                    <div class="col-2">
+                        <t t-esc="qty_letter[1]"/>
+                    </div>
+                </div>
+                <div class="row mt-6">
+                    <div class="col-12">
+                        <table style="width:100%">
+                            <body>
+                                <tr>
+                                    <td style="width:45%; text-align:left">
+                                        <h6>
+                                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 100px; height: 100px; max-width: 100px; display:block; margin-left: auto; margin-right: auto; top: 30%;" alt="Logo"/>
+                                        </h6>
+                                        <p>Banco de ...</p>
+                                    </td>
+                                    <td>
+                                        <h6 style="border-bottom: 1px solid black; text-align:right">
+                                            &amp;nbsp;
+                                        </h6>
+                                        <p>Firma(s)</p>
+                                    </td>
+                                </tr>
+                            </body>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <p>EL ENDOSO DE ESTE CHEQUE ES UN RECIBO COMPLETO DEL PAGO QUE SE DETALLA.</p>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <table class="table" style="border-collapse: collapse;border-radius: 1em;overflow: hidden;border: 1px solid black;">
+                            <thead class="text-center">
+                                <tr class="text-center" style="background:black !important; color:white !important">
+                                    <th colspan="3">CONCEPTO DEL PAGO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="width:45%;"/>
+                                    <td style="width:10%;">
+                                        <div style="  border-left: 2px solid black;height: 20px;position:absolute;left: 50%;"></div>
+                                    </td>
+                                    <td class="text-center" style="width:45%">
+                                        <h6>CHEQUE N°
+                                            <t t-esc="o.code_paycheck"/>
+                                        </h6>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <table class="table" style="border-collapse: collapse;border-radius: 1em;overflow: hidden;border: 1px solid black;">
+                            <thead class="text-center">
+                                <tr class="text-center" style="background:black !important; color:white !important">
+                                    <th>CUENTA</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>DEBE</th>
+                                    <th>HABER</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.move_id">
+                                    <t t-if="o.move_id.line_ids">
+                                        <t t-foreach="o.move_id.line_ids" t-as="line">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="line.account_id.code"/>
+                                                    /
+                                                    <t t-esc="line.account_id.name"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.name"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="line.debit" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="line.credit" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm table-striped" style="border-radius: 1em;w">
+                            <tbody >
+                                <tr class="text-center">
+                                    <td style="border-right: 1px solid #e9e9e9;">HECHO POR</td>
+                                    <td style="border-right: 1px solid #e9e9e9;">APROBADO POR</td>
+                                    <td style="border-right: 1px solid #e9e9e9;">AUTORIZADO POR</td>
+                                    <td>
+                                        <br/>
+                                        <br/>
+                                        RECIBI CONFORME
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </template>
+
+    <template id="report_payment_check_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="bpc_aliadas.payment_check_document_aliadas" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_payment_check" model="report.paperformat">
+        <field name="name">Cheques aliadas</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field> <!-- la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja-->
+        <field name="header_spacing">35</field>
+        <field name="margin_bottom">36</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/><!-- mostrar una linea en cabecera-->
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_payment_receipt_check" model="ir.actions.report">
+        <field name="name">Cheque</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bpc_aliadas.report_payment_check_receipt</field>
+        <field name="report_file">bpc_aliadas.report_payment_check_receipt</field>
+        <field name="print_report_name">'Cheque_%s' % (object.code_paycheck or object.name)</field>
+        <field name="binding_model_id" ref="model_account_payment"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_payment_check"/>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+   <record id="rental_configurator_view_form_aliadas" model="ir.ui.view">
+        <field name="model">rental.wizard</field>
+        <field name="inherit_id" ref="sale_renting.rental_configurator_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='rental_configurator']" position="inside">
+                <group string="Tarifas">
+                    <field name="pricelist_item_ids" nolabel="1"/>
+                </group>
+
+            </xpath>
+        </field>
+   </record>
+</odoo>

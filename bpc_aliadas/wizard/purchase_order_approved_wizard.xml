@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!--Todo: Category Import-->
+        <record id="view_purchase_order_approved_wizard" model="ir.ui.view">
+            <field name="name">purchase.order.approved.wizard.form</field>
+            <field name="model">purchase.order.approved.wizard</field>
+            <field name="arch" type="xml">
+                <form >
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="order_id"/>
+                            </group>
+                            <group />
+                        </group>
+                        <group>
+                            <field name="note"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="confirm_approved" string="Aceptar" title="Al aceptar continará con el proceso."
+                                icon="fa-check-circle"
+                                type="object" class="oe_highlight"/>
+<!--                        <button string="Cancelar" class="oe_link" special="cancel" icon="fa-times-circle-o"/>-->
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_purchase_order_approved_wizard" model="ir.actions.act_window">
+            <field name="name">Confirmación orden de compra</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">purchase.order.approved.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

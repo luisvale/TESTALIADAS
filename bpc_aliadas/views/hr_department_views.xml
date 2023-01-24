@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_department_form_aliadas" model="ir.ui.view">
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page string="Departamentos relacionados" name="name_relations">
+                            <group>
+                                <field name="departament_ids" nolabel="1"/>
+                            </group>
+
+                        </page>
+                        <page string="Autorizaciones" name="name_authorizations">
+                            <div class="row mb-2">
+                                <button name="%(bpc_aliadas.action_department_authorization_line)d"
+                                        context="{'default_department_id': id, 'search_default_department_id': id}"
+                                        class="btn btn-link ml-2" string="Nueva autorización"
+                                        title="Crear nueva autorización"
+                                        icon="fa-arrow-circle-o-right"
+                                        type="action"/>
+                            </div>
+                            <group>
+                                <field name="authorization_line_ids" nolabel="1">
+                                    <tree>
+                                        <field name="user_id" optional="show"/>
+                                        <field name="department_id" optional="hide"/>
+                                        <field name="department_user_id" optional="show"/>
+                                        <field name="level_id" optional="show"/>
+                                        <field name="amount_lines" widget="many2many_tags"/>
+                                    </tree>
+                                </field>
+                            </group>
+
+                        </page>
+                        <!--                    <page string="Autorizadores" name="name_authorizations_lines">-->
+                        <!--                        <field name="authorization_lines_ids" context="{'default_department_id': id}">-->
+                        <!--                            <tree editable="top">-->
+                        <!--&lt;!&ndash;                                <field name="existing_user_ids"/>&ndash;&gt;-->
+                        <!--                                <field name="department_id" context="{'default_department_id': parent.id}"/>-->
+                        <!--                                <field name="company_id"/>-->
+                        <!--                                <field name="user_id"/>-->
+                        <!--&lt;!&ndash;                                <field name="level_id"/>&ndash;&gt;-->
+                        <!--&lt;!&ndash;                                <field name="amount_lines" widget="many2many_tags" context="{'default_authorization_id': id}" domain="[('authorization_id','=',False)]"/>&ndash;&gt;-->
+                        <!--                            </tree>-->
+                        <!--                        </field>-->
+                        <!--                    </page>-->
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+    </data>
+
+</odoo>

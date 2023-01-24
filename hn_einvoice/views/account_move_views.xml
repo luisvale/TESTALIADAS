@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- MODIFICACION DE VISTA DE ACCOUNT.MOVE -->
+    <record id="view_move_form_hn" model="ir.ui.view">
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <group attrs="{'invisible': [('state','!=','draft'),('name', 'not in', ('/','',False))]}">
+                    <group>
+                         <field name="document_type_code" invisible="1"/>
+                        <field name="next_cai_number" attrs="{'invisible': ['|',('move_type','not in',['out_invoice','out_refund']), ('document_type_code','=','00')]}"/>
+                    </group>
+                    <group>
+
+                    </group>
+                </group>
+                <div class="alert alert-danger" role="alert" attrs="{'invisible': [('error','=',False)]}">
+                    <field name="message"/>
+                </div>
+                <group>
+                    <group>
+                        <field name="error" invisible="1"/>
+                        <field name="check_cai" attrs="{'invisible': [('move_type','=','entry')]}"/>
+                    </group>
+                    <group>
+                        <div class="oe_grey" colspan="4"
+                             attrs="{'invisible': ['|',('check_cai','!=',True),('move_type','not in', ('out_invoice','out_refund'))]}">
+                            <i class="fa fa-info-circle"/>
+                            Toma en cuenta para validación de CAI: Tipo documento, Diario y Fecha factura.
+                        </div>
+                        <div class="oe_grey" colspan="4"
+                             attrs="{'invisible': ['|',('check_cai','!=',True),('move_type','not in', ('in_invoice','in_refund'))]}">
+                            <i class="fa fa-info-circle"/>
+                            Toma en cuenta para validación de CAI: Proveedor, Fecha factura y Referencia factura.
+                        </div>
+                         <div class="oe_grey text-info" colspan="44" attrs="{'invisible': [('document_type_code','!=','00')]}">
+                            <i class="fa fa-info-circle"/>
+                            Este tipo de documento, NO tiene efecto en la creación y sencuencia de CAI.
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+
+            <xpath expr="//group[@id='header_left_group']" position="replace">
+                <group id="header_left_group">
+                    <field name="document_type_sale_id" options="{'no_create': True, 'no_open': True}" string="Tipo Documento"
+                           attrs="{'invisible': [('move_type','not in',('out_invoice','out_refund'))], 'required': [('check_cai','=',True),('move_type','in',('out_invoice','out_refund'))]}"
+                    />
+                    <field name="document_type_purchase_id" options="{'no_create': True, 'no_open': True}" string="Tipo Documento"
+                           attrs="{'invisible': [('move_type','not in',('in_invoice','in_refund'))], 'required': [('check_cai','=',True),('move_type','in',('in_invoice','in_refund'))]}"
+                    />
+
+                    <field name="document_type_id" invisible="1"/>
+                    <div class="o_td_label">
+                        <label for="partner_id" string="Cliente" style="font-weight:bold;"
+                               attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'out_receipt'))]}"/>
+                        <label for="partner_id" string="Proveedor" style="font-weight:bold;"
+                               attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund', 'in_receipt'))]}"/>
+                    </div>
+                    <field name="partner_id" widget="res_partner_many2one" nolabel="1"
+                           context="{
+                                            'res_partner_search_mode': (context.get('default_move_type', 'entry') in ('out_invoice', 'out_refund', 'out_receipt') and 'customer')
+                                            or (context.get('default_move_type', 'entry') in ('in_invoice', 'in_refund', 'in_receipt') and 'supplier') or False,
+                                            'show_address': 1, 'default_is_company': True, 'show_vat': True}"
+                           domain="[('type', '!=', 'private'), ('company_id', 'in', (False, company_id))]"
+                           options='{"always_reload": True, "no_quick_create": True}'
+                           attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}"/>
+                    <label for="journal_id"
+                           groups="account.group_account_readonly"
+                           invisible="context.get('default_journal_id') and context.get('move_type', 'entry') != 'entry'"/>
+                    <div name="journal_div" class="d-flex" invisible="context.get('default_journal_id') and context.get('move_type', 'entry') != 'entry'">
+                        <field name="journal_id"
+                               groups="account.group_account_readonly"
+                               options="{'no_create': True}"
+                               attrs="{'readonly': [('posted_before', '=', True)]}"/>
+                        <span class="oe_inline o_form_label mx-3 oe_read_only"
+                              groups="base.group_multi_currency">in
+                        </span>
+                        <!-- Bigger margin on the left because in edit mode the external link button covers the text -->
+                        <span class="oe_inline o_form_label mr-3 ml-5 oe_edit_only"
+                              groups="base.group_multi_currency">in
+                        </span>
+                        <field name="currency_id"
+                               groups="base.group_multi_currency"
+                               attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </div>
+                    <!--                    <label for="cai_supplier" string="CAI" attrs="{'invisible': [('move_type','not in',('in_invoice','in_refund'))]}"/>-->
+                    <!--                    <div attrs="{'invisible': [('move_type','not in',('in_invoice','in_refund'))]}">-->
+                    <!--                        <field name="cai_supplier"/>-->
+                    <!--                        <button name="view_cai_supplier" type="object" string="⇒ Ver" class="oe_inline oe_link"-->
+                    <!--                                attrs="{'invisible': [('cai_id','=',False)]}"/>-->
+                    <!--                    </div>-->
+                    <label for="ref" string="Referencia factura"
+                           attrs="{'invisible':[('move_type', 'not in', ('in_invoice', 'in_receipt', 'in_refund'))]}"/>
+                    <!--                    <field name="ref" nolabel="1" attrs="{'invisible':[('move_type', 'not in', ('in_invoice', 'in_receipt', 'in_refund'))]}"/>-->
+                    <field name="ref" nolabel="1" attrs="{'invisible':[('move_type', 'not in', ('in_invoice', 'in_receipt', 'in_refund'))]}"/>
+                    <field name="cai_id" attrs="{'invisible': ['|',('move_type','not in',['out_invoice', 'out_refund']), ('cai_id','=',False)]}"
+                           domain="[('type_use','=','sale')]" string="CAI"/>
+                    <field name="cai_supplier_id" attrs="{'invisible': ['|',('move_type','not in',['in_invoice', 'in_refund']), ('cai_supplier_id','=',False)]}"
+                           domain="[('type_use','=','purchase')]" string="CAI"/>
+                    <field name="cai_date_end" attrs="{'invisible': [('cai_id','=',False),('cai_supplier_id','=',False)]}"/>
+
+
+                </group>
+            </xpath>
+
+            <xpath expr="//group[@id='header_right_group']" position="replace">
+                <!-- Invoice date (only invoices / receipts) -->
+                <group id="header_right_group">
+                    <div class="o_td_label">
+                        <label for="invoice_date" string="Fecha factura" style="font-weight:bold;"
+                               attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'out_receipt'))]}"/>
+                        <label for="invoice_date" string="Fecha factura" style="font-weight:bold;"
+                               attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund', 'in_receipt'))]}"/>
+                    </div>
+                    <field name="invoice_date" nolabel="1" options="{'datepicker': {'warn_future': true}}"
+                           attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}"/>
+
+                    <field name="date" string="Fecha contable"
+                           attrs="{
+                                            'invisible': [('move_type', 'in', ('out_invoice', 'out_refund', 'out_receipt'))],
+                                            'readonly': [('state', '!=', 'draft')],
+                                       }"/>
+
+                    <!-- Invoice payment terms (only invoices) + due date (only invoices / receipts) -->
+                    <label for="invoice_payment_term_id" string="Fecha vencimiento"
+                           attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}"/>
+                    <div class="d-flex" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}">
+                        <field name="invoice_date_due" force_save="1"
+                               placeholder="Date"
+                               attrs="{'invisible': [('invoice_payment_term_id', '!=', False)]}"/>
+                        <span class="o_form_label mx-3 oe_edit_only"
+                              attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('invoice_payment_term_id', '!=', False)]}">or
+                        </span>
+                        <field name="invoice_payment_term_id"
+                               placeholder="Terms"/>
+                    </div>
+
+                    <field name="tax_cash_basis_origin_move_id" attrs="{'invisible': [('tax_cash_basis_origin_move_id', '=', False)]}"/>
+                    <field name="payment_reference"
+                           attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))], 'readonly': [('state', '!=', 'draft')]}"/>
+
+                    <label name="invoice_vendor_bill_id_label" for="invoice_vendor_bill_id" string="Auto-Complete" class="oe_edit_only"
+                           attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('move_type', '!=', 'in_invoice')]}"/>
+                    <field name="invoice_vendor_bill_id" nolabel="1" class="oe_edit_only"
+                           attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('move_type', '!=', 'in_invoice')]}"
+                           domain="[('company_id', '=', company_id), ('partner_id','child_of', [partner_id]), ('move_type','=','in_invoice')]"
+                           placeholder="Select an old vendor bill"
+                           options="{'no_create': True}" context="{'show_total_amount': True}"/>
+                    <field name="partner_bank_id"
+                           context="{'default_partner_id': bank_partner_id}"
+                           domain="[('partner_id', '=', bank_partner_id)]"
+                           attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund', 'in_receipt'))], 'readonly': [('state', '!=', 'draft')]}"/>
+                    <field name="exchange_rate"/>
+                    <field name="amount_text"/>
+                    <field name="move_o_ids" widget="many2many_tags"/>
+
+
+                </group>
+            </xpath>
+
+            <xpath expr="//button[@name='action_reverse']" position="after">
+                <button name="action_debit" string='Nota Débito'
+                        type='object' groups="account.group_account_invoice"
+                        attrs="{'invisible': ['|', ('move_type', 'not in', ('out_invoice', 'in_invoice')), ('state', '!=', 'posted')]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_reverse']" position="attributes">
+                <attribute name="string">Nota crédito</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

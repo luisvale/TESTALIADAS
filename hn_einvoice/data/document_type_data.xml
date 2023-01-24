@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="document_factura_electronica" model="document.type">
+        <field name="sequence">1</field>
+        <field name="code">01</field>
+        <field name="name">Factura electrónica</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+    <record id="document_recibo_honorario" model="document.type">
+        <field name="sequence">4</field>
+        <field name="code">04</field>
+        <field name="name">Recibos por honorarios profesionales</field>
+        <field name="active">true</field>
+        <field name="in_sale">False</field>
+        <field name="in_purchase">False</field>
+    </record>
+
+    <record id="document_comprobante_retencion" model="document.type">
+        <field name="sequence">5</field>
+        <field name="code">05</field>
+        <field name="name">Comprobante de retención</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+
+    <record id="document_nota_credito" model="document.type">
+        <field name="sequence">6</field>
+        <field name="code">06</field>
+        <field name="name">Nota de crédito</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+
+    <record id="document_nota_debito" model="document.type">
+        <field name="sequence">7</field>
+        <field name="code">07</field>
+        <field name="name">Nota de débito</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+
+    <record id="document_guia_remision" model="document.type">
+        <field name="sequence">8</field>
+        <field name="code">08</field>
+        <field name="name">Guía de remisión</field>
+        <field name="active">true</field>
+        <field name="in_sale">False</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+    <record id="document_ticket" model="document.type">
+        <field name="sequence">9</field>
+        <field name="code">09</field>
+        <field name="name">Ticket</field>
+        <field name="active">true</field>
+        <field name="in_sale">False</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+    <record id="document_factura_prevalorada" model="document.type">
+        <field name="sequence">10</field>
+        <field name="code">10</field>
+        <field name="name">Factura prevalorada</field>
+        <field name="active">true</field>
+        <field name="in_sale">False</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+    <record id="document_boleta_compra" model="document.type">
+        <field name="sequence">11</field>
+        <field name="code">11</field>
+        <field name="name">Boleta de compra</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">False</field>
+    </record>
+
+    <record id="document_constancia_donación" model="document.type">
+        <field name="sequence">12</field>
+        <field name="code">12</field>
+        <field name="name">Constancia de donación</field>
+        <field name="active">true</field>
+        <field name="in_sale">False</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+      <record id="document_constancia_internal_document" model="document.type">
+        <field name="sequence">100</field>
+        <field name="code">00</field>
+        <field name="name">Documento interno</field>
+        <field name="active">true</field>
+        <field name="in_sale">True</field>
+        <field name="in_purchase">True</field>
+    </record>
+
+
+</odoo>

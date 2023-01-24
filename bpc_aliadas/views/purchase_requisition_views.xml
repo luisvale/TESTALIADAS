@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_requisition_form_bpc" model="ir.ui.view">
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Ordenes" id="page_purchase">
+                    <field name="get_purchase" invisible="1"/>
+                    <field name="purchase_line_ids" nolabel="1">
+                        <tree>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="date_planned"/>
+                            <field name="state"/>
+                            <field name="invoice_status"/>
+                            <field name="amount_total" string="Total sel."/>
+                            <field name="amount_total_without_check" string="Total compra"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Detalle de órdenes" id="page_lines_purchase">
+                    <field name="purchase_order_line_ids" nolabel="1"/>
+                </page>
+                <page string="Información adicional">
+                    <group >
+                        <group string="Automatización">
+                            <field name="automatic"/>
+                        </group>
+                        <group string="Aprobación">
+                            <field name="request_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']//tree/field[@name='product_qty']" position="before">
+                <field name="account_id"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="analytic_account_id" string="Analítica"/>
+                <field name="department_id" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_requisition_tree_bpc" model="ir.ui.view">
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="request_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
