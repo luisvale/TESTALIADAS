@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_account_move_debit" model="ir.ui.view">
+            <field name="name">account.move.debit.form</field>
+            <field name="model">account.move.debit</field>
+            <field name="arch" type="xml">
+                <form string="Factura débito">
+                    <field name="residual" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="move_ids" invisible="1"/>
+                    <field name="move_type" invisible="1"/>
+                    <field name="available_journal_ids" invisible="1"/>
+                    <group>
+                         <group attrs="{'invisible': ['|',('move_type', 'not in', ('out_invoice', 'in_invoice')),('residual', '=', 0)]}">
+                            <field name="debit_method" widget="radio" attrs="{'readonly': [('residual', '=', 0)]}"/>
+                         </group>
+                         <group attrs="{'invisible': ['|', ('move_type', 'not in', ('out_invoice', 'in_invoice', 'some_invoice')), ('residual', '=', 0)]}">
+                            <div attrs="{'invisible':[('debit_method', '!=', 'debit')]}" class="oe_grey" colspan="4">
+                                El comprobante de débito se crea en borrador y puede ser editada antes de expedirse.
+                            </div>
+                            <div attrs="{'invisible':[('debit_method', '!=', 'all')]}" class="oe_grey" colspan="4">
+                                 El comprobante de débito  se valida automáticamente.
+                            </div>
+                         </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="reason" attrs="{'invisible': [('move_type', '=', 'entry')]}"/>
+                            <field name="date_mode" string="Reversal Date" widget="radio"/>
+                        </group>
+                        <group>
+                        <field name="journal_id" domain="[('id', 'in', available_journal_ids)]"/>
+                        <field name="date" string="Refund Date" attrs="{'invisible': ['|', ('move_type', 'not in', ('out_invoice', 'in_invoice')), ('date_mode', '!=', 'custom')], 'required':[('date_mode', '=', 'custom')]}"/>
+                        <field name="date" attrs="{'invisible': ['|', ('move_type', 'in', ('out_invoice', 'in_invoice')), ('date_mode', '!=', 'custom')], 'required':[('date_mode', '=', 'custom')]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string='Añadir' name="create_debit_moves" type="object" class="btn-primary" data-hotkey="q"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_view_account_move_debit" model="ir.actions.act_window">
+            <field name="name">Débito</field>
+            <field name="res_model">account.move.debit</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_move_debit"/>
+            <field name="target">new</field>
+            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="binding_view_types">list</field>
+        </record>
+    </data>
+</odoo>

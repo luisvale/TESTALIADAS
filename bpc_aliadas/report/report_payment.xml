@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_document_aliadas">
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+        <div class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-2 col-xs-4 mt32">
+                    <div style="text-align:left;">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 100px; height: 100px; max-width: 150px; display:block; margin-left: auto; margin-right: auto; top: 30%;" alt="Logo"/>
+                    </div>
+                </div>
+                <!--                <div class="col-6 empresa" name="company_address" style="text-transform: uppercase;">-->
+                <div class="col-8 empresa" name="company_address" style="text-align: center; font-size:12px">
+                    <strong style="font-size:16px">
+                        <t t-esc="company.name"/>
+                    </strong>
+                    <br/>
+                    <t t-if="company.street">
+                        <span t-esc="company.street"/>,
+                    </t>
+                    <t t-else="">
+                        S/D
+                    </t>
+                    <t t-if="company.city">
+                        <span t-esc="company.city"/>,
+                    </t>
+                    <t t-if="company.state_id">
+                        <span t-esc="company.state_id.name"/>,
+                    </t>
+                    <t t-if="company.country_id">
+                        <span t-esc="company.country_id.name"/>.
+                    </t>
+                    <br/>
+                    <span t-if="company.phone" style="white-space: nowrap;"
+                          t-esc="'Tel: ' + company.phone"/>
+                    /
+                    <span t-if="company.email" style="white-space: nowrap;"
+                          t-esc="'Correo Electrónico: ' + company.email"/>
+                    <!--                    <br/>-->
+                    <!--                    <span t-if="company.vat" style="white-space: nowrap;"-->
+                    <!--                          t-esc="'RTN: ' + company.vat"/>-->
+                </div>
+                <div class="col-2"/>
+            </div>
+        </div>
+        <div class="article o_report_layout_clean" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+            <t t-set="o" t-value="o.with_context(lang=lang)"/>
+            <div class="page" style="font-size:13px!important;font-weight: lighter !important;">
+                <div class="row" style=" border-top: 2px solid black; border-bottom: 2px solid #9e6b6b">
+                    <div class="col-2" style="font-weight: bold;">
+                        <span>Fecha :</span>
+                    </div>
+                    <div class="col-4">
+                        <span t-esc="o.date"/>
+                    </div>
+                    <div class="col-6 text-right" style="font-weight: bold; font-size:15px!important">
+                        <span>Recibo de Pago</span>
+                        <br/>
+                        <span t-esc="o.name" style="color:red"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2" style="font-weight: bold;">
+                        Recibí de:
+                    </div>
+                    <div class="col-5">
+                        <span t-esc="o.partner_id.name"/>
+                        <br/>
+                        <t t-if="o.partner_id.street">
+                            <span t-esc="o.partner_id.street"/>,
+                        </t>
+                        <t t-if="o.partner_id.state_id">
+                            <span t-esc="o.partner_id.state_id.name"/>,
+                        </t>
+                        <t t-if="o.partner_id.country_id">
+                            <span t-esc="o.partner_id.country_id.name"/>.
+                        </t>
+                        <br/>
+                        <t t-if="o.partner_id.phone">
+                            <span t-esc="o.partner_id.phone"/>
+                            <br/>
+                        </t>
+                        <span t-if="o.partner_id.mobile" t-esc="o.partner_id.mobile"/>
+                    </div>
+                    <div class="col-2" style="font-weight: bold;">Código de cliente</div>
+                    <div class="col-2">-</div>
+                </div>
+                <table style="width:100%" class="mt-4">
+                    <body>
+                        <tr>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>Método de pago</strong>
+                            </td>
+                            <td style="width:1%"/>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>Banco Emisor</strong>
+                            </td>
+                            <td style="width:1%"/>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>N° de referencia</strong>
+                            </td>
+                            <td style="width:1%"/>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>N° de Cheque</strong>
+                            </td>
+                            <td style="width:1%"/>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>Banco receptor</strong>
+                            </td>
+                            <td style="width:1%"/>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <strong>N° Interno</strong>
+                            </td>
+
+
+                        </tr>
+                        <tr>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <t t-if="o.pay_method_id">
+                                    <t t-esc="o.pay_method_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td></td>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <t t-if="o.customer_bank_id">
+                                    <t t-esc="o.customer_bank_id.bank_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td></td>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <t t-if="o.pay_method_id.sequence != '03'">
+                                    <t t-esc="o.ref"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td></td>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <t t-if="o.pay_method_id.sequence == '03'">
+                                    <t t-esc="o.ref" t-if="o.pay_method_id.sequence == '03'"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td></td>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <span t-esc="o.partner_bank_id.bank_id.name"/>
+                            </td>
+                            <td></td>
+                            <td style="border-bottom: 1px solid #9e6b6b;">
+                                <span>-</span>
+                            </td>
+
+                        </tr>
+                    </body>
+                </table>
+                <table style="width:100%" class="mt-4">
+                    <head>
+                        <tr style="border-bottom: 2px solid #9e6b6b;">
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Contaro N°</th>
+                            <th>N° Documento</th>
+                            <th>Plaza</th>
+                            <th style="text-align:right">Saldo anterior</th>
+                            <th style="text-align:right">Valor aplicado</th>
+                            <th style="text-align:right">Saldo actual</th>
+                        </tr>
+                    </head>
+                    <body>
+                        <t t-if="o.reconciled_invoice_ids">
+                            <tr t-foreach="o.reconciled_invoice_ids" t-as="inv">
+                                <t t-set="residual" t-value="o.get_residual_by_invoice(inv)"/>
+                                <td>-</td>
+                                <td>
+                                    <t t-esc="inv.invoice_date"/>
+                                </td>
+                                <td>
+                                    <t t-esc="inv.subscription_contract_name"/>
+                                </td>
+                                <td>
+                                    <t t-esc="inv.name"/>
+                                </td>
+                                <td><t t-esc="inv.category_id.name" /></td>
+                                <td style="text-align:right">
+                                    <t t-esc="residual['residual_last']" t-options='{"widget": "monetary", "display_currency": inv.currency_id}'/>
+                                </td>
+                                <td style="text-align:right">
+                                    <t t-esc="residual['paid']"/>
+                                </td>
+                                <td style="text-align:right">
+                                    <t t-esc="residual['residual']" t-options='{"widget": "monetary", "display_currency": inv.currency_id}'/>
+                                </td>
+                            </tr>
+
+                        </t>
+                    </body>
+                    <footer>
+                        <tr>
+                            <td colspan="8"/>
+                        </tr>
+                        <tr>
+                            <td colspan="5"/>
+                            <td style="text-align:right">
+                                Total Recibido:
+                            </td>
+                            <td style="text-align:right">
+                                <t t-esc="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                            <td/>
+                        </tr>
+                        <tr>
+                            <td colspan="8"/>
+                        </tr>
+                        <tr>
+                            <td colspan="4"/>
+                            <td>
+                                <strong>La cantidad de:</strong>
+                            </td>
+                            <td colspan="3">
+                                <t t-esc="o.get_amount_text()"/>
+                            </td>
+                        </tr>
+                    </footer>
+                </table>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <p>Si tiene alguna duda sobre la aplicación de este documento, póngase en contacto con: cobros@aliadas.net Tel. 2508-1999 Ext. 1965</p>
+                    </div>
+                </div>
+            </div>
+            <!--FIN PAGE-->
+            <!-- Footer -->
+            <div class="footer">
+                <br/>
+                <div class="row">
+                    <div class="col-6 text-center">
+                        <span>Aplicado por:
+                            <t t-esc="o.user_id.name"/>
+                        </span>
+                    </div>
+                    <div class="col-6 text-center">
+                        <span>Firma y sello:</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="account.report_payment_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="bpc_aliadas.payment_document_aliadas" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_payment_custom" model="report.paperformat">
+        <field name="name">Recigo de pago aliadas</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">40</field> <!-- la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja-->
+        <field name="header_spacing">35</field>
+        <field name="margin_bottom">36</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/><!-- mostrar una linea en cabecera-->
+        <field name="dpi">90</field>
+    </record>
+
+
+    <record id="account.action_report_payment_receipt" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_payment_custom"/>
+    </record>
+
+
+</odoo>

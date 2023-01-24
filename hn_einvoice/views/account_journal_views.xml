@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_journal_inherit_form" model="ir.ui.view">
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="sucursal_id" domain="[('company_id','=',company_id)]"/>
+                <field name="terminal_id" domain="[('sucursal_id','=',sucursal_id)]"/>
+            </xpath>
+            <xpath expr="//field[@name='refund_sequence']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='code']" position="after">
+                <label for="sequence_id" string="Secuencia"/>
+                <div>
+                    <field name="sequence_id" class="oe_inline"/>
+                    <button name="generate_sequence" type="object" string="⇒ Genera secuencia" class="oe_inline oe_link" groups="base.group_user"
+                            attrs="{'invisible': [('sequence_id','!=',False)]}"/>
+                </div>
+                <label for="sequence_return_id" string="Secuencia Rect."/>
+                <div>
+                    <field name="sequence_return_id" class="oe_inline"/>
+                    <button name="generate_sequence_rect" type="object" string="⇒ Genera secuencia" class="oe_inline oe_link" groups="base.group_user"
+                            attrs="{'invisible': [('sequence_return_id','!=',False)]}"/>
+                </div>
+                <label for="sequence_without_id" string="Secuencia sin CAI."/>
+                <div>
+                    <field name="sequence_without_id" class="oe_inline"/>
+                    <button name="generate_sequence_without_cai" type="object" string="⇒ Genera secuencia" class="oe_inline oe_link" groups="base.group_user"
+                            attrs="{'invisible': [('sequence_without_id','!=',False)]}"/>
+                </div>
+
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Lista de C.A.I." attrs="{'invisible': [('type','not in',('sale','purchase'))]}">
+                    <field name="cai_ids" nolabel="1" context="{'default_journal_id': id, 'default_type_use': type}" domain="[('type_use','=',type),
+                    ('state','=','done'),('sucursal_id','=',sucursal_id),('terminal_id','=',terminal_id)]" options="{'no_create_edit': True}"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_journal_inherit_tree" model="ir.ui.view">
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_tree"/>
+        <field name="arch" type="xml">
+            <field name="type" position="after">
+                <field name="sequence_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

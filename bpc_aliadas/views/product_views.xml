@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="product_template_aliadas_form_view">
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='detailed_type']" position="after">
+                <field name="document_type_sale_id"/>
+                <!--                <field name="auto_requisition"/>-->
+                <field name="analytic_account_id"/>
+                <field name="classification_id"/>
+                <field name="rental_type"/>
+                <field name="is_free" attrs="{'invisible': [('rent_ok','=',False)]}"/>
+                <field name="not_total" attrs="{'invisible': [('rent_ok','=',True)]}"/>
+                <label for="meter2" string="Medida arrendada"/>
+                <div>
+                    <field name="meter2" class="mb-0 oe_inline"/>
+                    <span>m²</span>
+                </div>
+                <label for="meter_real" string="Medida real"/>
+                <div>
+                    <field name="meter_real" class="mb-0 oe_inline"/>
+                    <span>m²</span>
+                </div>
+                <field name="is_advance"/>
+            </xpath>
+            <xpath expr="//group[@name='group_general']" position="inside">
+                <field name="warehouse_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="product_template_tree_view_aliadas">
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+              <xpath expr="//field[@name='categ_id']" position="after">
+                  <field name="meter2" optional="show"/>
+                  <field name="meter_real" optional="show"/>
+              </xpath>
+        </field>
+    </record>
+
+</odoo>

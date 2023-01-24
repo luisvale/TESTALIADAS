@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Rentable products -->
+        <record id="rental_product_bpc" model="product.product">
+            <field name="name">Renta</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+            <field name="default_code">RENT</field>
+            <field name="recurring_invoice">True</field>
+            <field name="subscription_template_id" ref="sale_subscription.monthly_subscription"/>
+        </record>
+    </data>
+</odoo>

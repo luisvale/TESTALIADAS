@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="approval_category_view_form_aliadas" model="ir.ui.view">
+        <field name="model">approval.category</field>
+        <field name="inherit_id" ref="approvals.approval_category_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='has_quantity']" position="after">
+                <field name="has_price_unit" string="Precio unitario" widget="radio" options="{'horizontal': true}"/>
+            </xpath>
+            <xpath expr="//group[@name='approvers']" position="replace">
+
+            </xpath>
+            <xpath expr="//page[@name='options']" position="inside">
+                <group string="Approvers" name="approvers">
+                    <field name="manager_approval"/>
+                    <separator colspan="2"/>
+                    <field name="approver_ids">
+                        <tree editable="bottom">
+                            <field name="existing_user_ids" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="user_id" options="{'no_create': True}"/>
+                            <field name="department_id" options="{'no_create': True}"/>
+                            <field name="level_id" options="{'no_create': True}"/>
+                            <field name="approval_type" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <!--                            <field name="amount" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_approved')]}"/>-->
+                            <field name="amount_lines" widget="many2many_tags"
+                                   attrs="{'column_invisible': [('parent.approval_type', 'not in', ['sale_margin'])]}"
+                                   context="{'default_approval_id': id}" domain="[('approval_id','=',False)]"/>
+                            <field name="percentage_margin" attrs="{'column_invisible': [('parent.approval_type', '!=', 'sale_margin')]}"/>
+                            <field name="pricelist_ids" widget="many2many_tags" attrs="{'column_invisible': [('parent.approval_type', '!=', 'pricelist')]}"/>
+                            <field name="required"/>
+                        </tree>
+                    </field>
+                    <field name="approval_minimum"/>
+                    <field name="invalid_minimum" invisible="1"/>
+                    <div class="text-warning" colspan="2" attrs="{'invisible': [('invalid_minimum', '=', False)]}">
+                        <span class="fa fa-warning" title="Invalid minimum approvals"/>
+                        <field name="invalid_minimum_warning" nolabel="1"/>
+                    </div>
+                </group>
+            </xpath>
+
+
+        </field>
+    </record>
+
+    <record id="approval_category_view_kanban_aliadas" model="ir.ui.view">
+        <field name="model">approval.category</field>
+        <field name="inherit_id" ref="approvals.approval_category_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="approval_type" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='create_request']" position="attributes">
+                <attribute name="attrs">{'invisible': [('approval_type','in',('purchase_approved', 'purchase_budget', 'sale_margin','pricelist','payment_term'))]}</attribute>
+            </xpath>
+
+        </field>
+    </record>
+    <record id="approval_category_approver_view_tree_aliadas" model="ir.ui.view">
+        <field name="model">approval.category.approver</field>
+        <field name="inherit_id" ref="approvals.approval_category_approver_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='required']" position="before">
+                <field name="approval_type" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <!--                <field name="amount" attrs="{'invisible': [('approval_type', '!=', 'purchase_approved')]}"/>-->
+                <field name="amount_lines" widget="one2many" attrs="{'invisible': [('approval_type', '!=', 'sale_margin')]}"/>
+                <field name="percentage_margin" attrs="{'invisible': [('approval_type', '!=', 'sale_margin')]}"/>
+                <field name="pricelist_ids" widget="many2many_tags" attrs="{'invisible': [('approval_type', '!=', 'pricelist')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="approval_request_view_form_aliadas" model="ir.ui.view">
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='request_main']" position="inside">
+                <field name="sale_id" attrs="{'invisible': [('sale_id','=',False)]}"/>
+                <field name="origin" invisible="1"/>
+                <field name="purchase_id" attrs="{'invisible':[('approval_type','not in',['purchase_advance','purchase_approved','purchase_budget'])],
+                    'required':[('approval_type','=','purchase_advance')]}" domain="[('state','=','purchase')]"/>
+                <field name="purchase_advance_amount" attrs="{'invisible':[('approval_type','!=','purchase_advance')]}"/>
+                <field name="advance_payment_method" attrs="{'invisible':[('approval_type','!=','purchase_advance')],
+                'required':[('approval_type','=','purchase_advance'),('purchase_advance_amount','=',0.0)]}"/>
+                <field name="advance_amount" attrs="{'invisible':[('approval_type','!=','purchase_advance')],
+                'required':[('approval_type','=','purchase_advance'),('purchase_advance_amount','=',0.0)]}"/>
+                <field name="requisition_id" attrs="{'invisible':[('requisition_id','=',False)]}"/>
+                <field name="requisition_currency_id" attrs="{'required': [('approval_type','=','purchase_requisition')], 'invisible': [('approval_type','!=','purchase_requisition')]}"/>
+                <field name="department_id" attrs="{'required': [('approval_type','in',('job_position','purchase_requisition','purchase'))]}"/>
+                <field name="job_id" attrs="{'invisible': [('job_id','=',False)]}"/>
+                <field name="pricelist_id" attrs="{'invisible': [('pricelist_id','=',False)]}"/>
+                <field name="subscription_id" attrs="{'invisible': [('subscription_id','=',False)]}"/>
+                <field name="product_ids" attrs="{'invisible': [('subscription_id','=',False)]}" widget="many2many_tags"/>
+                <field name="sale_margin_diff" attrs="{'invisible':[('approval_type','!=','sale_margin')]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <button name="create_purchase_requisition" type="object" string="Crear Licitación" class="btn-primary"
+                        attrs="{'invisible': [ '|', '|',
+                        ('approval_type', '!=', 'purchase_requisition'),('request_status', '!=', 'approved'), ('requisition_id','!=', False)]}"/>
+                <button name="create_job_position" type="object" string="Crear Puesto" class="btn-primary"
+                        attrs="{'invisible': [ '|','|',
+                         ('approval_type', '!=', 'job_position'),('request_status', '!=', 'approved'),('job_id','!=',False)]}"/>
+            </xpath>
+            <xpath expr="//field[@name='has_product']" position="after">
+                <field name="has_price_unit" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='approver_ids']//tree/field[@name='status']" position="before">
+                <field name="currency_id" invisible="1"/>
+                <!--                <field name="amount" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_approved')]}"/>-->
+                <field name="amount_lines" widget="many2many_tags" attrs="{'column_invisible': [('parent.approval_type', '!=', 'sale_margin')]}"/>
+                <field name="interval_amount_lines" widget="many2many_tags" attrs="{'column_invisible': [('parent.approval_type', 'not in', ['purchase_approved','purchase_budget'])]}"/>
+                <field name="percentage_margin" attrs="{'column_invisible': [('parent.approval_type', '!=', 'sale_margin')]}"/>
+                <field name="level_id"/>
+                <field name="department_id"/>
+                <field name="pricelist_ids" widget="many2many_tags" attrs="{'column_invisible': [('parent.approval_type', '!=', 'pricelist')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='quantity']" position="before">
+                <field name="user_id" string="Usuario"/>
+                <field name="analytic_account_id" string="Analítica"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="approval_request_view_tree_aliadas" model="ir.ui.view">
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_request_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="sale_id" optional="show"/>
+                <field name="purchase_id" optional="show"/>
+                <field name="origin" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="approval_product_line_view_tree_aliadas" model="ir.ui.view">
+        <field name="model">approval.product.line</field>
+        <field name="inherit_id" ref="approvals.approval_product_line_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='quantity']" position="after">
+                <field name="approval_type" invisible="1"/>
+                <field name="price_unit" attrs="{
+                    'column_invisible': [('parent.has_price_unit', '=', 'no')],
+                    'required': [('parent.has_price_unit', '=', 'required'), ('parent.request_status', '!=', 'new')],
+                    }"/>
+                <field name="account_id" attrs="{'invisible': [('approval_type', '!=', 'purchase_requisition')]}"/>
+                <field name="analytic_id" attrs="{'invisible': [('approval_type', '!=', 'purchase_requisition')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_purchase_approval_process" model="ir.actions.act_window">
+        <field name="name">Autorizaciones</field>
+        <field name="res_model">approval.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('approval_type','=','purchase_approved')]</field>
+        <field name="context">{'default_approval_type':'purchase_approved','approval_type':'purchase_approved','create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree alguna aprobación de compra
+            </p>
+        </field>
+    </record>
+
+    <menuitem action="action_purchase_approval_process" id="menu_purchase_approval_process" parent="purchase.menu_purchase_config" sequence="500"/>
+
+    <record id="action_sale_approval_process" model="ir.actions.act_window">
+        <field name="name">Autorizaciones</field>
+        <field name="res_model">approval.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('approval_type','in',('sale_margin','pricelist','payment_term'))]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree alguna aprobación de venta
+            </p>
+        </field>
+    </record>
+
+    <menuitem action="action_sale_approval_process" id="menu_sale_approval_process" parent="sale.menu_sale_config" sequence="500"/>
+
+    <!-- APROBACIÓN DE FORMA MASIVA -->
+    <record id="window_aliadas_approval_request_good_wizard" model="ir.actions.server">
+        <field name="name">Aprobar masivamente</field>
+        <field name="model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.act_view_approval_request()</field>
+    </record>
+
+    <!-- APROBACIÓN DE FORMA MASIVA -->
+    <record id="window_aliadas_approval_request_bad_wizard" model="ir.actions.server">
+        <field name="name">Rechazar masivamente</field>
+        <field name="model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.act_view_refused_request()</field>
+    </record>
+
+</odoo>

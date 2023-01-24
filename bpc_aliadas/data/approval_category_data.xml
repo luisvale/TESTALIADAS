@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="approval_category_data_purchase_advance" model="approval.category">
+            <field name="name">Aniticipo de Compra</field>
+            <field name="sequence">500</field>
+            <field name="has_date">required</field>
+            <field name="has_period">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">ANTC/</field>
+            <field name="approval_type">purchase_advance</field>
+        </record>
+
+        <record id="approval_category_data_purchase_requisition" model="approval.category">
+            <field name="name">Solicitud de Compra (Licitación)</field>
+            <field name="sequence">501</field>
+            <field name="has_date">required</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">required</field>
+            <field name="has_product">required</field>
+            <field name="has_quantity">required</field>
+            <field name="has_price_unit">required</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">LICT/</field>
+            <field name="approval_type">purchase_requisition</field>
+        </record>
+
+        <record id="approval_category_data_hr_job" model="approval.category">
+            <field name="name">Puesto de trabajo</field>
+            <field name="sequence">502</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">required</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">required</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">required</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">JOB/</field>
+            <field name="approval_type">job_position</field>
+        </record>
+
+        <record id="approval_category_data_sale_margin" model="approval.category">
+            <field name="name">Ventas / No Supera margen</field>
+            <field name="sequence">600</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--    <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VMARGIN/</field>
+            <field name="approval_type">sale_margin</field>
+        </record>
+
+        <record id="approval_category_data_sale_payment_term" model="approval.category">
+            <field name="name">Ventas / Cambio plazos de pago</field>
+            <field name="sequence">601</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VTERMPAID/</field>
+            <field name="approval_type">payment_term</field>
+        </record>
+
+        <record id="approval_category_data_sale_pricelist" model="approval.category">
+            <field name="name">Ventas / Cambio lista de precios</field>
+            <field name="sequence">602</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VPRICELIST/</field>
+            <field name="approval_type">pricelist</field>
+        </record>
+
+        <record id="approval_category_data_sale_check_list_process" model="approval.category">
+            <field name="name">Ventas / No cumple check-list procesos</field>
+            <field name="sequence">604</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VCHECKLIST/</field>
+            <field name="approval_type">check_list</field>
+        </record>
+
+
+        <record id="approval_category_data_purchase_general" model="approval.category">
+            <field name="name">Compras / Aprobación general</field>
+            <field name="sequence">603</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">PAPPROVED/</field>
+            <field name="approval_type">purchase_approved</field>
+        </record>
+
+           <record id="approval_category_data_purchase_budget" model="approval.category">
+            <field name="name">Compras / Disponibilidad presupuesto</field>
+            <field name="sequence">606</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">PBUDGET/</field>
+            <field name="approval_type">purchase_budget</field>
+        </record>
+
+        <record id="approval_category_data_subscription_new_product" model="approval.category">
+            <field name="name">Subscripción / Nuevo producto</field>
+            <field name="sequence">603</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">SUBSNP/</field>
+            <field name="approval_type">subs_new_product</field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="action_approval_category_action_new_request" model="ir.actions.act_window">
+        <field name="name">Nueva solicitud</field>
+        <field name="res_model">approval.category</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('approval_type','in', ['purchase_requisition','purchase_advance','job_position','purchase'])]</field>
+    </record>
+
+    <record id="approval_request_action_all" model="ir.actions.act_window">
+        <field name="name">Lista aprobaciones</field>
+        <field name="res_model">approval.request</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No new approvals to review
+            </p>
+        </field>
+
+    </record>
+
+    <record id="request_purchase_order_filter" model="ir.ui.view">
+        <field name="name">purchase.order.request.select</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Purchase Order">
+                <field name="requisition_request_id" string="Solicitud" filter_domain="[('requisition_request_id', 'ilike', self)]"/>
+                <field name="requisition_id" string="Licitación" filter_domain="[('requisition_id', 'ilike', self)]"/>
+                <field name="name" string="Orden"
+                       filter_domain="['|', '|', ('name', 'ilike', self), ('partner_ref', 'ilike', self), ('partner_id', 'child_of', self)]"/>
+                <group expand="1" string="Group By">
+                    <filter string="Solicitud" name="group_requisition_request_id" context="{'group_by':'requisition_request_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_request_purchase_order_tree">
+        <field name="name">purchase.order.request.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="requisition_request_id"/>
+                <button name="view_requisition_request_id" icon="fa-arrow-right" class="btn-link"
+                        string="Ver solicitud" title="Ver solicitud" type="object" attrs="{'invisible':[('requisition_request_id','=', False)]}"/>
+                <field name="requisition_request_status" string="Estado solicitud"/>
+                <field name="requisition_id"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="origin" optional="hide"/>
+                <field name="amount_total"/>
+                <field name="state" string="Estado orden"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="request_purchase_order_list" model="ir.actions.act_window">
+        <field name="name">Ordenes detalladas</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('requisition_request_id','!=',False)]</field>
+        <field name="search_view_id" ref="request_purchase_order_filter"/>
+        <field name="view_id" ref="view_request_purchase_order_tree"/>
+        <field name="context">{"search_default_group_requisition_request_id":1, 'create': 0, 'edit': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Ordenes detalladas
+            </p>
+        </field>
+    </record>
+
+      <record id="window_request_purchase_order_approved" model="ir.actions.server">
+        <field name="name">Aprobar solicitud</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.act_view_approval_request_purchase()</field>
+    </record>
+
+    <menuitem name="Solicitudes"
+              id="menu_request_o"
+              groups="base.group_user"
+              web_icon="bpc_aliadas,static/description/request.png"
+              sequence="20"/>
+
+    <menuitem id="menu_request_new" name="Nueva solicitud" parent="menu_request_o" sequence="10" action="action_approval_category_action_new_request"
+              groups="bpc_aliadas.group_aliadas_request_custom_new"/>
+    <menuitem id="menu_request_list" name="Solicitudes" parent="menu_request_o" sequence="20" action="approval_request_action_all"
+              groups="bpc_aliadas.group_aliadas_request_custom_list"/>
+    <menuitem id="menu_request_purchase_list" name="Solicitudes de compras detalladas" parent="menu_request_o" sequence="30" action="request_purchase_order_list"
+              groups="bpc_aliadas.group_aliadas_request_purchase_order_list"/>
+
+</odoo>

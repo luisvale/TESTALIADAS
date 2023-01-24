@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_aliadas" model="ir.ui.view">
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']/group" position="after">
+                <group string="Analíticas">
+                    <field name="analytic_ids" string="Cuentas analíticas">
+                        <tree editable="bottom">
+                            <field name="user_id" invisible="1"/>
+                            <field name="analytic_id"/>
+                            <field name="default"/>
+                        </tree>
+                    </field>
+                </group>
+
+                <!--                <field name="analytic_account_id" domain="[('id', 'in', analytic_account_ids)]"/>-->
+            </xpath>
+        </field>
+    </record>
+</odoo>

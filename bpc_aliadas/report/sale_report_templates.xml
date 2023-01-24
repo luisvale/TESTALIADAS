@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_document_aliadas" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[hasclass('page')]" position="replace">
+            <div class="page">
+                <div class="oe_structure"/>
+
+                <h2 class="mt16">
+                    <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                        <span t-if="doc.state not in ['draft','sent']">Order #</span>
+                        <span t-if="doc.state in ['draft','sent']">Cotización #</span>
+                    </t>
+                    <t t-if="env.context.get('proforma', False) or is_pro_forma">
+                        <span>Pro-Forma Factura #</span>
+                    </t>
+                    <span t-field="doc.name"/>
+                </h2>
+
+                <div class="row mt32 mb32" id="informations">
+                    <div t-if="doc.client_order_ref" class="col-auto col-3 mw-100 mb-2">
+                        <strong>Referencia:</strong>
+                        <p class="m-0" t-field="doc.client_order_ref"/>
+                    </div>
+                    <div t-if="doc.date_order and doc.state not in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                        <strong>Fecha pedido:</strong>
+                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                    </div>
+                    <div t-if="doc.date_order and doc.state in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                        <strong>Fecha cotización:</strong>
+                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                    </div>
+                    <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="col-auto col-3 mw-100 mb-2" name="expiration_date">
+                        <strong>Vencimiento:</strong>
+                        <p class="m-0" t-field="doc.validity_date"/>
+                    </div>
+                    <div t-if="doc.user_id.name" class="col-auto col-3 mw-100 mb-2">
+                        <strong>Vendedor:</strong>
+                        <p class="m-0" t-field="doc.user_id"/>
+                    </div>
+                </div>
+
+                <!-- Is there a discount on at least one line? -->
+                <t t-set="display_discount" t-value="any(l.discount for l in doc.order_line)"/>
+
+                <table class="table table-sm o_main_table">
+                    <tbody>
+                        <tr style="background:#ededed; color:#92009d">
+                            <td>AREA:</td>
+                            <td class="text-right">
+                                <t t-esc="doc._get_data_report('area')"/>
+                                <span>MT2</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-sm o_main_table mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th colspan="4" style="background:#f0e1e1">
+                                RENTA:
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="width:50%">Producto</th>
+                            <th name="th_priceunit" class="text-text">Precio unitario</th>
+                            <th>Variable</th>
+                            <th name="th_quantity" class="text-right">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines_rent_ok" t-value="doc._get_data_report('rent_ok')"/>
+                        <t t-foreach="lines_rent_ok" t-as="l_one">
+                            <tr>
+                                <td>
+                                    <span t-esc="l_one.product_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <t t-if="l_one.pricelist_id">
+                                        <span t-esc="l_one.price_unit" t-options='{"widget": "monetary", "display_currency": l_one.pricelist_id.currency_id}'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="l_one.price_unit" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                    </t>
+
+                                </td>
+                                <td>
+                                    <span t-if="l_one.rental_type == 'fixed'">Monto fijo</span>
+                                    <span t-if="l_one.rental_type == 'm2'">Monto por metro cuadrado</span>
+                                    <span t-if="l_one.rental_type == 'consumption'">Consumo</span>
+                                    <span t-if="l_one.rental_type == 'consumption_min'">Consumo mínimo</span>
+                                    <span t-if="l_one.rental_type == 'consumption_fixed'">Consumo y monto fijo</span>
+                                    <span t-if="l_one.rental_type == 'rental_min'">Renta monto mínimo</span>
+                                    <span t-if="l_one.rental_type == 'rental_percentage'">Renta % de ventas</span>
+                                    <span t-if="l_one.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
+                                    <span t-if="l_one.rental_type == 'tonnage'">Tonelaje</span>
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="l_one.product_uom_qty"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+
+                <table class="table table-sm o_main_table mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th colspan="4" style="background:#f0e1e1">
+                                SERVICIOS:
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="width:50%">Producto</th>
+                            <th name="th_priceunit" class="text-right">Precio unitario</th>
+                            <th>Variable</th>
+                            <th name="th_quantity" class="text-right">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines_recurring_ok" t-value="doc._get_data_report('recurring_ok')"/>
+                        <t t-foreach="lines_recurring_ok" t-as="l_recurring">
+                            <tr>
+                                <td>
+                                    <span t-esc="l_recurring.product_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <t t-if="l_recurring.pricelist_id">
+                                        <span t-esc="l_recurring.price_unit" t-options='{"widget": "monetary", "display_currency": l_recurring.pricelist_id.currency_id}'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="l_recurring.price_unit" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                    </t>
+
+                                </td>
+                                <td>
+                                    <span t-if="l_recurring.rental_type == 'fixed'">Monto fijo</span>
+                                    <span t-if="l_recurring.rental_type == 'm2'">Monto por metro cuadrado</span>
+                                    <span t-if="l_recurring.rental_type == 'consumption'">Consumo</span>
+                                    <span t-if="l_recurring.rental_type == 'consumption_min'">Consumo mínimo</span>
+                                    <span t-if="l_recurring.rental_type == 'consumption_fixed'">Consumo y monto fijo</span>
+                                    <span t-if="l_recurring.rental_type == 'rental_min'">Renta monto mínimo</span>
+                                    <span t-if="l_recurring.rental_type == 'rental_percentage'">Renta % de ventas</span>
+                                    <span t-if="l_recurring.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
+                                    <span t-if="l_recurring.rental_type == 'tonnage'">Tonelaje</span>
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="l_recurring.product_uom_qty"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <table class="table table-sm o_main_table mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th colspan="4" style="background:#f0e1e1">
+                                DERECHOS:
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="width:50%">Producto</th>
+                            <th name="th_priceunit" class="text-right">Precio unitario</th>
+                            <th>Variable</th>
+                            <th name="th_quantity" class="text-right">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines_others" t-value="doc._get_data_report('others')"/>
+                        <t t-foreach="lines_others" t-as="l_other">
+                            <tr>
+                                <td>
+                                    <span t-esc="l_other.product_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <t t-if="l_other.pricelist_id">
+                                        <span t-esc="l_other.price_unit" t-options='{"widget": "monetary", "display_currency": l_other.pricelist_id.currency_id}'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="l_other.price_unit" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                    </t>
+
+                                </td>
+                                <td>
+                                    <span t-if="l_other.rental_type == 'fixed'">Monto fijo</span>
+                                    <span t-if="l_other.rental_type == 'm2'">Monto por metro cuadrado</span>
+                                    <span t-if="l_other.rental_type == 'consumption'">Consumo</span>
+                                    <span t-if="l_other.rental_type == 'consumption_min'">Consumo mínimo</span>
+                                    <span t-if="l_other.rental_type == 'consumption_fixed'">Consumo y monto fijo</span>
+                                    <span t-if="l_other.rental_type == 'rental_min'">Renta monto mínimo</span>
+                                    <span t-if="l_other.rental_type == 'rental_percentage'">Renta % de ventas</span>
+                                    <span t-if="l_other.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
+                                    <span t-if="l_other.rental_type == 'tonnage'">Tonelaje</span>
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="l_other.product_uom_qty"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                  <table class="table table-sm o_main_table mt-4">
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th colspan="4" style="background:#f0e1e1">
+                                A PAGAR CON LA FIRMA DEL CONTRATO:
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="width:50%">Producto</th>
+                            <th name="th_priceunit" class="text-right">Precio unitario</th>
+                            <th>Variable</th>
+                            <th name="th_quantity" class="text-right">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines_others" t-value="doc._get_data_report('no_total')"/>
+                        <t t-foreach="lines_others" t-as="l_other">
+                            <tr>
+                                <td>
+                                    <span t-esc="l_other.product_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <t t-if="l_other.pricelist_id">
+                                        <span t-esc="l_other.price_unit" t-options='{"widget": "monetary", "display_currency": l_other.pricelist_id.currency_id}'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="l_other.price_unit" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                    </t>
+
+                                </td>
+                                <td>
+                                    <span t-if="l_other.rental_type == 'fixed'">Monto fijo</span>
+                                    <span t-if="l_other.rental_type == 'm2'">Monto por metro cuadrado</span>
+                                    <span t-if="l_other.rental_type == 'consumption'">Consumo</span>
+                                    <span t-if="l_other.rental_type == 'consumption_min'">Consumo mínimo</span>
+                                    <span t-if="l_other.rental_type == 'consumption_fixed'">Consumo y monto fijo</span>
+                                    <span t-if="l_other.rental_type == 'rental_min'">Renta monto mínimo</span>
+                                    <span t-if="l_other.rental_type == 'rental_percentage'">Renta % de ventas</span>
+                                    <span t-if="l_other.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
+                                    <span t-if="l_other.rental_type == 'tonnage'">Tonelaje</span>
+                                </td>
+                                <td class="text-right">
+                                    <span t-esc="l_other.product_uom_qty"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+
+
+
+                <div t-if="doc.signature" class="mt32 ml64 mr4" name="signature">
+                    <div class="offset-8">
+                        <strong>Firma</strong>
+                    </div>
+                    <div class="offset-8">
+                        <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                    <div class="offset-8 text-center">
+                        <p t-field="doc.signed_by"/>
+                    </div>
+                </div>
+
+                <div class="oe_structure"/>
+
+                <p t-field="doc.note"/>
+                <p t-if="not is_html_empty(doc.payment_term_id.note)">
+                    <span t-field="doc.payment_term_id.note"/>
+                </p>
+                <p id="fiscal_position_remark" t-if="doc.fiscal_position_id and not is_html_empty(doc.fiscal_position_id.sudo().note)">
+                    <strong>Posición fiscal:</strong>
+                    <span t-field="doc.fiscal_position_id.sudo().note"/>
+                </p>
+            </div>
+        </xpath>
+    </template>
+</odoo>

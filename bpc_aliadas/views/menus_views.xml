@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--    <data noupdate="1">-->
+    <!--        <delete model="ir.ui.menu" id="maintenance.menu_maintenance_stage_configuration" />-->
+    <!--    </data>-->
+    <!--      <data noupdate="1">-->
+    <!--        <delete model="ir.ui.menu" id="maintenance.menu_m_request_form" />-->
+    <!--    </data>-->
+    <menuitem
+            id="maintenance.menu_m_dashboard"
+            name="Tablero"
+            parent="maintenance.menu_maintenance_title"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            action="maintenance_team_action_dashboard"
+            sequence="0"/>
+
+    <!--    <menuitem-->
+    <!--            id="maintenance.menu_maintenance_stage_configuration"-->
+    <!--            name="Maintenance Stages"-->
+    <!--            action="maintenance.hr_equipment_stage_action"-->
+    <!--            groups="base.group_no_one"-->
+    <!--            sequence="3"/>-->
+
+
+    <!--    <menuitem-->
+    <!--            id="maintenance.menu_m_request_form"-->
+    <!--            name="Mantenimiento maestro"-->
+    <!--            action="action_maintenance_master"-->
+    <!--            groups="maintenance.group_equipment_manager,base.group_user"-->
+    <!--            sequence="1"/>-->
+    <!--    -->
+    <menuitem
+            id="menu_maintenance_master"
+            name="Mantenimiento maestro"
+            parent="maintenance.menu_m_request"
+            action="action_maintenance_master"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            sequence="1"/>
+
+    <menuitem
+            id="menu_maintenance_periodic"
+            name="Mantenimiento periódico"
+            parent="maintenance.menu_m_request"
+            action="action_maintenance_periodic"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            sequence="2"/>
+
+    <menuitem
+            id="maintenance.menu_m_request_calendar"
+            name="Calendario de mantenimiento"
+            parent="maintenance.menu_m_request"
+            action="hr_equipment_periodic_action_cal"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            sequence="3"/>
+
+    <menuitem
+            id="maintenance.maintenance_request_reporting"
+            action="maintenance_periodic_action_reports"
+            parent="maintenance.maintenance_reporting"/>
+
+
+    <menuitem
+            id="maintenance.menu_equipment_form"
+            name="Equipos"
+            parent="maintenance.menu_maintenance_title"
+            groups="maintenance.group_equipment_manager,base.group_user"
+            sequence="2"/>
+
+    <menuitem
+            id="menu_hr_equipment_maintenance"
+            name="Equipos"
+            action="maintenance.hr_equipment_action"
+            parent="maintenance.menu_equipment_form"/>
+
+
+    <menuitem
+            id="menu_action_maintenance_equipment"
+            name="Tonelaje"
+            action="action_maintenance_equipment_tonnage"
+            parent="maintenance.menu_equipment_form"/>
+
+
+    <menuitem id="menu_sale_order_checklist_general"
+              name="CheckList"
+              parent="sale.menu_sale_config"
+              sequence="90"/>
+
+    <menuitem id="menu_sale_order_checklist_document"
+              name="Documentos"
+              parent="menu_sale_order_checklist_general"
+              action="action_documents_checklist"
+              sequence="10"/>
+
+    <menuitem id="menu_sale_order_checklist_process"
+              name="Procesos"
+              parent="menu_sale_order_checklist_general"
+              action="action_sale_order_checklist"
+              sequence="20"/>
+
+    <menuitem id="menu_sale_order_checklist_process_by_customer"
+              name="Procesos por cliente"
+              parent="menu_sale_order_checklist_general"
+              action="action_documents_checklist_lines_sale"
+              sequence="21"/>
+
+</odoo>

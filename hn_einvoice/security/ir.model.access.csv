@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_company_sucursal,company.sucursal,model_company_sucursal,base.group_user,1,1,1,1
+access_company_terminal,company.terminal,model_company_terminal,base.group_user,1,1,1,1
+access_document_type,document.type,model_document_type,base.group_user,1,1,1,1
+access_res_cai,res.cai,model_res_cai,base.group_user,1,1,1,1
+access_res_cai_trigger,res.cai.trigger,model_res_cai_trigger,base.group_user,1,1,1,1
+access_account_move_debit,access.account.move.debit,model_account_move_debit,account.group_account_invoice,1,1,1,0

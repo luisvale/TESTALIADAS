@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="res_partner_form_view_inherit_exonerated" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="vat" position="after">
+                <field name="check_cai" widget="boolean_toggle"/>
+                <field name="cai_id" invisible="1"/>
+            </field>
+            <xpath expr="//notebook" position="inside">
+                <page string="C.A.I">
+                    <field name="lines_cai_ids" nolabel="1" context="{'form_view_ref':'hn_einvoice.view_res_cai_supplier_form'}"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

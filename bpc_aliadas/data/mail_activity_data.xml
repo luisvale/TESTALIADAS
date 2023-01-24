@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data >
+        <record id="mail_activity_approval_purchase_order" model="mail.activity.type">
+            <field name="name">Aprobación orden de compra</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">1</field>
+            <field name="active">True</field>
+            <field name="res_model">approval.request</field>
+        </record>
+        <record id="mail_activity_approval_sale_order_pricelist" model="mail.activity.type">
+            <field name="name">Aprobación tarifa en orden de venta</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">2</field>
+            <field name="active">True</field>
+            <field name="res_model">approval.request</field>
+        </record>
+        <record id="mail_activity_approval_sale_order_payment_term" model="mail.activity.type">
+            <field name="name">Aprobación de término de pago en orden de venta</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">3</field>
+            <field name="active">True</field>
+            <field name="res_model">approval.request</field>
+        </record>
+         <record id="mail_activity_approval_sale_order_check_list" model="mail.activity.type">
+            <field name="name">Aprobación de check-list de procesos</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">4</field>
+            <field name="active">True</field>
+            <field name="res_model">approval.request</field>
+        </record>
+        <record id="mail_activity_data_check_list_process" model="mail.activity.type">
+            <field name="name">Check-list procesos</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">False</field>
+            <field name="res_model">sale.order.check_list.lines</field>
+        </record>
+    </data>
+</odoo>
