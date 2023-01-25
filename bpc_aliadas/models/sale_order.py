@@ -311,18 +311,28 @@ class SaleOrder(models.Model):
             if not _request:
                 continue_process = False
                 self._create_request('margin')
-
         # Evalación para lista de preocios
-        line_approved_required = self.order_line.filtered(lambda l: l.approved_required)
+        # line_approved_required = self.order_line.filtered(lambda l: l.approved_required)
+        # if line_approved_required:
+        #     # Alguna de las líneas SI requiere aprobación
+        #     user_in = self.pricelist_id.user_ids.filtered(lambda u: u.id == self.env.user.id)
+        #     if not user_in:
+        #         _logger.info("ALIADAS: Evaluación de lista de precios.")
+        #         _request = self._exist_request_by_category(category='list_price')
+        #         if not _request:
+        #             continue_process = False
+        #             self._create_request('pricelist')
+        # Alguna de las líneas SI requiere aprobación
+
+        line_approved_required = self.order_line.filtered(lambda l: l.pricelist_id.required_authorization and self.env.user.id not in l.pricelist_id.user_ids.ids)
         if line_approved_required:
-            # Alguna de las líneas SI requiere aprobación
-            user_in = self.pricelist_id.user_ids.filtered(lambda u: u.id == self.env.user.id)
-            if not user_in:
-                _logger.info("ALIADAS: Evaluación de lista de precios.")
-                _request = self._exist_request_by_category(category='list_price')
-                if not _request:
-                    continue_process = False
-                    self._create_request('pricelist')
+            _logger.info("Se econtraron líneas que requiren aprobación: Total - %s" % len(line_approved_required.ids))
+            for line_pricelist in line_approved_required:
+               _logger.info("ALIADAS: Evaluación de lista de precios.")
+               _request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
+               if not _request:
+                   continue_process = False
+                   self._create_request('pricelist', line_pricelist.pricelist_id)
 
         #Evaluación de lista de procesos
         lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
@@ -354,7 +364,7 @@ class SaleOrder(models.Model):
             record.approval_approved_count = approved_count
             record.approval_cancel_count = cancel_count
 
-    def _exist_request_by_category(self, category):
+    def _exist_request_by_category(self, category, pricelist=False):
 
         payment_term_id = self.env['approval.category'].sudo().search([('approval_type','=','payment_term'),('company_id','=',self.company_id.id)], limit=1)
         list_price_id = self.env['approval.category'].sudo().search([('approval_type','=','pricelist'),('company_id','=',self.company_id.id)], limit=1)
@@ -368,10 +378,13 @@ class SaleOrder(models.Model):
             'check_list': check_list_id.id,
         }
         category_id = LIST_CAT[category]
-        _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id)
+        if not pricelist:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id)
+        else:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id and a.pricelist_id == pricelist)
         return _request
 
-    def _create_request(self, mode):
+    def _create_request(self, mode, pricelist=False):
         sale_margin_diff = 0
         if mode == 'margin':
             category_id = self.env['approval.category'].sudo().search([('approval_type','=','sale_margin'),('company_id','=',self.company_id.id)], limit=1)
@@ -401,7 +414,7 @@ class SaleOrder(models.Model):
             'reference': self.name,
             'origin': self.name,
             'sale_id': self.id,
-            'pricelist_id': self.pricelist_id.id if mode == 'pricelist' and self.pricelist_id else False,
+            'pricelist_id': pricelist.id if mode == 'pricelist' and pricelist else False,
             'sale_margin_diff': sale_margin_diff,
             'request_owner_id': self.env.user.id,
             'department_id': employee.department_id.id
@@ -518,9 +531,9 @@ class SaleOrder(models.Model):
 
                 _find_pricelist = record._eval_local_pricelist()
                 if _find_pricelist:
-                    continue
+                   continue
                 #Evaluación de productos solo para renta
-                lines_diff = record.order_line.filtered(lambda l:l.product_id.analytic_account_id != analytic_account_id and l.product_id.rent_ok)
+                lines_diff = record.order_line.filtered(lambda l: l.product_id.analytic_account_id != analytic_account_id and l.product_id.rent_ok)
                 if lines_diff:
                     for l in lines_diff:
                         if not l.product_id.analytic_account_id:
@@ -529,7 +542,7 @@ class SaleOrder(models.Model):
                                                                                                                       l.product_id.name,
                                                                                                                       l.product_id.analytic_account_id.name
                                                                                                                       )
-                        raise ValidationError(_(msg))
+                        #raise ValidationError(_(msg))
 
     def _eval_local_pricelist(self):
         _find_pricelist = False
@@ -537,18 +550,21 @@ class SaleOrder(models.Model):
             lines_local = self.order_line._filtered_local()
             if len(lines_local) == 1:
                 if isinstance(lines_local[0].id, models.NewId):
-                    _find_pricelist = self.env['product.pricelist'].sudo().search([('analytic_account_id','=',lines_local[0].product_id.analytic_account_id.id),
-                                                                                   ('is_start','=',True)], limit=1)
-                    if _find_pricelist:
-                        _logger.info("ALIADADAS: Orden %s / Asignando lista de precios de inicio : %s" % (self.name, _find_pricelist.name))
-                        self.pricelist_id = _find_pricelist
-                        #lines_local.pricelist_id = _find_pricelist
+                    self.pricelist_id = lines_local[0].pricelist_id
+                    _find_pricelist = lines_local[0].pricelist_id
+                    # _find_pricelist = self.env['product.pricelist'].sudo().search([('analytic_account_id','=',lines_local[0].product_id.analytic_account_id.id),
+                    #                                                                ('is_start','=',True)], limit=1)
+                    # _logger.info("Rango asignado: %s " % lines_local[0].find_range)
+                    # if not lines_local[0].find_range:
+                    #     if _find_pricelist:
+                    #         _logger.info("ALIADADAS: Orden %s / Asignando lista de precios de inicio : %s" % (self.name, _find_pricelist.name))
+                    #         self.pricelist_id = _find_pricelist
+                    #         lines_local.pricelist_id = _find_pricelist
             if _find_pricelist:
                 for l in self.order_line:
-                    l.pricelist_id = _find_pricelist
+                    if not l.pricelist_id:
+                        l.pricelist_id = _find_pricelist
         return _find_pricelist
-
-
 
     @api.onchange('sale_order_template_id')
     def onchange_sale_order_template_id(self):

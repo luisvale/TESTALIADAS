@@ -9,7 +9,7 @@
             </xpath>
             <xpath expr="//button[@name='button_cancel']" position="attributes">
                 <attribute name="string">NO APROBADO</attribute>
-                <attribute name="states">bidding,draft,to approve,sent,purchase</attribute>
+                <attribute name="states">bidding,draft,to approve,sent,purchase,on_hold</attribute>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Ordenes de Licitación">
@@ -85,6 +85,7 @@
                 <field name="commercial_ids" invisible="1"/>
                 <field name="commercial_id" domain="[('id','in',commercial_ids)]"/>
                 <field name="department_id"/>
+                <field name="force_picking"/>
 
             </xpath>
             <xpath expr="//field[@name='effective_date']" position="after">

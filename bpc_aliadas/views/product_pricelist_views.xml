@@ -7,6 +7,7 @@
             <xpath expr="//field[@name='currency_id']" position="before">
                 <field name="analytic_account_id"/>
                 <field name="is_start"/>
+                <field name="required_authorization"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Usuarios">
@@ -20,17 +21,23 @@
         <field name="model">product.pricelist.item</field>
         <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
         <field name="arch" type="xml">
-<!--            <xpath expr="//group[@name='pricelist_rule_target']" position="inside">-->
+            <!--            <xpath expr="//group[@name='pricelist_rule_target']" position="inside">-->
             <xpath expr="//field[@name='pricelist_id']" position="before">
                 <field name="combination_type"/>
                 <field name="category_add_id" attrs="{'invisible': ['|',('combination_type','=',False),('combination_type','!=','category')], 'required': [('combination_type','=','category')]}"/>
                 <label for="meter_init" string="Metraje desde/hasta" attrs="{'invisible': ['|',('combination_type','=',False),('combination_type','!=','meter')], 'required': [('combination_type','=','meter')]}"/>
                 <div class="o_row" attrs="{'invisible': ['|',('combination_type','=',False),('combination_type','!=','meter')], 'required': [('combination_type','=','meter')]}">
                     <field name="meter_init" class="oe_inline" nolabel="1"/>
-                    <span class="oe_inline" > / </span>
-                    <field name="meter_end" class="oe_inline" nolabel="1" />
+                    <span class="oe_inline">/</span>
+                    <field name="meter_end" class="oe_inline" nolabel="1"/>
                 </div>
                 <field name="classification_id" attrs="{'invisible': ['|',('combination_type','=',False),('combination_type','!=','classification')], 'required': [('combination_type','=','classification')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='fixed_price']" position="before">
+                <field name="price_min"/>
+            </xpath>
+            <xpath expr="//field[@name='fixed_price']" position="after">
+                <field name="price_max"/>
             </xpath>
         </field>
     </record>

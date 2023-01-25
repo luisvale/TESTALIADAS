@@ -67,9 +67,9 @@
             <!--            </xpath>-->
             <xpath expr="//field[@name='order_line']//tree/field[@name='price_unit']" position="before">
                 <field name="approved_required" optional="hide"/>
-                <field name="pricelist_id" optional="show"/>
+                <field name="pricelist_id" optional="show" attrs="{'required': [('display_type', '=', False)]}"/>
                 <field name="not_update_price" optional="hide"/>
-                <field name="price_min" optional="hide"/>
+                <!--                <field name="price_min" optional="hide"/>-->
 
             </xpath>
             <xpath expr="//field[@name='order_line']//tree/field[@name='price_subtotal']" position="before">
@@ -92,8 +92,8 @@
                 <field name="document_type_sale_id" string="Tipo doc."/>
                 <field name="rental_type"/>
             </xpath>
-             <xpath expr="//field[@name='order_line']//tree/field[@name='tax_id']" position="after">
-                <field name="price_tax" optional="show" />
+            <xpath expr="//field[@name='order_line']//tree/field[@name='tax_id']" position="after">
+                <field name="price_tax" optional="show"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="attributes">
                 <attribute name="attrs">{'readonly': [('state','in',('sale','approved'))]}</attribute>
@@ -122,9 +122,9 @@
                         </tree>
                     </field>
                 </page>
-                 <page string="Check-list documentos" >
+                <page string="Check-list documentos">
                     <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">
-                         <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
+                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
                             <field name="partner_id" invisible="1"/>
                             <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
@@ -132,7 +132,7 @@
                             <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                             <field name="now" invisible="1"/>
+                            <field name="now" invisible="1"/>
                         </tree>
                     </field>
                 </page>
