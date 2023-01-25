@@ -171,6 +171,7 @@ class DocumentsChecklistLines(models.Model):
     _order = 'id desc'
 
     partner_id = fields.Many2one('res.partner', string='Partner')
+    now = fields.Date(related='partner_id.now')
     check_list_id = fields.Many2one('documents.check_list', string='Paso')
     check_list_type = fields.Selection(related='check_list_id.type')
     check_list_id_sequence = fields.Integer(related='check_list_id.sequence')

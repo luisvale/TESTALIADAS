@@ -122,6 +122,20 @@
                         </tree>
                     </field>
                 </page>
+                 <page string="Check-list documentos" >
+                    <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">
+                         <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
+                            <field name="partner_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                             <field name="now" invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
                 <page string="Solicitudes aprobación">
                     <group>
                         <field name="approval_pending_count"/>
