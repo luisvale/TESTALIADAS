@@ -48,6 +48,12 @@ class SaleOrderLine(models.Model):
 
     find_range = fields.Boolean(help="Encontrado por rango en tarifa")
 
+    # @api.constrains('pricelist_id')
+    # def _constraint_pricelist_id(self):
+    #     for record in self:
+    #         if not record.pricelist_id:
+    #             raise ValidationError(_("No se encontró Tariga para el producto %s con el precio de %s" % (record.product_id.name, record.price_unit)))
+
     def _get_display_price(self, product):
         """Ensure unit price isn't recomputed."""
         if self.is_rental:
@@ -217,6 +223,8 @@ class SaleOrderLine(models.Model):
             is_local = line._filtered_local()
             _logger.info("Es local ? %s " % is_local)
             pricelist_id = line._find_pricelist_by_price( line.price_unit)
+            # if not pricelist_id:
+            #     raise ValidationError(_("No se encontró lista de precios para producto %s " % line.product_id.name))
             #line.pricelist_id = pricelist_id
             find_range = True if pricelist_id else False
             _logger.info("Econtrado por rango en tarifa : %s" % find_range)
@@ -313,24 +321,24 @@ class SaleOrderLine(models.Model):
             }))
         return values
 
-    @api.onchange('pricelist_id')
-    def _onchange_pricelist_id(self):
-        for record in self:
-            record.update_pricelist()
-
-    def update_pricelist(self):
-        for record in self:
-            if record.pricelist_id:
-                price_unit = record.product_id._get_tax_included_unit_price(
-                    record.company_id or record.order_id.company_id,
-                    record.order_id.currency_id,
-                    record.order_id.date_order,
-                    'sale',
-                    fiscal_position=record.order_id.fiscal_position_id,
-                    product_price_unit=record._get_display_price_by_line(record.product_id),
-                    product_currency=record.order_id.currency_id
-                )
-                record.price_unit = price_unit
+    # @api.onchange('pricelist_id')
+    # def _onchange_pricelist_id(self):
+    #     for record in self:
+    #         record.update_pricelist()
+    #
+    # def update_pricelist(self):
+    #     for record in self:
+    #         if record.pricelist_id:
+    #             price_unit = record.product_id._get_tax_included_unit_price(
+    #                 record.company_id or record.order_id.company_id,
+    #                 record.order_id.currency_id,
+    #                 record.order_id.date_order,
+    #                 'sale',
+    #                 fiscal_position=record.order_id.fiscal_position_id,
+    #                 product_price_unit=record._get_display_price_by_line(record.product_id),
+    #                 product_currency=record.order_id.currency_id
+    #             )
+    #             record.price_unit = price_unit
                 #record.price_min = price_unit
 
 
