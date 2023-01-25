@@ -127,13 +127,14 @@ class SaleOrderLine(models.Model):
 
     def line_product_not_repeat_local(self, lines_local):
         locals = self.env['sale.order.line'].sudo()
-        locals += lines_local[0]
-        others = lines_local - locals
-        if others:
-            for l in others:
-                _find = locals.filtered(lambda x: x.product_id == l.product_id)
-                if not _find:
-                    locals += l
+        if lines_local:
+            locals += lines_local[0]
+            others = lines_local - locals
+            if others:
+                for other in others:
+                    _find = locals.filtered(lambda x: x.product_id == other.product_id)
+                    if not _find:
+                        locals += other
 
         return locals
 
