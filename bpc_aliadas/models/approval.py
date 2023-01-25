@@ -94,8 +94,6 @@ class ApprovalRequest(models.Model):
     product_ids = fields.Many2many('product.product', string='Productos')
     sale_margin_diff = fields.Float(string='Diferencia en margen')
 
-    link_approval = fields.Char(string='Link aprobación')
-
     # @api.depends('approver_ids.status', 'approver_ids.required')
     # def _compute_request_status(self):
     #     super(ApprovalRequest, self)._compute_request_status()
@@ -369,48 +367,8 @@ class ApprovalRequest(models.Model):
             raise UserError(_("You have to attach at lease one document."))
         approvers = self.mapped('approver_ids').filtered(lambda approver: approver.status == 'new')
         approvers._create_activity()
-        self._create_url()
-        self._send_email()
         approvers.write({'status': 'pending'})
         self.write({'date_confirmed': fields.Datetime.now()})
-
-    def _create_url(self):
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        request = self
-        action = self.env.ref('approvals.approval_request_action')
-        menu = self.env.ref('approvals.approvals_request_menu_my')
-        url = "/web#id=%s&action=%s&model=approval.request&view_type=form&menu_id=%s" % (request.id, action.id, menu.id)
-
-        complete_url = '%s%s' % (base_url, url)
-
-        self.sudo().write({'link_approval': complete_url})
-
-        _logger.info("URL de aprobación generada : %s " % complete_url)
-
-    def _send_email(self):
-        if not self.approver_ids:
-            _logger.info("No hay aprobadores para enviar email")
-        for line in self.approver_ids:
-            template = self.env.ref('bpc_aliadas.approval_template_approver_user', raise_if_not_found=False)
-            try:
-                email_values = {
-                    'email_from': self.env.user.email_formatted,
-                    'author_id': self.env.user.partner_id.id,
-                }
-                res = template.sudo().send_mail(line.id,
-                                                notif_layout='mail.mail_notification_light',
-                                                force_send=True,
-                                                email_values=email_values)
-                _logger.info("Resultado del envío a usuario %s es : %s " % (line.user_id.name, res))
-            except Exception as e:
-                _logger.warning("Error de envío a aprobador: %s " % e)
-
-
-    def send_mail_approval(self):
-        self.ensure_one()
-        self._create_url()
-        self._send_email()
-
 
     #
     # def _eval_departmens(self):
@@ -563,13 +521,6 @@ class ApprovalApprover(models.Model):
     #                 lines += app.amount_lines
     #         record.amount_lines = lines
 
-
-    def name_get(self):
-        result = []
-        for r in self:
-            name = r.user_id.name
-            result.append((r.id, name))
-        return result
 
 class ApprovalCategoryApprover(models.Model):
     _inherit = 'approval.category.approver'

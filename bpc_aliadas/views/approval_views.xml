@@ -103,8 +103,6 @@
                 <button name="create_job_position" type="object" string="Crear Puesto" class="btn-primary"
                         attrs="{'invisible': [ '|','|',
                          ('approval_type', '!=', 'job_position'),('request_status', '!=', 'approved'),('job_id','!=',False)]}"/>
-                 <button name="send_mail_approval" type="object" string="Enviar email" class="btn-primary"
-                        attrs="{'invisible': [('request_status', 'not in', ['pending','approved'])]}"/>
             </xpath>
             <xpath expr="//field[@name='has_product']" position="after">
                 <field name="has_price_unit" invisible="1"/>

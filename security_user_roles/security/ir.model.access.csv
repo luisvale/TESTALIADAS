@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_security_role,access_security_role,model_security_role,base.group_erp_manager,1,1,1,1
+access_security_role_user,access_security_role_user,model_security_role,base.group_user,1,0,0,0
+access_security_role_rule,access_security_role_rule,model_security_role_rule,base.group_erp_manager,1,1,1,1
+access_security_role_rule_user,access_security_role_rule_user,model_security_role_rule,base.group_user,1,0,0,0
+access_security_role_rule_period,access_security_role_rule_period,model_security_role_rule_period,base.group_erp_manager,1,1,1,1
+access_security_role_rule_period_user,access_security_role_rule_period_user,model_security_role_rule_period,base.group_user,1,0,0,0

@@ -71,8 +71,6 @@ class SaleOrder(models.Model):
 
     accept_and_signed = fields.Boolean(string='Aceptada y Firmada')
 
-    documents_check_list_lines = fields.One2many(related='partner_id.check_list_lines', readonly=False)  #
-
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
     #     for record in self:
@@ -616,10 +614,9 @@ class SaleOrder(models.Model):
         for record in self:
             if record.order_line:
                 lines_local = record.order_line._filtered_local()
-                lines_local_not_duplicate = record.order_line.line_product_not_repeat_local(lines_local)
                 for line in record.order_line:
                     if line.product_id and line.rental_type == 'm2' and not line.product_id.rent_ok:
-                        total = sum(line.product_uom_qty for line in lines_local_not_duplicate)
+                        total = sum(line.product_uom_qty for line in lines_local)
                         line.product_uom_qty = total
 
                     if line.product_id and lines_local and not line.not_update_price and not line.product_id.rent_ok:
@@ -699,40 +696,6 @@ class SaleOrder(models.Model):
                 'amount_tax': amount_tax,
                 'amount_total': amount_untaxed + amount_tax,
             })
-
-
-    # def action_quotation_send(self):
-    #     ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
-    #     self.ensure_one()
-    #     template_id = self._find_mail_template()
-    #     lang = self.env.context.get('lang')
-    #     template = self.env['mail.template'].browse(template_id)
-    #     if template.lang:
-    #         lang = template._render_lang(self.ids)[self.id]
-    #     ctx = {
-    #         'default_model': 'sale.order',
-    #         'default_res_id': self.ids[0],
-    #         'default_use_template': bool(template_id),
-    #         'default_template_id': template_id,
-    #         'default_composition_mode': 'comment',
-    #         'mark_so_as_sent': True,
-    #         'custom_layout': "mail.mail_notification_paynow",
-    #         'proforma': self.env.context.get('proforma', False),
-    #         'force_email': True,
-    #         'model_description': self.with_context(lang=lang).type_name,
-    #         'default_partner_ids': self.partner_prospect_id.ids,
-    #         'default_partner_prospect_id': self.partner_prospect_id.id
-    #     }
-    #     return {
-    #         'type': 'ir.actions.act_window',
-    #         'view_mode': 'form',
-    #         'res_model': 'mail.compose.message',
-    #         'views': [(False, 'form')],
-    #         'view_id': False,
-    #         'target': 'new',
-    #         'context': ctx,
-    #     }
-
 
 
 class SaleOrderChecklistLines(models.Model):

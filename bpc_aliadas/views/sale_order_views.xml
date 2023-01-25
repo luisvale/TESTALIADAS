@@ -23,7 +23,7 @@
             </xpath>
             <xpath expr="//group[@name='partner_details']" position="replace">
                 <group name="partner_details">
-                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}" context="{'default_state': 'draft', 'default_active': False}"/>
+                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}"/>
                     <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
                     <field name="partner_prospect_state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"
                            attrs="{'invisible': ['|',('partner_prospect_id','=',False),('state','=','sale')]}"/>
@@ -89,11 +89,10 @@
             <!--             </xpath>-->
             <xpath expr="//field[@name='order_line']//tree/field[@name='product_id']" position="after">
                 <field name="subscription_template_id" optional="show"/>
-                <field name="document_type_sale_id" string="Tipo doc."/>
-                <field name="rental_type"/>
-            </xpath>
-             <xpath expr="//field[@name='order_line']//tree/field[@name='tax_id']" position="after">
-                <field name="price_tax" optional="show" />
+                <field name="document_type_sale_id" string="Tipo doc." style="max-width: 115px !important; width:115px !important;overflow: hidden;
+    display: inline-block;
+    white-space: nowrap;"/>
+                <field name="rental_type" style="max-width: 112px !important;width:112px !important;"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="attributes">
                 <attribute name="attrs">{'readonly': [('state','in',('sale','approved'))]}</attribute>
@@ -119,20 +118,6 @@
                             <field name="now" invisible="1"/>
                             <field name="date_due" optional="show"/>
                             <field name="user_ids" string="Usuarios" widget="many2many_tags" optional="show"/>
-                        </tree>
-                    </field>
-                </page>
-                 <page string="Check-list documentos" >
-                    <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">
-                         <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
-                            <field name="partner_id" invisible="1"/>
-                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
-                             <field name="now" invisible="1"/>
                         </tree>
                     </field>
                 </page>
@@ -174,12 +159,12 @@
         <field name="inherit_id" ref="sale_renting.rental_order_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='pickup_date']" position='attributes'>
-                <attribute name="invisible">1</attribute>
+                <attribute name="invisible">0</attribute>
                 <attribute name="optional">show</attribute>
                 <attribute name="string">Inicia</attribute>
             </xpath>
             <xpath expr="//field[@name='return_date']" position='attributes'>
-                <attribute name="invisible">1</attribute>
+                <attribute name="invisible">0</attribute>
                 <attribute name="optional">show</attribute>
                 <attribute name="string">Termina</attribute>
             </xpath>
