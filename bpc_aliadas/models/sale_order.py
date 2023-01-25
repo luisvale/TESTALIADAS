@@ -614,10 +614,9 @@ class SaleOrder(models.Model):
         for record in self:
             if record.order_line:
                 lines_local = record.order_line._filtered_local()
-                lines_local_not_duplicate = record.order_line.line_product_not_repeat_local(lines_local)
                 for line in record.order_line:
                     if line.product_id and line.rental_type == 'm2' and not line.product_id.rent_ok:
-                        total = sum(line.product_uom_qty for line in lines_local_not_duplicate)
+                        total = sum(line.product_uom_qty for line in lines_local)
                         line.product_uom_qty = total
 
                     if line.product_id and lines_local and not line.not_update_price and not line.product_id.rent_ok:
