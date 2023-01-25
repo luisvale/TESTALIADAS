@@ -562,8 +562,8 @@ class SaleOrder(models.Model):
                     #         lines_local.pricelist_id = _find_pricelist
             if _find_pricelist:
                 for l in self.order_line:
-                    if not l.pricelist_id:
-                        l.pricelist_id = _find_pricelist
+                    #if not l.pricelist_id:
+                    l.pricelist_id = _find_pricelist
         return _find_pricelist
 
     @api.onchange('sale_order_template_id')

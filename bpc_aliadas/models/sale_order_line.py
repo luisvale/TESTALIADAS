@@ -239,6 +239,7 @@ class SaleOrderLine(models.Model):
             if is_local and line.pricelist_id:
                 _logger.info("Actualizando tarifa de la orden según el local")
                 line.order_id.pricelist_id = line.pricelist_id
+                #line.order_id.order_line.filtered(lambda l: l.sudo().write({'pricelist_id': line.pricelist_id.id}))
             elif not is_local and not line.pricelist_id:
                 line.update({
                     'pricelist_id': line.order_id.pricelist_id.id if line.order_id.pricelist_id else False
