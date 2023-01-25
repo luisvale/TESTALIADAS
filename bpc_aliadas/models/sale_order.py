@@ -71,8 +71,6 @@ class SaleOrder(models.Model):
 
     accept_and_signed = fields.Boolean(string='Aceptada y Firmada')
 
-    documents_check_list_lines = fields.One2many(related='partner_id.check_list_lines', readonly=False)  #
-
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
     #     for record in self:
