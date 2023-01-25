@@ -369,8 +369,8 @@ class ApprovalRequest(models.Model):
             raise UserError(_("You have to attach at lease one document."))
         approvers = self.mapped('approver_ids').filtered(lambda approver: approver.status == 'new')
         approvers._create_activity()
-        approvers._create_url()
-        approvers._send_email()
+        self._create_url()
+        self._send_email()
         approvers.write({'status': 'pending'})
         self.write({'date_confirmed': fields.Datetime.now()})
 
