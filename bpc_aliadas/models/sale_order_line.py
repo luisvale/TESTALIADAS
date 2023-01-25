@@ -113,7 +113,7 @@ class SaleOrderLine(models.Model):
         if self.product_id and self.rental_type == 'm2':
             order_id = self.order_id
             lines_local = order_id.order_line._filtered_local()
-            lines_local = order_id.line_product_not_repeat_local(lines_local)
+            lines_local = self.line_product_not_repeat_local(lines_local)
             total = sum(line.product_uom_qty for line in lines_local)
             self.product_uom_qty = total
         if self.product_id:
@@ -126,7 +126,6 @@ class SaleOrderLine(models.Model):
         return res
 
     def line_product_not_repeat_local(self, lines_local):
-        self.ensure_one()
         locals = self.env['sale.order.line'].sudo()
         locals += lines_local[0]
         others = lines_local - locals
@@ -313,7 +312,7 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         if self.pickup_date_format:
             pd = self.pickup_date_format
-            self.pickup_date = datetime(pd.year, pd.month, pd.day, 0, 0, 0)
+            self.pickup_date = datetime(pd.year, pd.month, pd.day, 0, 0, 0) + timedelta(hours=6)
         if self.return_date_format:
             rd = self.return_date_format
-            self.return_date = datetime(rd.year, rd.month, rd.day, 0, 0, 0)
+            self.return_date = datetime(rd.year, rd.month, rd.day, 0, 0, 0) + timedelta(hours=6)
