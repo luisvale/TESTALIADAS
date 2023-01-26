@@ -37,5 +37,7 @@ from . import account_payment
 from . import hr_department
 from . import crm_lead
 from . import helpdesk_ticket #add 04-01-23
+from . import project_task #add 04-01-23
+from . import stock_location #add 04-01-23
 from . import hr_employee #add 10-01-23
 

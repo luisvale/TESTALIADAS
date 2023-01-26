@@ -14,6 +14,13 @@
                             icon="fa-arrow-circle-o-right"
                             type="object"/>
                 </div>
+                <field name="subscription_id"/>
+                <field name="local_ids" widget="many2many_tags"/>
+                <field name="square_id" />
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="is_maintenance" invisible="1"/>
+                <field name="commercial_name"/>
             </xpath>
         </field>
     </record>
@@ -27,5 +34,32 @@
             </xpath>
         </field>
     </record>
+
+    <record model="ir.ui.view" id="helpdesk_ticket_view_form_inherit_stock_user_aliadas">
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_repair.helpdesk_ticket_view_form_inherit_stock_user"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(helpdesk_repair.action_repair_order_form)d']" position="attributes">
+                <attribute name="context">{}</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="helpdesk_team_view_form_aliadas">
+        <field name="model">helpdesk.team</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//h2[1]" position="before">
+                <group>
+                    <field name="is_maintenance"/>
+                </group>
+
+            </xpath>
+        </field>
+    </record>
+
+
+
 
 </odoo>

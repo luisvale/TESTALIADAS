@@ -100,8 +100,8 @@
                         </div>
                         <group>
                             <group>
-                                <label for="parent_id" string="Origen" attrs="{'invisible': [('is_master','=',True)]}" />
-                                <div >
+                                <label for="parent_id" string="Origen" attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <div>
                                     <field name="parent_id" class="oe_inline" nolabel="1" domain="[('state','=','process'), ('is_master','=',True)]"
                                            options="{'no_open': True, 'no_create': True}"/>
                                     <button name="complete_data" attrs="{'invisible': [('parent_id','=',False)]}"
@@ -222,12 +222,26 @@
                             <page name="page_locations" string="Ubicaciones">
                                 <group>
                                     <group>
-                                        <field name="location_init_id"/>
-                                        <field name="location_end_id"/>
+                                        <label for="location_init_id" string="Locación origen"/>
+                                        <div>
+                                            <field name="location_init_id" class="oe_inline"/>
+                                            <button name="get_location_init_id" attrs="{'invisible': ['|',('is_master','!=',True),('location_end_id','!=',False)]}"
+                                                    class="btn btn-link ml-2" string="Obtener ubicación"
+                                                    icon="fa-arrow-circle-o-right"
+                                                    type="object"/>
+                                        </div>
+                                        <label for="location_end_id" string="Locación destino"/>
+                                        <div>
+                                            <field name="location_end_id" class="oe_inline"/>
+                                            <button name="get_location_end_id" attrs="{'invisible': ['|',('is_master','!=',True),('location_end_id','!=',False)]}"
+                                                    class="btn btn-link ml-2" string="Obtener ubicación"
+                                                    icon="fa-arrow-circle-o-right"
+                                                    type="object"/>
+                                        </div>
+<!--                                        <field name="location_init_id"/>-->
+<!--                                        <field name="location_end_id"/>-->
                                     </group>
-                                    <group/>
                                 </group>
-
                             </page>
                         </notebook>
                     </sheet>
@@ -314,7 +328,7 @@
             </field>
         </record>
 
-         <record id="action_maintenance_master" model="ir.actions.act_window">
+        <record id="action_maintenance_master" model="ir.actions.act_window">
             <field name="name">Tarea Maestra</field>
             <field name="res_model">maintenance.periodic</field>
             <field name="view_mode">tree,form</field>
@@ -330,7 +344,7 @@
             </field>
         </record>
 
-         <record id="maintenance_periodic_action_reports" model="ir.actions.act_window">
+        <record id="maintenance_periodic_action_reports" model="ir.actions.act_window">
             <field name="name">Peticiones de mantenimiento</field>
             <field name="res_model">maintenance.periodic</field>
             <field name="view_mode">graph,pivot,tree,form,calendar</field>
@@ -491,7 +505,6 @@
                 </p>
             </field>
         </record>
-
 
 
         <record id="hr_equipment_periodic_action_cal" model="ir.actions.act_window">

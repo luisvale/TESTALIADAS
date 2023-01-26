@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 {
     'name': "bpc_aliadas",
-
     'summary': """
         Personalización ALIADAS""",
     'description': """
@@ -11,16 +10,16 @@
     'company': 'BPC LATAM',
     'website': "https://www.bpc-lat.com/",
     'category': 'Sales',
-    'version': '15.0.13.2',
+    'version': '15.0.13.17',
     # any module necessary for this one to work correctly
     'depends': ['base','hn_einvoice', 'purchase_requisition','purchase','sale','sale_renting','sale_subscription','account_budget','sales_team',
-                'purchase_stock', 'approvals', 'purchase_requisition_stock','crm_helpdesk','website_helpdesk_form', 'hr'],
+                'purchase_stock', 'approvals', 'purchase_requisition_stock','crm_helpdesk','website_helpdesk_form', 'hr',
+                'helpdesk_stock'],
     # always loaded
     'data': [
         #security
         'security/groups.xml',
         'security/ir.model.access.csv',
-
         # data
         'data/approval_category_data.xml',
         'data/mail_activity_data.xml',
@@ -30,6 +29,7 @@
         'data/payment_method_data.xml',
         'data/website_helpdesk.xml',
         'data/mail_template_approval_data.xml',
+        'data/sale_mail_template.xml',
 
 
         #views
@@ -71,6 +71,7 @@
         'views/request_module_views.xml',
         'views/helpdesk_views.xml',  #add 04-01-23
         'views/hr_employee_views.xml',  #add 10-01-23
+        'views/stock_location_views.xml',  #add 10-01-23
         'website/helpdesk_service.xml', #add 04-01-23
         'data/website_data.xml', #add 04-01-23
 

@@ -79,6 +79,7 @@ class PurchaseAdvancePaymentInv(models.TransientModel):
         invoice_vals = {
             'ref': order.partner_ref,
             'move_type': 'in_invoice',
+            'document_type_purchase_id': self.env.ref('hn_einvoice.document_factura_electronica').id,
             'narration': order.notes,
             'currency_id': order.currency_id.id,
             'invoice_user_id': order.user_id and order.user_id.id or self.env.user.id,
@@ -150,7 +151,7 @@ class PurchaseAdvancePaymentInv(models.TransientModel):
             'taxes_id': [(6, 0, tax_ids)],
             'is_downpayment': True,
             'sequence': order.order_line and order.order_line[-1].sequence + 1 or 10,
-            'document_type_purchase_id': self.env.ref('hn_einvoice.document_factura_electronica').id
+            #'document_type_purchase_id': self.env.ref('hn_einvoice.document_factura_electronica').id
         }
         del context
         return po_values

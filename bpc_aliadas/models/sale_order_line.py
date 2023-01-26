@@ -33,7 +33,7 @@ class SaleOrderLine(models.Model):
 
     def default_pricelist_order(self):
         if self.order_id.pricelist_id:
-            return  self.order_id.pricelist_id
+            return self.order_id.pricelist_id
 
     pricelist_id = fields.Many2one('product.pricelist', string='Tarifa', ondelete="cascade", default=default_pricelist_order)
     currency_external_id = fields.Many2one('res.currency', string='Moneda')
@@ -45,6 +45,14 @@ class SaleOrderLine(models.Model):
 
     pickup_date_format = fields.Date(string='Inicia')
     return_date_format = fields.Date(string='Termina')
+
+    find_range = fields.Boolean(help="Encontrado por rango en tarifa")
+
+    # @api.constrains('pricelist_id')
+    # def _constraint_pricelist_id(self):
+    #     for record in self:
+    #         if not record.pricelist_id:
+    #             raise ValidationError(_("No se encontró Tariga para el producto %s con el precio de %s" % (record.product_id.name, record.price_unit)))
 
     def _get_display_price(self, product):
         """Ensure unit price isn't recomputed."""
@@ -99,13 +107,12 @@ class SaleOrderLine(models.Model):
     def _update_taxes(self):
         super(SaleOrderLine, self)._update_taxes()
         if self.product_id:
-            self.price_min = self.price_unit
+            #self.price_min = self.price_unit
             if self.product_id.meter2 not in (False, 0.0):
                 self.product_uom_qty = self.product_id.meter2
 
     @api.onchange('product_id')
     def product_id_change(self):
-
         if self.product_id.id == self.env.ref('bpc_aliadas.rental_product_bpc').id and not self.env.user.user_has_groups('bpc_aliadas.group_aliadas_sale_subs_product_rent_default'):
             raise ValidationError(_("No tiene permiso para seleccionar este producto."))
 
@@ -113,7 +120,7 @@ class SaleOrderLine(models.Model):
         if self.product_id and self.rental_type == 'm2':
             order_id = self.order_id
             lines_local = order_id.order_line._filtered_local()
-            lines_local = order_id.line_product_not_repeat_local(lines_local)
+            lines_local = self.line_product_not_repeat_local(lines_local)
             total = sum(line.product_uom_qty for line in lines_local)
             self.product_uom_qty = total
         if self.product_id:
@@ -126,15 +133,15 @@ class SaleOrderLine(models.Model):
         return res
 
     def line_product_not_repeat_local(self, lines_local):
-        self.ensure_one()
         locals = self.env['sale.order.line'].sudo()
-        locals += lines_local[0]
-        others = lines_local - locals
-        if others:
-            for l in others:
-                _find = locals.filtered(lambda x: x.product_id == l.product_id)
-                if not _find:
-                    locals += l
+        if lines_local:
+            locals += lines_local[0]
+            others = lines_local - locals
+            if others:
+                for other in others:
+                    _find = locals.filtered(lambda x: x.product_id == other.product_id)
+                    if not _find:
+                        locals += other
 
         return locals
 
@@ -146,7 +153,10 @@ class SaleOrderLine(models.Model):
     #         lines_local = order_id.order_line._filtered_local()
     #         total = sum(line.product_uom_qty for line in lines_local)
     #         self.product_uom_qty = total
-
+    # @api.depends('price_unit')
+    # def _compute_pricelist_id(self):
+    #     for record in self:
+    #
 
     @api.onchange('pricelist_id')
     def _onchange_pricelist_id(self):
@@ -174,6 +184,35 @@ class SaleOrderLine(models.Model):
                 amount_convert = record.order_id.currency_id._convert(amount_convert, record.currency_external_id, record.company_id, record.order_id.date_order.date() or datetime.now().date())
             record.amount_convert = amount_convert
 
+    def _find_pricelist_by_price(self, price_unit):
+        self.ensure_one()
+        item = self.env['product.pricelist.item'].sudo()
+        pricelist_id = False
+        _logger.info("Buscando lista de precios por cambio de precio unitario. Producto %s - precio %s " % (self.product_id.name, price_unit))
+        if self.product_id and price_unit >= 0.0:
+
+            items = item.search(['|', '|',
+                                 ('product_tmpl_id', '=', self.product_id.product_tmpl_id.id),
+                                 ('product_id', 'in', self.product_id.ids),
+                                 ('categ_id', '=', self.product_id.product_tmpl_id.categ_id.id),
+                                 ])
+            find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
+                                     i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
+            if find_items:
+                pricelist_id = find_items[0].pricelist_id
+                _logger.info("Lista de precio encontrada : %s " % pricelist_id.name)
+                #find = True
+                #self.pricelist_id = pricelist_id
+                #self.find_range = find
+            else:
+                _logger.info("Lista de precio NO encontrada ")
+                text = "No se encontro lista de precios para la línea con el producto %s, con la cuenta analítica %s y el precio unitario %s " \
+                       % (self.product_id.name, self.product_id.product_tmpl_id.analytic_account_id.name, price_unit)
+                #raise ValidationError(_(text))
+
+        return pricelist_id
+
+
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
     def _compute_amount(self):
         """
@@ -181,7 +220,14 @@ class SaleOrderLine(models.Model):
         Compute the amounts of the SO line.
         """
         for line in self:
-
+            is_local = line._filtered_local()
+            _logger.info("Es local ? %s " % is_local)
+            pricelist_id = line._find_pricelist_by_price(line.price_unit)
+            # if not pricelist_id:
+            #     raise ValidationError(_("No se encontró lista de precios para producto %s " % line.product_id.name))
+            #line.pricelist_id = pricelist_id
+            find_range = True if pricelist_id else False
+            _logger.info("Econtrado por rango en tarifa : %s" % find_range)
             price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
             if line.rental_type == 'fixed':
                 qty = 1
@@ -192,18 +238,39 @@ class SaleOrderLine(models.Model):
                 'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
                 'price_total': taxes['total_included'],
                 'price_subtotal': taxes['total_excluded'],
+                'pricelist_id': pricelist_id.id if pricelist_id else False,
+                'find_range': True if pricelist_id else False,
             })
             if self.env.context.get('import_file', False) and not self.env.user.user_has_groups('account.group_account_manager'):
                 line.tax_id.invalidate_cache(['invoice_repartition_line_ids'], [line.tax_id.id])
 
-    @api.onchange('price_unit')
-    def _onchange_price_unit(self):
-        for record in self:
-            if record.price_unit < record.price_min:
-                # Linea que requiere aprobación
-                record.approved_required = True
-            else:
-                record.approved_required = False
+            if is_local and line.pricelist_id:
+                _logger.info("Actualizando tarifa de la orden según el local")
+                line.order_id.pricelist_id = line.pricelist_id
+                #line.order_id.order_line.filtered(lambda l: l.sudo().write({'pricelist_id': line.pricelist_id.id}))
+            elif not is_local and not line.pricelist_id:
+                line.update({
+                    'pricelist_id': line.order_id.pricelist_id.id if line.order_id.pricelist_id else False
+                })
+            # if find:
+            #     return {
+            #         'type': 'ir.actions.client',
+            #         'tag': 'display_notification',
+            #         'params': {
+            #             'type': 'success',
+            #             'title': _('Bien!'),
+            #             'message': _("Se encontró la tarifa"),
+            #             'next': {'type': 'ir.actions.act_window_close'},
+            #         }
+            #     }
+    # @api.onchange('price_unit')
+    # def _onchange_price_unit(self):
+    #     for record in self:
+    #         if record.price_unit < record.price_min:
+    #             # Linea que requiere aprobación
+    #             record.approved_required = True
+    #         else:
+    #             record.approved_required = False
 
     @api.model
     def _filtered_local(self):
@@ -254,25 +321,25 @@ class SaleOrderLine(models.Model):
             }))
         return values
 
-    @api.onchange('pricelist_id')
-    def _onchange_pricelist_id(self):
-        for record in self:
-            record.update_pricelist()
-
-    def update_pricelist(self):
-        for record in self:
-            if record.pricelist_id:
-                price_unit = record.product_id._get_tax_included_unit_price(
-                    record.company_id or record.order_id.company_id,
-                    record.order_id.currency_id,
-                    record.order_id.date_order,
-                    'sale',
-                    fiscal_position=record.order_id.fiscal_position_id,
-                    product_price_unit=record._get_display_price_by_line(record.product_id),
-                    product_currency=record.order_id.currency_id
-                )
-                record.price_unit = price_unit
-                record.price_min = price_unit
+    # @api.onchange('pricelist_id')
+    # def _onchange_pricelist_id(self):
+    #     for record in self:
+    #         record.update_pricelist()
+    #
+    # def update_pricelist(self):
+    #     for record in self:
+    #         if record.pricelist_id:
+    #             price_unit = record.product_id._get_tax_included_unit_price(
+    #                 record.company_id or record.order_id.company_id,
+    #                 record.order_id.currency_id,
+    #                 record.order_id.date_order,
+    #                 'sale',
+    #                 fiscal_position=record.order_id.fiscal_position_id,
+    #                 product_price_unit=record._get_display_price_by_line(record.product_id),
+    #                 product_currency=record.order_id.currency_id
+    #             )
+    #             record.price_unit = price_unit
+                #record.price_min = price_unit
 
 
     def _get_display_price_by_line(self, product):

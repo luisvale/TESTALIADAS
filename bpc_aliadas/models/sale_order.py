@@ -5,6 +5,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import TransactionCase, tagged, Form
 from odoo.tools import is_html_empty
+import json
 from .. import sale
 import logging
 _logger = logging.getLogger(__name__)
@@ -70,6 +71,10 @@ class SaleOrder(models.Model):
     currency_rate = fields.Float(compute='_compute_currency_rate', store=True) #TIPO DE CAMBIO
 
     accept_and_signed = fields.Boolean(string='Aceptada y Firmada')
+
+    documents_check_list_lines = fields.One2many(related='partner_id.check_list_lines', readonly=False)  #
+
+    link_sale = fields.Char(string='Link sale')
 
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
@@ -198,6 +203,7 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).write(vals)
         self.test_exist_request_payment_term(vals, 'write', res)
         self._state_lead(vals)
+        #self._send_email_vendor(vals, res)
         return res
 
     def test_exist_request_payment_term(self, vals, process, res):
@@ -271,7 +277,10 @@ class SaleOrder(models.Model):
         for record in self:
             record.eval_fields()
             if record.eval_limits():
-                return super(SaleOrder, self).action_confirm()
+                res = super(SaleOrder, self).action_confirm()
+                if record.state == 'sale':
+                    record._send_email_vendor()
+                return res
             else:
                 self.sudo().write({'state': 'pending'})
 
@@ -281,7 +290,10 @@ class SaleOrder(models.Model):
             if record.eval_limits():
                 _request = self._exist_request_by_category(category='check_list')
                 if _request and _request.request_status == 'approved':
-                    return super(SaleOrder, self).action_confirm()
+                    res = super(SaleOrder, self).action_confirm()
+                    if record.state == 'sale':
+                        record._send_email_vendor()
+                    return res
                 else:
                     self.sudo().write({'state': 'compliance'})
             else:
@@ -309,18 +321,28 @@ class SaleOrder(models.Model):
             if not _request:
                 continue_process = False
                 self._create_request('margin')
-
         # Evalación para lista de preocios
-        line_approved_required = self.order_line.filtered(lambda l: l.approved_required)
+        # line_approved_required = self.order_line.filtered(lambda l: l.approved_required)
+        # if line_approved_required:
+        #     # Alguna de las líneas SI requiere aprobación
+        #     user_in = self.pricelist_id.user_ids.filtered(lambda u: u.id == self.env.user.id)
+        #     if not user_in:
+        #         _logger.info("ALIADAS: Evaluación de lista de precios.")
+        #         _request = self._exist_request_by_category(category='list_price')
+        #         if not _request:
+        #             continue_process = False
+        #             self._create_request('pricelist')
+        # Alguna de las líneas SI requiere aprobación
+
+        line_approved_required = self.order_line.filtered(lambda l: l.pricelist_id.required_authorization and self.env.user.id not in l.pricelist_id.user_ids.ids)
         if line_approved_required:
-            # Alguna de las líneas SI requiere aprobación
-            user_in = self.pricelist_id.user_ids.filtered(lambda u: u.id == self.env.user.id)
-            if not user_in:
-                _logger.info("ALIADAS: Evaluación de lista de precios.")
-                _request = self._exist_request_by_category(category='list_price')
-                if not _request:
-                    continue_process = False
-                    self._create_request('pricelist')
+            _logger.info("Se econtraron líneas que requiren aprobación: Total - %s" % len(line_approved_required.ids))
+            for line_pricelist in line_approved_required:
+               _logger.info("ALIADAS: Evaluación de lista de precios.")
+               _request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
+               if not _request:
+                   continue_process = False
+                   self._create_request('pricelist', line_pricelist.pricelist_id)
 
         #Evaluación de lista de procesos
         lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
@@ -352,7 +374,7 @@ class SaleOrder(models.Model):
             record.approval_approved_count = approved_count
             record.approval_cancel_count = cancel_count
 
-    def _exist_request_by_category(self, category):
+    def _exist_request_by_category(self, category, pricelist=False):
 
         payment_term_id = self.env['approval.category'].sudo().search([('approval_type','=','payment_term'),('company_id','=',self.company_id.id)], limit=1)
         list_price_id = self.env['approval.category'].sudo().search([('approval_type','=','pricelist'),('company_id','=',self.company_id.id)], limit=1)
@@ -366,10 +388,13 @@ class SaleOrder(models.Model):
             'check_list': check_list_id.id,
         }
         category_id = LIST_CAT[category]
-        _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id)
+        if not pricelist:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id)
+        else:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id and a.pricelist_id == pricelist)
         return _request
 
-    def _create_request(self, mode):
+    def _create_request(self, mode, pricelist=False):
         sale_margin_diff = 0
         if mode == 'margin':
             category_id = self.env['approval.category'].sudo().search([('approval_type','=','sale_margin'),('company_id','=',self.company_id.id)], limit=1)
@@ -399,7 +424,7 @@ class SaleOrder(models.Model):
             'reference': self.name,
             'origin': self.name,
             'sale_id': self.id,
-            'pricelist_id': self.pricelist_id.id if mode == 'pricelist' and self.pricelist_id else False,
+            'pricelist_id': pricelist.id if mode == 'pricelist' and pricelist else False,
             'sale_margin_diff': sale_margin_diff,
             'request_owner_id': self.env.user.id,
             'department_id': employee.department_id.id
@@ -516,9 +541,9 @@ class SaleOrder(models.Model):
 
                 _find_pricelist = record._eval_local_pricelist()
                 if _find_pricelist:
-                    continue
+                   continue
                 #Evaluación de productos solo para renta
-                lines_diff = record.order_line.filtered(lambda l:l.product_id.analytic_account_id != analytic_account_id and l.product_id.rent_ok)
+                lines_diff = record.order_line.filtered(lambda l: l.product_id.analytic_account_id != analytic_account_id and l.product_id.rent_ok)
                 if lines_diff:
                     for l in lines_diff:
                         if not l.product_id.analytic_account_id:
@@ -527,7 +552,7 @@ class SaleOrder(models.Model):
                                                                                                                       l.product_id.name,
                                                                                                                       l.product_id.analytic_account_id.name
                                                                                                                       )
-                        raise ValidationError(_(msg))
+                        #raise ValidationError(_(msg))
 
     def _eval_local_pricelist(self):
         _find_pricelist = False
@@ -535,18 +560,21 @@ class SaleOrder(models.Model):
             lines_local = self.order_line._filtered_local()
             if len(lines_local) == 1:
                 if isinstance(lines_local[0].id, models.NewId):
-                    _find_pricelist = self.env['product.pricelist'].sudo().search([('analytic_account_id','=',lines_local[0].product_id.analytic_account_id.id),
-                                                                                   ('is_start','=',True)], limit=1)
-                    if _find_pricelist:
-                        _logger.info("ALIADADAS: Orden %s / Asignando lista de precios de inicio : %s" % (self.name, _find_pricelist.name))
-                        self.pricelist_id = _find_pricelist
-                        #lines_local.pricelist_id = _find_pricelist
+                    self.pricelist_id = lines_local[0].pricelist_id
+                    _find_pricelist = lines_local[0].pricelist_id
+                    # _find_pricelist = self.env['product.pricelist'].sudo().search([('analytic_account_id','=',lines_local[0].product_id.analytic_account_id.id),
+                    #                                                                ('is_start','=',True)], limit=1)
+                    # _logger.info("Rango asignado: %s " % lines_local[0].find_range)
+                    # if not lines_local[0].find_range:
+                    #     if _find_pricelist:
+                    #         _logger.info("ALIADADAS: Orden %s / Asignando lista de precios de inicio : %s" % (self.name, _find_pricelist.name))
+                    #         self.pricelist_id = _find_pricelist
+                    #         lines_local.pricelist_id = _find_pricelist
             if _find_pricelist:
                 for l in self.order_line:
+                    #if not l.pricelist_id:
                     l.pricelist_id = _find_pricelist
         return _find_pricelist
-
-
 
     @api.onchange('sale_order_template_id')
     def onchange_sale_order_template_id(self):
@@ -614,9 +642,10 @@ class SaleOrder(models.Model):
         for record in self:
             if record.order_line:
                 lines_local = record.order_line._filtered_local()
+                lines_local_not_duplicate = record.order_line.line_product_not_repeat_local(lines_local)
                 for line in record.order_line:
                     if line.product_id and line.rental_type == 'm2' and not line.product_id.rent_ok:
-                        total = sum(line.product_uom_qty for line in lines_local)
+                        total = sum(line.product_uom_qty for line in lines_local_not_duplicate)
                         line.product_uom_qty = total
 
                     if line.product_id and lines_local and not line.not_update_price and not line.product_id.rent_ok:
@@ -697,8 +726,40 @@ class SaleOrder(models.Model):
                 'amount_total': amount_untaxed + amount_tax,
             })
 
+    @api.depends('order_line.tax_id', 'order_line.price_unit', 'amount_total', 'amount_untaxed')
+    def _compute_tax_totals_json(self):
+        def compute_taxes(order_line):
+            price = order_line.price_unit * (1 - (order_line.discount or 0.0) / 100.0)
+            order = order_line.order_id
+            if order_line.rental_type == 'fixed':
+                qty = 1
+            else:
+                qty = order_line.product_uom_qty
+            return order_line.tax_id._origin.compute_all(price, order.currency_id, qty, product=order_line.product_id, partner=order.partner_shipping_id)
 
-    # def action_quotation_send(self):
+        account_move = self.env['account.move']
+        for order in self:
+            tax_lines_data = account_move._prepare_tax_lines_data_for_totals_from_object(order.order_line, compute_taxes)
+            tax_totals = account_move._get_tax_totals(order.partner_id, tax_lines_data, order.amount_total, order.amount_untaxed, order.currency_id)
+            order.tax_totals_json = json.dumps(tax_totals)
+
+    def _send_email_vendor(self):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        sale_order = self
+        action = self.env.ref('sale.action_orders')
+        menu = self.env.ref('sale.menu_sale_order')
+        url = "/web#id=%s&action=%s&model=sale.order&view_type=form&menu_id=%s" % (sale_order.id, action.id, menu.id)
+        complete_url = '%s%s' % (base_url, url)
+        self.sudo().write({'link_sale': complete_url})
+        template = self.env.ref('bpc_aliadas.email_template_sale_order_confirm', raise_if_not_found=False)
+        res = template.sudo().send_mail(sale_order.id, force_send=True, notif_layout='mail.mail_notification_light')
+        _logger.info("Envio de correo al comercial - %s" % res)
+        msg = _('Estimado, %s . La orden de venta % ha sido confirmada.') % (sale_order.user_id.name, sale_order.name)
+        sale_order.sudo().message_post(body=msg, message_type='comment',subtype_xmlid='mail.mt_comment')
+
+
+
+        # def action_quotation_send(self):
     #     ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
     #     self.ensure_one()
     #     template_id = self._find_mail_template()

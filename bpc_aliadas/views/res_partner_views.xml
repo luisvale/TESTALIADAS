@@ -44,6 +44,7 @@
                             <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                             <field name="now" invisible="1"/>
                         </tree>
                     </field>
                 </page>

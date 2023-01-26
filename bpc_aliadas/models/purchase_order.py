@@ -87,6 +87,8 @@ class PurchaseOrder(models.Model):
 
     department_id = fields.Many2one('hr.department', string='Departamento')
 
+    force_picking = fields.Boolean(string='Incluir picking')
+
     @api.constrains('advance_check', 'advance_amount')
     def _constraint_advance_check(self):
         for order in self:
@@ -190,12 +192,13 @@ class PurchaseOrder(models.Model):
 
     def _compute_exist_budget(self):
         for record in self:
-            if record.exist_budget:
-                exist_budget = record.exist_budget
-            else:
-                exist_budget = record._find_budget()
+            exist_budget = False
+            if not record.force_purchase:
+                if record.exist_budget:
+                    exist_budget = record.exist_budget
+                else:
+                    exist_budget = record._find_budget()
             record.exist_budget = exist_budget
-
 
     def _find_budget(self):
         self.ensure_one()
@@ -209,8 +212,8 @@ class PurchaseOrder(models.Model):
             account_id = line.account_id
             analytic_id = line.account_analytic_id
             crossovered_budget_lines = self.env['crossovered.budget.lines'].sudo().search([('analytic_account_id', '=', analytic_id.id),
-                                                                ('check_control', '=', True),
-                                                                ('general_budget_id', '!=', False)])
+                                                                                           ('check_control', '=', True),
+                                                                                           ('general_budget_id', '!=', False)])
 
             budget_line = crossovered_budget_lines.filtered(lambda l: l.date_from <= date_order_timedelta.date() and l.date_to >= date_order_timedelta.date()
                                                                       and account_id.id in l.general_budget_id.account_ids.ids)
@@ -615,7 +618,8 @@ class PurchaseOrder(models.Model):
         """PASAR PEDIDO DE FORMA FORZADA"""
         try:
             self.state = 'purchase'
-            self._create_picking()
+            if self.force_picking:
+                self._create_picking()
             self.force_purchase = True
         except Exception as e:
             raise ValidationError(_("Error generación picking : %s" % e))
