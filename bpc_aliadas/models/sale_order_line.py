@@ -189,7 +189,7 @@ class SaleOrderLine(models.Model):
         item = self.env['product.pricelist.item'].sudo()
         pricelist_id = False
         _logger.info("Buscando lista de precios por cambio de precio unitario. Producto %s - precio %s " % (self.product_id.name, price_unit))
-        if self.product_id and price_unit > 0.0:
+        if self.product_id and price_unit >= 0.0:
 
             items = item.search(['|', '|',
                                  ('product_tmpl_id', '=', self.product_id.product_tmpl_id.id),

@@ -42,8 +42,19 @@ class MaintenancePeriodic(models.Model):
     analytic_line_ids = fields.One2many('account.analytic.line', 'maintenance_id', string='Tareas', copy=False)
     state = fields.Selection(STATES, string='Estado', default='draft', tracking=True)
     parent_id = fields.Many2one('maintenance.periodic', string='Origen')
-    location_init_id = fields.Many2one('stock.location', 'Locación origen',index=True, required=True, check_company=True)
-    location_end_id = fields.Many2one('stock.location', 'Locación destino',index=True, required=True, check_company=True)
+
+    @api.model
+    def _default_origin(self):
+        location = self.env['stock.location'].sudo().search([('company_id','=',self.env.company.id), ('maintenance_use','=','origin')], limit=1)
+        return location
+
+    @api.model
+    def _default_destiny(self):
+        location = self.env['stock.location'].sudo().search([('company_id','=',self.env.company.id), ('maintenance_use','=','destiny')], limit=1)
+        return location
+
+    location_init_id = fields.Many2one('stock.location', string='Locación origen', default=_default_origin)
+    location_end_id = fields.Many2one('stock.location', string='Locación destino', default=_default_destiny)
     # Depende de los estado y los productos
     purchase_requisition_id = fields.Many2one('purchase.requisition', string='Licitación', tracking=True, copy=False)
     purchase_requisition_ids = fields.Many2many('purchase.requisition', string='Licitaciones')
@@ -54,6 +65,14 @@ class MaintenancePeriodic(models.Model):
     total_cost_material = fields.Monetary(string='Costo materiales', store=True, compute='_compute_total')
     total_cost_work = fields.Monetary(string='Costo mano obra', store=True, compute='_compute_total')
     total_amount = fields.Monetary(string='Total', store=True, compute='_compute_total')
+
+    def get_location_init_id(self):
+        self.ensure_one()
+        self.location_init_id = self._default_origin()
+
+    def get_location_end_id(self):
+        self.ensure_one()
+        self.location_end_id = self._default_destiny()
 
     @api.depends('material_line_ids', 'material_line_ids.subtotal', 'analytic_line_ids.unit_amount','analytic_line_ids.employee_id',
                  'analytic_line_ids.contract_id')
@@ -167,6 +186,7 @@ class MaintenancePeriodic(models.Model):
             if record.parent_id:
                 record.location_init_id = record.parent_id.location_init_id
                 record.location_end_id = record.parent_id.location_end_id
-            else:
-                record.location_init_id = False
-                record.location_end_id = False
+            # else:
+            #     record.location_init_id = False
+            #     record.location_end_id = False
+            #     print("FFF")

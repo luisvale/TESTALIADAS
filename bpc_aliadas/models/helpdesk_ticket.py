@@ -8,9 +8,15 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+class HelpdeskTeam(models.Model):
+    _inherit = 'helpdesk.team'
+
+    is_maintenance = fields.Boolean(string='Es mantenimiento')
+
 class HelpdeskTicket(models.Model):
     _inherit = 'helpdesk.ticket'
 
+    is_maintenance = fields.Boolean(related='team_id.is_maintenance')
     commercial_name = fields.Many2one('res.partner.commercial', string='Nombre comercial')
     contract = fields.Char(string='Contrato', index=True, website_form_blacklisted=False)
     subscription_id = fields.Many2one('sale.subscription', string='Subscripción', compute='_compute_subscription_id', store=True,

@@ -19,6 +19,7 @@
                 <field name="square_id" />
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="is_maintenance" invisible="1"/>
                 <field name="commercial_name"/>
             </xpath>
         </field>
@@ -44,6 +45,21 @@
             </xpath>
         </field>
     </record>
+
+    <record model="ir.ui.view" id="helpdesk_team_view_form_aliadas">
+        <field name="model">helpdesk.team</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//h2[1]" position="before">
+                <group>
+                    <field name="is_maintenance"/>
+                </group>
+
+            </xpath>
+        </field>
+    </record>
+
+
 
 
 </odoo>
