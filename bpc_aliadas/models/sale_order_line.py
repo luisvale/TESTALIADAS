@@ -222,7 +222,7 @@ class SaleOrderLine(models.Model):
         for line in self:
             is_local = line._filtered_local()
             _logger.info("Es local ? %s " % is_local)
-            pricelist_id = line._find_pricelist_by_price( line.price_unit)
+            pricelist_id = line._find_pricelist_by_price(line.price_unit)
             # if not pricelist_id:
             #     raise ValidationError(_("No se encontró lista de precios para producto %s " % line.product_id.name))
             #line.pricelist_id = pricelist_id

@@ -5,6 +5,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import TransactionCase, tagged, Form
 from odoo.tools import is_html_empty
+import json
 from .. import sale
 import logging
 _logger = logging.getLogger(__name__)
@@ -72,6 +73,8 @@ class SaleOrder(models.Model):
     accept_and_signed = fields.Boolean(string='Aceptada y Firmada')
 
     documents_check_list_lines = fields.One2many(related='partner_id.check_list_lines', readonly=False)  #
+
+    link_sale = fields.Char(string='Link sale')
 
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
@@ -200,6 +203,7 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).write(vals)
         self.test_exist_request_payment_term(vals, 'write', res)
         self._state_lead(vals)
+        #self._send_email_vendor(vals, res)
         return res
 
     def test_exist_request_payment_term(self, vals, process, res):
@@ -273,7 +277,10 @@ class SaleOrder(models.Model):
         for record in self:
             record.eval_fields()
             if record.eval_limits():
-                return super(SaleOrder, self).action_confirm()
+                res = super(SaleOrder, self).action_confirm()
+                if record.state == 'sale':
+                    record._send_email_vendor()
+                return res
             else:
                 self.sudo().write({'state': 'pending'})
 
@@ -283,7 +290,10 @@ class SaleOrder(models.Model):
             if record.eval_limits():
                 _request = self._exist_request_by_category(category='check_list')
                 if _request and _request.request_status == 'approved':
-                    return super(SaleOrder, self).action_confirm()
+                    res = super(SaleOrder, self).action_confirm()
+                    if record.state == 'sale':
+                        record._send_email_vendor()
+                    return res
                 else:
                     self.sudo().write({'state': 'compliance'})
             else:
@@ -716,8 +726,40 @@ class SaleOrder(models.Model):
                 'amount_total': amount_untaxed + amount_tax,
             })
 
+    @api.depends('order_line.tax_id', 'order_line.price_unit', 'amount_total', 'amount_untaxed')
+    def _compute_tax_totals_json(self):
+        def compute_taxes(order_line):
+            price = order_line.price_unit * (1 - (order_line.discount or 0.0) / 100.0)
+            order = order_line.order_id
+            if order_line.rental_type == 'fixed':
+                qty = 1
+            else:
+                qty = order_line.product_uom_qty
+            return order_line.tax_id._origin.compute_all(price, order.currency_id, qty, product=order_line.product_id, partner=order.partner_shipping_id)
 
-    # def action_quotation_send(self):
+        account_move = self.env['account.move']
+        for order in self:
+            tax_lines_data = account_move._prepare_tax_lines_data_for_totals_from_object(order.order_line, compute_taxes)
+            tax_totals = account_move._get_tax_totals(order.partner_id, tax_lines_data, order.amount_total, order.amount_untaxed, order.currency_id)
+            order.tax_totals_json = json.dumps(tax_totals)
+
+    def _send_email_vendor(self):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        sale_order = self
+        action = self.env.ref('sale.action_orders')
+        menu = self.env.ref('sale.menu_sale_order')
+        url = "/web#id=%s&action=%s&model=sale.order&view_type=form&menu_id=%s" % (sale_order.id, action.id, menu.id)
+        complete_url = '%s%s' % (base_url, url)
+        self.sudo().write({'link_sale': complete_url})
+        template = self.env.ref('bpc_aliadas.email_template_sale_order_confirm', raise_if_not_found=False)
+        res = template.sudo().send_mail(sale_order.id, force_send=True, notif_layout='mail.mail_notification_light')
+        _logger.info("Envio de correo al comercial - %s" % res)
+        msg = _('Estimado, %s . La orden de venta % ha sido confirmada.') % (sale_order.user_id.name, sale_order.name)
+        sale_order.sudo().message_post(body=msg, message_type='comment',subtype_xmlid='mail.mt_comment')
+
+
+
+        # def action_quotation_send(self):
     #     ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
     #     self.ensure_one()
     #     template_id = self._find_mail_template()

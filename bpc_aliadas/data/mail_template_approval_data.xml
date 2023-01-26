@@ -15,7 +15,7 @@
                         .
                         <br/>
                         <br/>
-                        La solcitud de aprobación  <strong t-out="object.request_id.name or ''"/> está en curso , perteneciente a
+                        La solicitud de aprobación  <strong t-out="object.request_id.name or ''"/> está en curso , perteneciente a
                         "<strong t-out="object.request_id.category_id.name or ''"/>" ,
                         relacionada a
                         <t t-if="object.request_id.purchase_id">

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="email_template_sale_order_confirm" model="mail.template">
+            <field name="name">Pedido de venta: Aprobación de venta</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">{{ object.display_name }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (user.email or object.company_id.email) }}&gt;</field>
+            <field name="email_to">{{ object.user_id.email }}</field>
+            <field name="body_html" type="html">
+                 <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola,
+                        <t t-out="object.user_id.name or ''"/>
+                        .
+                        <br/>
+                        <br/>
+                        Se realizó la confirmación de la orden. <strong t-out="object.name or ''"/>
+                        <br/>
+                        <br/>
+                        Ver pedido de venta :
+                        <t t-if="object.link_sale">
+                            <a t-att-href="object.link_sale"
+                               style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                <t t-out="object.name"/>
+                            </a>
+                        </t>
+
+                    </p>
+                </div>
+            </field>
+            <field name="lang">{{ object.user_id.lang or user.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+    </data>
+</odoo>
