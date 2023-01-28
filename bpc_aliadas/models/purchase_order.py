@@ -207,7 +207,7 @@ class PurchaseOrder(models.Model):
         order = self
         #for order in self:
         date_order = order.date_order
-        date_order_timedelta = date_order - timedelta(hours=5)
+        date_order_timedelta = date_order - timedelta(hours=6)
         for line in order.order_line:
             account_id = line.account_id
             analytic_id = line.account_analytic_id

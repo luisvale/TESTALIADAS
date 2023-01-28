@@ -14,7 +14,13 @@ def get_data(self, param):
 
 def area(self):
     product_rental_id = self.env.ref('bpc_aliadas.rental_product_bpc')
-    total_area = sum(line.product_uom_qty if line.product_id.rent_ok and line.product_id.id != product_rental_id.id else 0.0 for line in self.order_line)
+    locals = self.env['sale.order.line'].sudo()
+    for line in self.order_line:
+        if line.product_id.rent_ok and line.product_id.id != product_rental_id.id:
+            locals += line
+    new_locals = self.env['sale.order.line'].sudo().line_product_not_repeat_local(locals)
+    total_area = sum(nl.product_uom_qty for nl in new_locals)
+    #total_area = sum(line.product_uom_qty if line.product_id.rent_ok and line.product_id.id != product_rental_id.id else 0.0 for line in self.order_line)
     return total_area
 
 

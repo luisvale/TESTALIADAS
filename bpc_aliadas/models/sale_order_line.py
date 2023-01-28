@@ -381,6 +381,26 @@ class SaleOrderLine(models.Model):
         if self.pickup_date_format:
             pd = self.pickup_date_format
             self.pickup_date = datetime(pd.year, pd.month, pd.day, 0, 0, 0) + timedelta(hours=6)
+            _logger.info("Segundo onchange")
         if self.return_date_format:
             rd = self.return_date_format
             self.return_date = datetime(rd.year, rd.month, rd.day, 0, 0, 0) + timedelta(hours=6)
+
+    # def write(self, values):
+    #     if 'pickup_date' in values:
+    #         values['pickup_date_format'] = (values['pickup_date'] - timedelta(hours=6)).date()
+    #         _logger.info("Fecha forma start : %s " % values['pickup_date_format'])
+    #     if 'return_date' in values:
+    #         values['return_date_format'] = (values['return_date'] - timedelta(hours=6)).date()
+    #         _logger.info("Fecha forma end : %s " % values['return_date_format'])
+    #     res = super(SaleOrderLine, self).write(values)
+    #     return res
+
+    @api.onchange('pickup_date', 'return_date')
+    def _onchange_rental_info(self):
+        super(SaleOrderLine, self)._onchange_rental_info()
+        if self.pickup_date and not self.pickup_date_format:
+            self.pickup_date_format = (self.pickup_date - timedelta(hours=6)).date()
+            _logger.info("Primer onchange")
+        if self.return_date and not self.return_date_format:
+            self.return_date_format = (self.return_date - timedelta(hours=6)).date()

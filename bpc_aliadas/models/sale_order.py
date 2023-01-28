@@ -88,23 +88,34 @@ class SaleOrder(models.Model):
     #     a=1
     #     return res
 
+    # @api.constrains('partner_prospect_state')
+    # def _constraint_partner_prospect_state(self):
+    #     for record in self:
+    #         if record.partner_id and record.partner_prospect_state == 'done' and not record.accept_and_signed:
+    #             raise ValidationError(_("No puede confirmar el cliente si la orden no está - Aceptada y Firmada -"))
+
     @api.constrains('state')
     def _constraint_order_state(self):
         for record in self:
             if record.state == 'sale' and record.partner_id.state != 'done':
                 raise ValidationError(_("Para pasar a orden de venta asegúrese que el cliente tenga el estado CONFIRMADO."))
 
-
-    @api.depends('partner_prospect_id','partner_prospect_id.state','partner_prospect_id.active')
+    @api.depends('partner_prospect_id', 'partner_prospect_id.state', 'partner_prospect_id.active')
     def _compute_partner_prospect_state(self):
         for record in self:
+            state = 'draft'
             if record.partner_prospect_id:
-                record.partner_prospect_state = record.partner_prospect_id.state
+                state = record.partner_prospect_id.state
                 record.partner_id = record.partner_prospect_id
             elif record.partner_id:
-                record.partner_prospect_state = record.partner_id.state
+                state = record.partner_id.state
             else:
-                record.partner_prospect_state = 'done'
+                state = 'draft'
+            #
+            # if state == 'done' and not record.accept_and_signed:
+            #     raise ValidationError(_("No puede confirmar el cliente si la orden no está -Aceptada y Firmada-"))
+
+            record.partner_prospect_state = state
 
     @api.depends('currency_id')
     def _compute_currency_rate(self):

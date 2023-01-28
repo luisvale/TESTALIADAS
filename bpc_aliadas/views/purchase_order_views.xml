@@ -46,7 +46,7 @@
                         attrs="{'invisible': [('state','!=','on_hold')]}"/>
                 <button name="refresh_state" string="Consultar aprobación" class="btn-primary" type="object"
                         attrs="{'invisible': [('state','not in',['pending','evaluation'])]}"/>
-                <button name="button_bidding_to_purchase" states="bidding" string="PEDIDO FORZADO" type="object" data-hotkey="l"
+                <button name="button_bidding_to_purchase" states="bidding,on_hold,pending" string="PEDIDO FORZADO" type="object" data-hotkey="l"
                         confirm="Está seguro de pasar a pedido de compra?" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"
                         style="background: #e09507;color: white;"/>
             </xpath>

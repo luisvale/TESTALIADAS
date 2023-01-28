@@ -36,7 +36,7 @@ class CrossoveredBudgetLines(models.Model):
     def _find_analytic_line(self, line, create_date):
         if line:
             _logger.info("Presupuesto contable, evaluación ... ")
-            date_planned = create_date - timedelta(hours=5)
+            date_planned = create_date - timedelta(hours=6)
             account_analytic_id = line.account_analytic_id
             account_id = line.account_id
             if account_analytic_id and account_id:

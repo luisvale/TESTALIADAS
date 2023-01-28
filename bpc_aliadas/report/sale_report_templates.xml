@@ -2,7 +2,7 @@
 <odoo>
     <template id="report_saleorder_document_aliadas" inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
-            <div class="page">
+            <div class="page" style="font-size:13px">
                 <div class="oe_structure"/>
 
                 <h2 class="mt16">
@@ -21,14 +21,14 @@
                         <strong>Referencia:</strong>
                         <p class="m-0" t-field="doc.client_order_ref"/>
                     </div>
-                    <div t-if="doc.date_order and doc.state not in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
-                        <strong>Fecha pedido:</strong>
-                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
-                    </div>
-                    <div t-if="doc.date_order and doc.state in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
-                        <strong>Fecha cotización:</strong>
-                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
-                    </div>
+                    <!--                    <div t-if="doc.date_order and doc.state not in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">-->
+                    <!--                        <strong>Fecha pedido:</strong>-->
+                    <!--                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>-->
+                    <!--                    </div>-->
+                    <!--                    <div t-if="doc.date_order and doc.state in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">-->
+                    <!--                        <strong>Fecha cotización:</strong>-->
+                    <!--                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>-->
+                    <!--                    </div>-->
                     <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="col-auto col-3 mw-100 mb-2" name="expiration_date">
                         <strong>Vencimiento:</strong>
                         <p class="m-0" t-field="doc.validity_date"/>
@@ -57,14 +57,14 @@
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="5" style="background:#f0e1e1">
+                            <th colspan="4" style="background:#f0e1e1">
                                 RENTA:
                             </th>
                         </tr>
                         <tr>
-                            <th style="width:50%">Producto</th>
-                            <th>Variable</th>
-                            <th name="th_quantity" class="text-right">Cantidad</th>
+                            <th style="width:50%"></th>
+                            <th></th>
+                            <!--                            <th name="th_quantity" class="text-right">Cantidad</th>-->
                             <th name="th_priceunit" class="text-right">Precio unit.</th>
                             <th class="text-right">Sub total</th>
                         </tr>
@@ -96,9 +96,9 @@
                                     <span t-if="l_one.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
                                     <span t-if="l_one.rental_type == 'tonnage'">Tonelaje</span>
                                 </td>
-                                <td class="text-right">
-                                    <span t-esc="l_one.product_uom_qty"/>
-                                </td>
+                                <!--                                <td class="text-right">-->
+                                <!--                                    <span t-esc="l_one.product_uom_qty"/>-->
+                                <!--                                </td>-->
 
                                 <td class="text-right">
                                     <!--                                    <t t-if="l_one.pricelist_id">-->
@@ -123,7 +123,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-right">
+                            <th colspan="3" class="text-right">
                                 Impuestos
                             </th>
                             <th class="text-right">
@@ -131,7 +131,7 @@
                             </th>
                         </tr>
                         <tr style="background:#ffffd6">
-                            <th colspan="4" class="text-right">
+                            <th colspan="3" class="text-right">
                                 Total
                             </th>
                             <th class="text-right">
@@ -145,14 +145,14 @@
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="5" style="background:#f0e1e1">
+                            <th colspan="4" style="background:#f0e1e1">
                                 SERVICIOS:
                             </th>
                         </tr>
                         <tr>
-                            <th style="width:50%">Producto</th>
-                            <th>Variable</th>
-                            <th name="th_quantity" class="text-right">Cantidad</th>
+                            <th style="width:50%"></th>
+                            <th></th>
+                            <!--                            <th name="th_quantity" class="text-right">Cantidad</th>-->
                             <th name="th_priceunit" class="text-right">Precio unit.</th>
                             <th class="text-right">Sub total</th>
                         </tr>
@@ -184,9 +184,9 @@
                                     <span t-if="l_recurring.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
                                     <span t-if="l_recurring.rental_type == 'tonnage'">Tonelaje</span>
                                 </td>
-                                <td class="text-right">
-                                    <span t-esc="l_recurring.product_uom_qty"/>
-                                </td>
+                                <!--                                <td class="text-right">-->
+                                <!--                                    <span t-esc="l_recurring.product_uom_qty"/>-->
+                                <!--                                </td>-->
                                 <td class="text-right">
                                     <t t-if="l_recurring.pricelist_id">
                                         <span t-esc="l_recurring.price_unit" t-options='{"widget": "monetary", "display_currency": l_recurring.pricelist_id.currency_id}'/>
@@ -206,7 +206,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-right">
+                            <th colspan="3" class="text-right">
                                 Impuestos
                             </th>
                             <th class="text-right">
@@ -214,7 +214,7 @@
                             </th>
                         </tr>
                         <tr style="background:#ffffd6">
-                            <th colspan="4" class="text-right">
+                            <th colspan="3" class="text-right">
                                 Total
                             </th>
                             <th class="text-right">
@@ -223,18 +223,48 @@
                         </tr>
                     </tfoot>
                 </table>
+                <table class="table table-sm o_main_table mt-4">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>SUBTOTAL MENSUAL</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="doc.amount_untaxed" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>IMPUESTOS</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="doc.amount_tax" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#ffffd6">
+                            <td>
+                                <strong>TOTAL MENSUAL</strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="doc.amount_total" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
 
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
+                        <!--                        <tr>-->
+                        <!--                            <th colspan="4" style="background:#f0e1e1">-->
+                        <!--                                DERECHOS:-->
+                        <!--                            </th>-->
+                        <!--                        </tr>-->
                         <tr>
-                            <th colspan="5" style="background:#f0e1e1">
-                                DERECHOS:
-                            </th>
-                        </tr>
-                        <tr>
-                            <th style="width:50%">Producto</th>
-                            <th>Variable</th>
-                            <th name="th_quantity" class="text-right">Cantidad</th>
+                            <th style="width:50%"></th>
+                            <th></th>
+                            <!--                            <th name="th_quantity" class="text-right">Cantidad</th>-->
                             <th name="th_priceunit" class="text-right">Precio unit.</th>
                             <th class="text-right">Sub total</th>
                         </tr>
@@ -266,9 +296,9 @@
                                     <span t-if="l_other.rental_type == 'rental_percentage_top'">Renta % de ventas con tope</span>
                                     <span t-if="l_other.rental_type == 'tonnage'">Tonelaje</span>
                                 </td>
-                                <td class="text-right">
-                                    <span t-esc="l_other.product_uom_qty"/>
-                                </td>
+                                <!--                                <td class="text-right">-->
+                                <!--                                    <span t-esc="l_other.product_uom_qty"/>-->
+                                <!--                                </td>-->
                                 <td class="text-right">
                                     <t t-if="l_other.pricelist_id">
                                         <span t-esc="l_other.price_unit" t-options='{"widget": "monetary", "display_currency": l_other.pricelist_id.currency_id}'/>
@@ -289,37 +319,37 @@
                             </tr>
                         </t>
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="4" class="text-right">
-                                Impuestos
-                            </th>
-                            <th class="text-right">
-                                <span t-esc="l_other_tax" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
-                            </th>
-                        </tr>
-                        <tr style="background:#ffffd6">
-                            <th colspan="4" class="text-right">
-                                Total
-                            </th>
-                            <th class="text-right">
-                                <span t-esc="l_other_total" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
-                            </th>
-                        </tr>
-                    </tfoot>
+                    <!--                    <tfoot>-->
+                    <!--                        <tr>-->
+                    <!--                            <th colspan="3" class="text-right">-->
+                    <!--                                Impuestos-->
+                    <!--                            </th>-->
+                    <!--                            <th class="text-right">-->
+                    <!--                                <span t-esc="l_other_tax" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>-->
+                    <!--                            </th>-->
+                    <!--                        </tr>-->
+                    <!--                        <tr style="background:#ffffd6">-->
+                    <!--                            <th colspan="3" class="text-right">-->
+                    <!--                                Total-->
+                    <!--                            </th>-->
+                    <!--                            <th class="text-right">-->
+                    <!--                                <span t-esc="l_other_total" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>-->
+                    <!--                            </th>-->
+                    <!--                        </tr>-->
+                    <!--                    </tfoot>-->
                 </table>
 
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="5" style="background:#f0e1e1">
+                            <th colspan="4" style="background:#f0e1e1">
                                 A PAGAR CON LA FIRMA DEL CONTRATO:
                             </th>
                         </tr>
                         <tr>
-                            <th style="width:50%">Producto</th>
-                            <th>Variable</th>
-                            <th name="th_quantity" class="text-right">Cantidad</th>
+                            <th style="width:50%"></th>
+                            <th></th>
+                            <!--                            <th name="th_quantity" class="text-right">Cantidad</th>-->
                             <th name="th_priceunit" class="text-right">Precio unit.</th>
                             <th class="text-right">Sub total</th>
                         </tr>
@@ -375,8 +405,8 @@
                         </t>
                     </tbody>
                     <tfoot>
-                          <tr>
-                            <th colspan="4" class="text-right">
+                        <tr>
+                            <th colspan="3" class="text-right">
                                 Impuestos
                             </th>
                             <th class="text-right">
@@ -384,7 +414,7 @@
                             </th>
                         </tr>
                         <tr style="background:#ffffd6">
-                            <th colspan="4" class="text-right">
+                            <th colspan="3" class="text-right">
                                 Total
                             </th>
                             <th class="text-right">

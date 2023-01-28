@@ -23,7 +23,8 @@
             </xpath>
             <xpath expr="//group[@name='partner_details']" position="replace">
                 <group name="partner_details">
-                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}" context="{'default_state': 'draft', 'default_active': False}"/>
+                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}"
+                           context="{'default_state': 'draft', 'default_active': False, 'default_model': 'sale.order', 'default_order_id': id}"/>
                     <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
                     <field name="partner_prospect_state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"
                            attrs="{'invisible': ['|',('partner_prospect_id','=',False),('state','=','sale')]}"/>
@@ -34,7 +35,7 @@
                     <field name="perm_can_project" invisible="1"/>
                     <field name="create_project_automatic_manual" invisible="1"/>
                     <field name="invoice_payment" invisible="1"/>
-                    <field name="purchase_ids" widget="many2many_tags"/>
+                    <field name="purchase_ids" widget="many2many_tags" invisible="1"/>
                 </group>
             </xpath>
             <!--            <xpath expr="//group[@name='partner_details']" position="inside">-->
@@ -175,20 +176,18 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='pickup_date']" position='attributes'>
                 <attribute name="invisible">1</attribute>
-                <attribute name="optional">show</attribute>
+                <attribute name="optional">hide</attribute>
                 <attribute name="string">Inicia</attribute>
             </xpath>
             <xpath expr="//field[@name='return_date']" position='attributes'>
                 <attribute name="invisible">1</attribute>
-                <attribute name="optional">show</attribute>
+                <attribute name="optional">hide</attribute>
                 <attribute name="string">Termina</attribute>
             </xpath>
             <xpath expr="//field[@name='pickup_date']" position='before'>
                 <field name="pickup_date_format"/>
                 <field name="return_date_format"/>
             </xpath>
-
-
         </field>
     </record>
 

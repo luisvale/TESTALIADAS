@@ -4,6 +4,8 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 from datetime import datetime, date
+import logging
+_logger = logging.getLogger(__name__)
 
 STATE = [('done', 'Confirmado'), ('draft', 'Prospecto'), ('cancel', 'Rechazado'),('inactive','Inactivo')]
 
@@ -125,7 +127,22 @@ class ResPartner(models.Model):
             if record.state in ('cancel','inactive','draft'):
                 record.active = False
             elif record.state == 'done':
+                record._eval_sale_order_change(record.env.context)
                 record.active = True
+
+    def _eval_sale_order_change(self, context):
+        _logger.info("Cambio de estado de cliente desde orden de venta")
+        if 'default_model' in context and 'default_order_id' in context:
+            if type(context['default_order_id']) == int and context['default_model'] == 'sale.order':
+                order = self.env['sale.order'].sudo().browse(context['default_order_id'])
+                if order:
+                    _logger.info("Orden %s encontrada" % order.name)
+                else:
+                    _logger.info("Orden NO encontrada")
+                if order and not order.accept_and_signed:
+                    raise ValidationError(_("No puede confirmar el cliente si la orden no está - Aceptada y Firmada -"))
+                elif order and order.accept_and_signed:
+                    _logger.info("Orden firmada, continuará con el cambio de estado del cliente a CONFIRMADO.")
 
     @api.constrains('active')
     def _check_active(self):
