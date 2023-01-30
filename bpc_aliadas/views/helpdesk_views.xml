@@ -35,31 +35,28 @@
         </field>
     </record>
 
-    <record model="ir.ui.view" id="helpdesk_ticket_view_form_inherit_stock_user_aliadas">
-        <field name="model">helpdesk.ticket</field>
-        <field name="inherit_id" ref="helpdesk_repair.helpdesk_ticket_view_form_inherit_stock_user"/>
-        <field name="arch" type="xml">
-            <xpath expr="//button[@name='%(helpdesk_repair.action_repair_order_form)d']" position="attributes">
-                <attribute name="context">{}</attribute>
-                <attribute name="invisible">1</attribute>
-            </xpath>
-        </field>
-    </record>
+<!--    <record model="ir.ui.view" id="helpdesk_ticket_view_form_inherit_stock_user_aliadas">-->
+<!--        <field name="model">helpdesk.ticket</field>-->
+<!--        <field name="inherit_id" ref="helpdesk_repair.helpdesk_ticket_view_form_inherit_stock_user"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//button[@name='%(helpdesk_repair.action_repair_order_form)d']" position="attributes">-->
+<!--                <attribute name="context">{}</attribute>-->
+<!--                <attribute name="invisible">1</attribute>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
 
-    <record model="ir.ui.view" id="helpdesk_team_view_form_aliadas">
+    <record id="helpdesk_team_view_form_aliadas" model="ir.ui.view" >
         <field name="model">helpdesk.team</field>
         <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//h2[1]" position="before">
+<!--            <xpath expr="//h2[1]" position="before">-->
+            <xpath expr="//sheet/group[1]" position="after">
                 <group>
                     <field name="is_maintenance"/>
                 </group>
-
             </xpath>
         </field>
     </record>
-
-
-
 
 </odoo>

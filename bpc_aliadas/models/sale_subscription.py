@@ -724,15 +724,24 @@ class SaleSubscription(models.Model):
                         ''' % self.id)
 
         query_res = self._cr.fetchall()
-        ril = self.recurring_invoice_line_ids
+        ril_all = self.recurring_invoice_line_ids
+        ril_local = self.recurring_invoice_line_ids._filtered_local_by_line()
+        ril_not_local = ril_all - ril_local
+        lines_list = []
+        if ril_local:
+            lines_list.append(ril_local)
+        if ril_not_local:
+            lines_list.append(ril_not_local)
+        #lines_list = [ril_local, ril_not_local]
         if query_res:
             for res in query_res:
                 document_type_sale_id = res[0]
                 currency_id = res[1]
-                lines = ril.filtered(lambda l: l.document_type_sale_id.id == document_type_sale_id and
-                                               (l.currency_external_id.id == currency_id if l.currency_external_id else l.currency_id.id == currency_id))
-                if lines:
-                    lines_invoice.append({'lines': lines, 'document_type_sale_id': document_type_sale_id, 'currency_id': currency_id})
+                for ril in lines_list:
+                    lines = ril.filtered(lambda l: l.document_type_sale_id.id == document_type_sale_id and
+                                                   (l.currency_external_id.id == currency_id if l.currency_external_id else l.currency_id.id == currency_id))
+                    if lines:
+                        lines_invoice.append({'lines': lines, 'document_type_sale_id': document_type_sale_id, 'currency_id': currency_id})
         return lines_invoice
 
     def manual_invoice(self):
@@ -740,6 +749,7 @@ class SaleSubscription(models.Model):
             if subscription.check_pending_amount:
                 lines_invoice = subscription._lines_to_process()
                 if not lines_invoice:
+                    _logger.info("Subscription (manual_invoice) - no se encontraron líneas a facturar")
                     continue
                 for lines in lines_invoice:
                     subs_order_lines = self.env['sale.order.line'].search([('subscription_id', 'in', subscription.ids)])

@@ -249,3 +249,10 @@ class SaleSubscriptionLine(models.Model):
 
     def _search_product_in_line_order(self, line):
         line.approved_state = 'new'
+
+    def _filtered_local_by_line(self):
+        lines_local = self.env['sale.subscription.line'].sudo()
+        for record in self:
+            if record.product_id and record.product_id.rent_ok:
+                lines_local += record
+        return lines_local
