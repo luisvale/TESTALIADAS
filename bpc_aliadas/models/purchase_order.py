@@ -29,8 +29,8 @@ class PurchaseOrder(models.Model):
 
     commercial_ids = fields.One2many(related='partner_id.commercial_ids')
     commercial_id = fields.Many2one('res.partner.commercial', string='Nombre comercial')
-
-    currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='Tipo cambio')  # TIPO DE CAMBIO
+    currency_rate = fields.Float("Currency Rate", compute='_compute_currency_rate', compute_sudo=True, store=True,  digits='Purchase change rate',
+                                 readonly=True, help='Ratio between the purchase order currency and the company currency')
 
     @api.depends('currency_id')
     def _compute_currency_rate(self):
@@ -435,6 +435,7 @@ class PurchaseOrder(models.Model):
     def _prepare_invoice(self):
         res = super(PurchaseOrder, self)._prepare_invoice()
         res['document_type_purchase_id'] = self.env.ref('hn_einvoice.document_factura_electronica').id
+        res['purchase_id'] = self.ids[0] if len(self.ids) > 0 else False
         return res
 
     def action_create_invoice_delivered(self, final):

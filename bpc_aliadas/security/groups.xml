@@ -14,11 +14,11 @@
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_purchase_order_confirm" model="res.groups">
-            <field name="name">COMPRAS / Aprobación de órdenes de compra - motivo.</field>
+            <field name="name">COMPRAS - Aprobación de órdenes de compra - motivo.</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_purchase_order_high_budget" model="res.groups">
-            <field name="name">COMPRAS / Aprobación de orden de compra con alto presupuesto.</field>
+            <field name="name">COMPRAS - Aprobación de orden de compra con alto presupuesto.</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
 
@@ -43,27 +43,27 @@
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_request_custom_new" model="res.groups">
-            <field name="name">SOLICITUDES / Nueva solicitud</field>
+            <field name="name">SOLICITUDES - Nueva solicitud</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_request_custom_list" model="res.groups">
-            <field name="name">SOLICITUDES / Listado</field>
+            <field name="name">SOLICITUDES - Listado</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_request_purchase_order_list" model="res.groups">
-            <field name="name">SOLICITUDES / Detalle de ordenes compra</field>
+            <field name="name">SOLICITUDES - Detalle de ordenes compra</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_request_delete" model="res.groups">
-            <field name="name">APROBACIÓN / Eliminar Autorizadores</field>
+            <field name="name">APROBACIÓN - Eliminar Autorizadores</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_res_partner_cai_check" model="res.groups">
-            <field name="name">CLIENTES / Activación check de CAI</field>
+            <field name="name">CLIENTES - Activación check de CAI</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <record id="group_aliadas_purchase_order_change_state" model="res.groups">
-            <field name="name">COMPRAS / Mostrar campo para activar el forzado de orden de compra</field>
+            <field name="name">COMPRAS - Mostrar campo para activar el forzado de orden de compra</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
          <record id="group_aliadas_sale_subs_product_rent_default" model="res.groups">
@@ -72,6 +72,10 @@
         </record>
           <record id="group_aliadas_hr_department_authorizations" model="res.groups">
             <field name="name">DEPARTAMENTOS - Autorizaciones</field>
+            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
+        </record>
+          <record id="group_aliadas_approval_request_cancel_force" model="res.groups">
+            <field name="name">APROBACIÓN - Cancelar aprobaciones de forma forzada </field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
         <!--          <record id="group_aliadas_purchase_mail_supplier" model="res.groups">-->

@@ -94,5 +94,26 @@
             </field>
         </record>
 
+
+        <record id="window_cai_inactive" model="ir.actions.server">
+            <field name="name">Inactivar CAI</field>
+            <field name="model_id" ref="model_res_cai"/>
+            <field name="binding_model_id" ref="model_res_cai"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">action = records.act_view_cai_inactive()</field>
+        </record>
+
+         <record id="window_cai_active" model="ir.actions.server">
+            <field name="name">Activar CAI</field>
+            <field name="model_id" ref="model_res_cai"/>
+            <field name="binding_model_id" ref="model_res_cai"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">action = records.act_view_cai_active()</field>
+        </record>
+
+
+
     </data>
 </odoo>

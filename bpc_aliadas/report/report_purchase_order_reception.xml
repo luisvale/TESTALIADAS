@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="report_purchase_order_document_aliadas">
+    <template id="report_purchase_order_document_reception_aliadas">
         <t t-if="not company">
             <!-- Multicompany -->
             <t t-if="company_id">
@@ -313,11 +313,18 @@
                 <div class="row">
                     <div class="col-6 text-center">
                         <span>Realizado por:
-<!--                            <t t-esc="o.user_id.name"/>-->
+                            <!--                            <t t-esc="o.user_id.name"/>-->
                         </span>
                     </div>
                     <div class="col-6 text-center">
                         <span>Autorizado por:</span>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 text-center">
+                        <span>Recibido por:
+                            <!--                            <t t-esc="o.user_id.name"/>-->
+                        </span>
                     </div>
                 </div>
             </div>
@@ -409,50 +416,24 @@
     </template>
 
 
-    <template id="purchase.report_purchaseorder">
+    <template id="report_purchaseorder_reception">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bpc_aliadas.report_purchase_order_document_aliadas" t-lang="o.partner_id.lang"/>
+                <t t-call="bpc_aliadas.report_purchase_order_document_reception_aliadas" t-lang="o.partner_id.lang"/>
             </t>
         </t>
     </template>
 
-
-    <record id="paperformat_purchase_custom" model="report.paperformat">
-        <field name="name">Orden de compra aliadas</field>
-        <field name="default" eval="True"/>
-        <field name="format">custom</field>
-        <field name="page_height">297</field>
-        <field name="page_width">210</field>
-        <field name="orientation">Portrait</field>
-        <field name="margin_top">40</field> <!-- la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja-->
-        <field name="header_spacing">35</field>
-        <field name="margin_bottom">36</field>
-        <field name="margin_left">7</field>
-        <field name="margin_right">7</field>
-        <field name="header_line" eval="False"/><!-- mostrar una linea en cabecera-->
-        <field name="dpi">90</field>
+    <record id="action_report_purchase_order_reception" model="ir.actions.report">
+        <field name="name">Recepción orden de compra</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bpc_aliadas.report_purchaseorder_reception</field>
+        <field name="report_file">bpc_aliadas.report_purchaseorder_reception</field>
+        <field name="print_report_name">('Purchase Order Reception - %s' % (object.name))</field>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="bpc_aliadas.paperformat_purchase_custom"/>
     </record>
-
-    <!--     <record id="paperformat_purchase_custom" model="report.paperformat">-->
-    <!--        <field name="name">Orden de compra aliadas</field>-->
-    <!--        <field name="default" eval="True"/>-->
-    <!--        <field name="format">custom</field>-->
-    <!--        <field name="page_height">297</field>-->
-    <!--        <field name="page_width">210</field>-->
-    <!--        <field name="orientation">Landscape</field>-->
-    <!--        <field name="margin_top">40</field> &lt;!&ndash; la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja&ndash;&gt;-->
-    <!--        <field name="header_spacing">35</field>-->
-    <!--        <field name="margin_bottom">36</field>-->
-    <!--        <field name="margin_left">7</field>-->
-    <!--        <field name="margin_right">7</field>-->
-    <!--        <field name="header_line" eval="False"/>&lt;!&ndash; mostrar una linea en cabecera&ndash;&gt;-->
-    <!--        <field name="dpi">90</field>-->
-    <!--    </record>-->
-
-    <record id="purchase.action_report_purchase_order" model="ir.actions.report">
-        <field name="paperformat_id" ref="paperformat_purchase_custom"/>
-    </record>
-
 
 </odoo>

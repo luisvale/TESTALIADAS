@@ -23,6 +23,7 @@ SELECTION_ADD = [('purchase_advance', 'Permitir anticipo (Ventas)'),
                  ('pricelist', 'Lista de precios (Ventas)'),
                  ('check_list', 'Check-list procesos (Ventas)'),
                  ('payment_term', 'Plazos de pago (Ventas)'),
+                 ('change_currency', 'Cambio de moneda (Ventas)'),
                  ('subs_new_product', 'Nuevo producto (Subscripción)'),
                  ]
 
@@ -351,6 +352,10 @@ class ApprovalRequest(models.Model):
         for record in self:
             if record.request_status == 'pending':
                 record.action_refuse()
+
+    def act_view_cancel_request(self):
+        for record in self:
+            record.sudo().action_cancel()
 
     def action_confirm(self):
         # self._eval_departmens()

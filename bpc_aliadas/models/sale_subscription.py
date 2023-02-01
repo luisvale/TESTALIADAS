@@ -310,85 +310,86 @@ class SaleSubscription(models.Model):
     def _prepare_invoice_line_aliadas(self, values, line, manual=False):
         sale = self._find_sale()
         recurring_next_date = self.recurring_next_date
-        if sale:
-            if line.rental_type == 'm2':
-                locals_ids = self.recurring_invoice_line_ids.filtered(lambda l:l.product_id.rent_ok)
-                amount_invoice = 0.0
-                tags = []
-                if locals_ids:
-                    for local in locals_ids:
-                        pickup_date = local.pickup_start + timedelta(hours=6)
-                        if type(pickup_date) == datetime:
-                            pickup_date = pickup_date.date()
-                        days = (recurring_next_date - pickup_date).days
-                        total_subscription = local.total_subscription if line.currency_id == line.currency_external_id else local.amount_convert
-                        # Precio a facturar
-                        # Cuándo se debe dividir entre 30?
-                        amount_invoice += (total_subscription / 30 * days)
-                        name = 'SUBS_%s / Mant. %s - Días facturación: %s' % (self.ids[0], local.product_id.name, days)
-                        tag = self.env['note.tag.bpc'].sudo().search([('name', '=', name)])
-                        if tag:
-                            tags.append((6, 0, tag.ids))
-                        else:
-                            tags.append((0, 0, {'name': name, 'color': 0}))
+        #if sale:
+        if line.rental_type == 'm2':
+            locals_ids = self.recurring_invoice_line_ids.filtered(lambda l: l.product_id.rent_ok)
+            amount_invoice = 0.0
+            tags = []
+            if locals_ids:
+                for local in locals_ids:
+                    pickup_date = local.pickup_start + timedelta(hours=6)
+                    if type(pickup_date) == datetime:
+                        pickup_date = pickup_date.date()
+                    days = (recurring_next_date - pickup_date).days
+                    total_subscription = local.total_subscription if line.currency_id == line.currency_external_id else local.amount_convert
+                    # Precio a facturar
+                    # Cuándo se debe dividir entre 30?
+                    amount_invoice += (total_subscription / 30 * days)
+                    name = 'SUBS_%s / Mant. %s - Días facturación: %s' % (self.ids[0], local.product_id.name, days)
+                    tag = self.env['note.tag.bpc'].sudo().search([('name', '=', name)])
+                    if tag:
+                        tags.append((6, 0, tag.ids))
+                    else:
+                        tags.append((0, 0, {'name': name, 'color': 0}))
 
-                    values['quantity'] = 1
-                    values['price_unit'] = amount_invoice
-                    values['note_tag'] = tags
+                values['quantity'] = 1
+                values['price_unit'] = amount_invoice
+                values['note_tag'] = tags
 
-            elif line.rental_type in ('consumption', 'consumption_min', 'consumption_fixed','rental_min', 'rental_percentage', 'rental_percentage_top'):
-                #values['price_unit'] = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
-                #price_subtotal = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
-                total_subscription = line.total_subscription if line.currency_id == line.currency_external_id else line.amount_convert
-                if line.pickup_start:
-                    pickup_date = line.pickup_start + timedelta(hours=6)
-                    days = (recurring_next_date - pickup_date.date()).days
-                    total_subscription = (total_subscription / 30 * days)
-                values['price_unit'] = total_subscription
+        elif line.rental_type in ('consumption', 'consumption_min', 'consumption_fixed','rental_min', 'rental_percentage', 'rental_percentage_top'):
+            #values['price_unit'] = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
+            #price_subtotal = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
+            total_subscription = line.total_subscription if line.currency_id == line.currency_external_id else line.amount_convert
+            if line.pickup_start:
+                pickup_date = line.pickup_start + timedelta(hours=6)
+                days = (recurring_next_date - (pickup_date.date() if type(pickup_date) == datetime else pickup_date)).days
+                total_subscription = (total_subscription / 30 * days)
+            values['price_unit'] = total_subscription
 
-            subscription = line.analytic_account_id
-            values['subscription_line_ids'] = [(6, 0, line.ids)]
-            values['subscription_id'] = subscription.id
-            # values['date_init'] = False
-            # values['date_end'] = False
-            if manual:
-                lines, pending_invoiced = line._find_move_line(subscription, line.date_end)
+        subscription = line.analytic_account_id
+        values['subscription_line_ids'] = [(6, 0, line.ids)]
+        values['subscription_id'] = subscription.id
+        # values['date_init'] = False
+        # values['date_end'] = False
+        if manual:
+            lines, pending_invoiced = line._find_move_line(subscription, line.date_end)
+        else:
+            lines, pending_invoiced = line._find_move_line(subscription, subscription.recurring_next_date)
+
+        subscription_period_start = False
+        subscription_period_end = False
+        subscription_next_invoiced = False
+        if lines and manual:
+            if not pending_invoiced:
+                values['price_unit'] = line.pending_amount
+                values['subscription_is_pending'] = True
+                subscription_period_start = lines[0].subscription_period_start
+                subscription_period_end = lines[0].subscription_period_end
+                subscription_next_invoiced = lines[0].subscription_next_invoiced
             else:
-                lines, pending_invoiced = line._find_move_line(subscription, subscription.recurring_next_date)
+                return False
 
-            subscription_period_start = False
-            subscription_period_end = False
-            subscription_next_invoiced = False
-            if lines and manual:
-                if not pending_invoiced:
-                    values['price_unit'] = line.pending_amount
-                    values['subscription_is_pending'] = True
-                    subscription_period_start = lines[0].subscription_period_start
-                    subscription_period_end = lines[0].subscription_period_end
-                    subscription_next_invoiced = lines[0].subscription_next_invoiced
-                else:
-                    return False
+        elif lines and not manual:
+            subscription_period_start = lines[0].subscription_period_end + timedelta(days=1)
+            subscription_period_end = subscription.recurring_next_date
+            subscription_next_invoiced = line.analytic_account_id._next_date()
+            line.sudo().write({'date_init': line.pickup_start, 'date_end': subscription_period_end})
 
-            elif lines and not manual:
-                subscription_period_start = lines[0].subscription_period_end + timedelta(days=1)
-                subscription_period_end = subscription.recurring_next_date
-                subscription_next_invoiced = line.analytic_account_id._next_date()
-                line.sudo().write({'date_init': line.pickup_start, 'date_end': subscription_period_end})
+        else:
+            subscription_period_start = subscription.date_start
+            subscription_period_end = subscription.recurring_next_date
+            subscription_next_invoiced = line.analytic_account_id._next_date()
+            line.sudo().write({'date_init':  line.pickup_start, 'date_end': subscription_period_end})
 
-            else:
-                subscription_period_start = subscription.date_start
-                subscription_period_end = subscription.recurring_next_date
-                subscription_next_invoiced = line.analytic_account_id._next_date()
-                line.sudo().write({'date_init':  line.pickup_start, 'date_end': subscription_period_end})
-
-            values['subscription_period_start'] = subscription_period_start
-            values['subscription_period_end'] = subscription_period_end
-            values['subscription_next_invoiced'] = subscription_next_invoiced
-            values['subscription_line_consumption'] = line.amount_consumption
-            values['subscription_line_sale'] = line.amount_sale
-            values['subscription_line_percentage_sale'] = line.percentage_sale
-            values['subscription_line_amount_min'] = line.amount_min
-            values['subscription_line_amount_max'] = line.amount_max
+        values['subscription_period_start'] = subscription_period_start
+        values['subscription_period_end'] = subscription_period_end
+        values['subscription_next_invoiced'] = subscription_next_invoiced
+        values['subscription_line_consumption'] = line.amount_consumption
+        values['subscription_line_sale'] = line.amount_sale
+        values['subscription_line_percentage_sale'] = line.percentage_sale
+        values['subscription_line_amount_min'] = line.amount_min
+        values['subscription_line_amount_max'] = line.amount_max
+        values['subscription_currency_rate'] = line.currency_rate
 
         return values
 
@@ -724,15 +725,24 @@ class SaleSubscription(models.Model):
                         ''' % self.id)
 
         query_res = self._cr.fetchall()
-        ril = self.recurring_invoice_line_ids
+        ril_all = self.recurring_invoice_line_ids
+        ril_local = self.recurring_invoice_line_ids._filtered_local_by_line()
+        ril_not_local = ril_all - ril_local
+        lines_list = []
+        if ril_local:
+            lines_list.append(ril_local)
+        if ril_not_local:
+            lines_list.append(ril_not_local)
+        #lines_list = [ril_local, ril_not_local]
         if query_res:
             for res in query_res:
                 document_type_sale_id = res[0]
                 currency_id = res[1]
-                lines = ril.filtered(lambda l: l.document_type_sale_id.id == document_type_sale_id and
-                                               (l.currency_external_id.id == currency_id if l.currency_external_id else l.currency_id.id == currency_id))
-                if lines:
-                    lines_invoice.append({'lines': lines, 'document_type_sale_id': document_type_sale_id, 'currency_id': currency_id})
+                for ril in lines_list:
+                    lines = ril.filtered(lambda l: l.document_type_sale_id.id == document_type_sale_id and
+                                                   (l.currency_external_id.id == currency_id if l.currency_external_id else l.currency_id.id == currency_id))
+                    if lines:
+                        lines_invoice.append({'lines': lines, 'document_type_sale_id': document_type_sale_id, 'currency_id': currency_id})
         return lines_invoice
 
     def manual_invoice(self):
@@ -740,6 +750,7 @@ class SaleSubscription(models.Model):
             if subscription.check_pending_amount:
                 lines_invoice = subscription._lines_to_process()
                 if not lines_invoice:
+                    _logger.info("Subscription (manual_invoice) - no se encontraron líneas a facturar")
                     continue
                 for lines in lines_invoice:
                     subs_order_lines = self.env['sale.order.line'].search([('subscription_id', 'in', subscription.ids)])

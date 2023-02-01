@@ -54,6 +54,19 @@ class ProductTemplate(models.Model):
     is_free = fields.Boolean(string='Local no totalizado')
     not_total = fields.Boolean(string='No total')
 
+    currency_id = fields.Many2one('res.currency', 'Currency', compute='_compute_currency_id', readonly=False)
+    currency_invoice_id = fields.Many2one('res.currency', string='Moneda facturación')
+
+
+    @api.depends('company_id', 'currency_invoice_id')
+    def _compute_currency_id(self):
+        main_company = self.env['res.company']._get_main_company()
+        for template in self:
+            if template.currency_invoice_id:
+                template.currency_id = template.currency_invoice_id
+            else:
+                template.currency_id = template.company_id.sudo().currency_id.id or main_company.currency_id.id
+
     def _compute_location_ids(self):
         for record in self:
             quants = self.env['stock.quant'].sudo().search([('product_tmpl_id', 'in', record.ids)])
@@ -71,79 +84,3 @@ class ProductTemplate(models.Model):
                                 raise ValidationError(_("Se han encontrado 1 producto con este mismo nombre"))
         return super(ProductTemplate, self).create(vals_list)
         #return res
-
-    # @api.model
-    # def _cron_purchase_requisition_by_product(self):
-    #     products = self.sudo().search([('active', '=', True), ('auto_requisition', '=', True), ('purchase_ok', '=', True)])
-    #     if products:
-    #         for p in products:
-    #             seller_ids = p.seller_ids
-    #             if seller_ids and p.qty_available <= 0.0:
-    #                 _logger.info("ALIADAS: Producto %s con stock en %s - SI procede a creación de licitción" % (p.name, p.qty_available))
-    #                 p._create_requisition_by_product()
-    #             else:
-    #                 _logger.info("ALIADAS: Producto %s con stock en %s - NO procede a creación de licitción" % (p.name, p.qty_available))
-    #                 # _logger.info("")
-    #
-    # def _create_requisition_by_product(self):
-    #
-    #     requisition_ids = self.env['purchase.requisition'].sudo().search([('automatic', '=', True),
-    #                                                                       ('template_id', 'in', self.ids),
-    #                                                                       ('state', '!=', 'done')])
-    #     if requisition_ids:
-    #         for req in requisition_ids:
-    #             _logger.info("ALIADAS : Requerimiento automático con ID %s y ESTADO %s" % (req.id, req.state))
-    #     else:
-    #         points = self.env['stock.warehouse.orderpoint'].sudo().search([('product_tmpl_id', '=', self.id)])
-    #         if points:
-    #             product_min_qty = points.mapped('product_min_qty')
-    #             minimal = min(product_min_qty)
-    #             if minimal > 0.0:
-    #                 price = sum(seller.price for seller in self.seller_ids) / len(self.seller_ids.ids)
-    #
-    #                 def _get_lines(self):
-    #                     list_lines = [(0, 0, {
-    #                         'product_id': self.product_variant_id.id,
-    #                         'product_qty': minimal,
-    #                         'price_unit': price,
-    #                         'product_uom_id': self.uom_po_id.id if self.uom_po_id.id else False
-    #                     })]
-    #                     return list_lines
-    #
-    #                 requisition_new = self.env['purchase.requisition'].sudo().create({
-    #                     'line_ids': _get_lines(self),
-    #                     'user_id': self.env.user.id,
-    #                     # 'vendor_id': self.partner_id.id,
-    #                     'currency_id': self.env.user.company_id.currency_id.id,
-    #                     'ordering_date': datetime.now().date(),
-    #                     'automatic': True,
-    #                     'template_id': self.id,
-    #                 })
-    #
-    #                 error = False
-    #                 for seller in self.seller_ids:
-    #                     try:
-    #                         purchase_order = self.env['purchase.order'].create({
-    #                             'partner_id': seller.name.id,
-    #                             'requisition_id': requisition_new.id,
-    #                             'order_line': [
-    #                                 (0, 0, {
-    #                                     'name': self.name,
-    #                                     'product_id': self.product_variant_id.id,
-    #                                     'product_qty': minimal,
-    #                                     'product_uom': self.uom_po_id.id,
-    #                                     'price_unit': seller.price,
-    #                                     'date_planned': fields.Datetime.now(),
-    #                                 })]
-    #                         })
-    #                         _logger.info("ALIADAS: Orden de comrpa creada ID %s" % purchase_order)
-    #                     except Exception as e:
-    #                         _logger.info("ALIADAS: Error al crear orden de compra %s " % e)
-    #                         error = True
-    #
-    #                 if error:
-    #
-    #                     requisition_new.sudo().unlink()
-    #                 else:
-    #                     requisition_new.sudo().write({'seller_ids': [(6, 0, self.seller_ids.ids)]})
-    #                     requisition_new.sudo().action_in_progress()

@@ -27,6 +27,9 @@
             <xpath expr="//group[@name='group_general']" position="inside">
                 <field name="warehouse_ids" widget="many2many_tags"/>
             </xpath>
+            <xpath expr="//label[@for='list_price']" position="before">
+                <field name="currency_invoice_id"/>
+            </xpath>
         </field>
     </record>
 

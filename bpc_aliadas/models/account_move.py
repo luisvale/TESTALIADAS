@@ -28,6 +28,9 @@ class AccountMove(models.Model):
     category_id = fields.Many2one('product.category', string='Plaza', compute='_compute_category_id')
     active = fields.Boolean(default=True, tracking=True, string='Activo')
 
+    sale_id = fields.Many2one('sale.order', string='O. Centa')
+    purchase_id = fields.Many2one('sale.order', string='O. Compra')
+
     def _get_payment_ref(self):
         invoice_payments_widget = self.invoice_payments_widget
         data = False
@@ -145,22 +148,3 @@ class AccountMove(models.Model):
         return tax_lines_data
 
 
-
-class AccountMoveLine(models.Model):
-    _inherit = 'account.move.line'
-
-    note_tag = fields.Many2many('note.tag.bpc', string='Notas')
-    rental_type = fields.Selection(string='Variable', related='product_id.rental_type')
-    #Historial
-    subscription_line_ids = fields.Many2many('sale.subscription.line', help='Líneas subscripción relacionadas')
-    subscription_id = fields.Many2one('sale.subscription')
-    subscription_contract_name = fields.Char(related='subscription_id.contract_name')
-    subscription_period_start = fields.Date(string='Inicio')
-    subscription_period_end = fields.Date(string='Fin')
-    subscription_next_invoiced = fields.Date(string='Próxima facturación')
-    subscription_is_pending = fields.Boolean(help='Cobrado adicional')
-    subscription_line_consumption = fields.Float(string='Consumo')
-    subscription_line_sale = fields.Float(string='Ventas')
-    subscription_line_percentage_sale = fields.Float(string='% sobre venta', help='Porcentaje sobre venta')
-    subscription_line_amount_min = fields.Float(string='Mínimo')
-    subscription_line_amount_max = fields.Float(string='Máximo')

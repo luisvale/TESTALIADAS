@@ -48,7 +48,8 @@ class SaleSubscriptionLine(models.Model):
     document_type_sale_id = fields.Many2one('document.type', domain=[('in_sale', '=', True)], string='Tipo doc.')
     currency_pricelist = fields.Many2one('res.currency', string='Moneda tarifa')
     currency_external_id = fields.Many2one('res.currency', string='Facturar en')
-    currency_rate = fields.Float(store=True, string='T.Cambio', compute='_compute_currency_rate')  # TIPO DE CAMBIO
+    currency_rate = fields.Float(store=True, string='T.Cambio', default=1)  # TIPO DE CAMBIO
+    #currency_rate = fields.Float(store=True, string='T.Cambio', compute='_compute_currency_rate')  # TIPO DE CAMBIO
     amount_convert = fields.Monetary(string='A Facturar', store=True, compute='_compute_amount_convert')
     # pending_amount = fields.Monetary(string='Monto pendiente', compute='_compute_pending_amount')
     pending_amount = fields.Monetary(string='Monto pendiente', compute='_compute_amount')
@@ -152,7 +153,7 @@ class SaleSubscriptionLine(models.Model):
     def _compute_currency_rate(self):
         for record in self:
             currency_rate = 1
-            if record.company_id.currency_id != record.currency_external_id:
+            if record.currency_id != record.currency_external_id:
                 currency_rate = record.currency_external_id._convert(1, record.company_id.currency_id, record.company_id, datetime.now().date())
             # if record.currency_id != record.currency_external_id:
             #     currency_rate = record.currency_external_id._convert(currency_rate, record.currency_id, record.company_id, datetime.now().date())
@@ -163,7 +164,8 @@ class SaleSubscriptionLine(models.Model):
         for record in self:
             amount_convert = record.price_subtotal
             if record.currency_id != record.currency_external_id:
-                amount_convert = record.currency_id._convert(amount_convert, record.currency_external_id, record.company_id, datetime.now().date())
+                amount_convert = amount_convert * record.currency_rate
+                #amount_convert = record.currency_id._convert(amount_convert, record.currency_external_id, record.company_id, datetime.now().date())
             record.amount_convert = amount_convert
 
     # @api.depends('price_subtotal')
@@ -249,3 +251,10 @@ class SaleSubscriptionLine(models.Model):
 
     def _search_product_in_line_order(self, line):
         line.approved_state = 'new'
+
+    def _filtered_local_by_line(self):
+        lines_local = self.env['sale.subscription.line'].sudo()
+        for record in self:
+            if record.product_id and record.product_id.rent_ok:
+                lines_local += record
+        return lines_local

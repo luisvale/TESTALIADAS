@@ -25,6 +25,7 @@ from . import crm_team
 from . import approval_level
 from . import approval
 from . import account_move
+from . import account_move_line
 from . import product
 from . import maintenance_level
 from . import maintenance_periodic
