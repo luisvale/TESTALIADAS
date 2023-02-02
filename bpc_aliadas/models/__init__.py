@@ -35,6 +35,7 @@ from . import maintenance_equipment
 from . import maintenance_team
 from . import account_analytic_line
 from . import account_payment
+from . import hr_salary_attachment
 from . import hr_department
 from . import crm_lead
 from . import helpdesk_ticket #add 04-01-23
