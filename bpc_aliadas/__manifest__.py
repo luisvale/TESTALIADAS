@@ -32,8 +32,6 @@
         'data/sale_mail_template.xml',
         'data/precision_decimal.xml',
         'data/salary_deduction_data.xml',
-
-
         #views
         'views/res_bank_views.xml',
         'views/purchase_requisition_views.xml',
