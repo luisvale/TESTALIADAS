@@ -21,6 +21,14 @@
             <field name="name">COMPRAS - Aprobación de orden de compra con alto presupuesto.</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
+           <record id="group_aliadas_purchase_order_change_state" model="res.groups">
+            <field name="name">COMPRAS - Mostrar campo para activar el forzado de orden de compra</field>
+            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
+        </record>
+        <record id="group_purchase_purchase_order_force_cancel" model="res.groups">
+            <field name="name">COMPRAS - Cancelar de manera forzada.</field>
+            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
+        </record>
 
         <record id="group_aliadas_crm_show_customer" model="res.groups">
             <field name="name">VENTAS/CRM - Mostrar vista clientes</field>
@@ -62,10 +70,7 @@
             <field name="name">CLIENTES - Activación check de CAI</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
-        <record id="group_aliadas_purchase_order_change_state" model="res.groups">
-            <field name="name">COMPRAS - Mostrar campo para activar el forzado de orden de compra</field>
-            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
-        </record>
+
          <record id="group_aliadas_sale_subs_product_rent_default" model="res.groups">
             <field name="name">VENTAS/SUBS - Seleccionar producto renta</field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>

@@ -88,6 +88,7 @@ class PurchaseOrder(models.Model):
     department_id = fields.Many2one('hr.department', string='Departamento')
 
     force_picking = fields.Boolean(string='Incluir picking')
+    force_cancel = fields.Boolean(string='Cancelación forzada')
 
     @api.constrains('advance_check', 'advance_amount')
     def _constraint_advance_check(self):
@@ -110,6 +111,24 @@ class PurchaseOrder(models.Model):
     def button_cancel(self):
         super(PurchaseOrder, self).button_cancel()
         self._unlink_from_budget()
+
+    def button_cancel_force(self):
+        for order in self:
+            for inv in order.invoice_ids:
+                if inv and inv.state not in ('cancel', 'draft'):
+                    raise UserError(_("No se puede cancelar esta orden de compra. Primero debe cancelar las facturas de proveedores relacionadas."))
+
+        self.write({'state': 'cancel', 'mail_reminder_confirmed': False})
+        self._unlink_from_budget()
+
+    def button_reprocess(self):
+        self.ensure_one()
+        _logger.info("Cancelando de forma forzada")
+        self.button_cancel_force()
+        if self.approval_request_ids:
+            _logger.info("Desvinculando aprobaciones: Cantidad de: %s" % len(self.approval_request_ids.ids))
+            self.write({'approval_request_ids': [(3, app.id, 0) for app in self.approval_request_ids]})
+        self.write({'state': 'bidding'})
 
     @api.ondelete(at_uninstall=False)
     def _unlink_if_cancelled(self):
@@ -624,6 +643,9 @@ class PurchaseOrder(models.Model):
             self.force_purchase = True
         except Exception as e:
             raise ValidationError(_("Error generación picking : %s" % e))
+
+
+
 
     # def action_rfq_send(self):
     #     '''

@@ -29,6 +29,7 @@
                         <field name="approval_request_advance_status"/>
                         <field name="force_purchase" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"/>
                         <field name="exist_budget" />
+                        <field name="force_cancel" groups="bpc_aliadas.group_purchase_purchase_order_force_cancel"/>
                     </group>
                     <group id="info_right"/>
                 </group>
@@ -49,6 +50,12 @@
                 <button name="button_bidding_to_purchase" states="bidding,on_hold,pending" string="PEDIDO FORZADO" type="object" data-hotkey="l"
                         confirm="Está seguro de pasar a pedido de compra?" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"
                         style="background: #e09507;color: white;"/>
+                 <button name="button_cancel_force" states="purchase" string="CANCELACIÓN FORZADA" type="object" data-hotkey="l"
+                        confirm="Está seguro de cancelar la orden de compra?" groups="bpc_aliadas.group_purchase_purchase_order_force_cancel"
+                        style="background: #e09507;color: white;"/>
+                 <button name="button_reprocess" states="evaluation,draft,on_hold,pending,approved,sent,purchase" string="REPROCESAR" type="object"
+                        confirm="Está seguro de reprocesar la orden de compra?. Esto implica que volverá a pasar por todo el proceso desde licitación."
+                         class="btn-primary"/>
             </xpath>
             <xpath expr="//field[@name='order_line']//tree/field[@name='account_analytic_id']" position="attributes">
                 <attribute name="optional">show</attribute>

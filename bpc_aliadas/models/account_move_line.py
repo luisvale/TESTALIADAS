@@ -67,7 +67,8 @@ class AccountMoveLine(models.Model):
     def _apply_new_balance(self, currency, company, amount_currency, sign):
         _next = False
         balance = 0
-        if currency != company.currency_id and self.subscription_currency_rate > 0 and self.subscription_id and sign == 1:
+        _logger.info("Evaluación de tipo de cambio de : %s " % self.name)
+        if currency != company.currency_id and self.subscription_currency_rate > 0 and self.subscription_id and sign == -1:
             _next = True
             balance = amount_currency * self.subscription_currency_rate
             _logger.info("Balance nuevo : %s " % balance)
