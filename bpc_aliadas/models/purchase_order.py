@@ -90,6 +90,9 @@ class PurchaseOrder(models.Model):
     force_picking = fields.Boolean(string='Incluir picking')
     force_cancel = fields.Boolean(string='Cancelación forzada')
 
+    send_mail_request = fields.Boolean(string='Envío mail aprobación', tracking=True)
+
+
     @api.constrains('advance_check', 'advance_amount')
     def _constraint_advance_check(self):
         for order in self:
@@ -128,7 +131,8 @@ class PurchaseOrder(models.Model):
         if self.approval_request_ids:
             _logger.info("Desvinculando aprobaciones: Cantidad de: %s" % len(self.approval_request_ids.ids))
             self.write({'approval_request_ids': [(3, app.id, 0) for app in self.approval_request_ids]})
-        self.write({'state': 'bidding'})
+        self.sudo().write({'state': 'bidding'})
+        self.sudo().write({'send_mail_request': False})
 
     @api.ondelete(at_uninstall=False)
     def _unlink_if_cancelled(self):
@@ -644,8 +648,21 @@ class PurchaseOrder(models.Model):
         except Exception as e:
             raise ValidationError(_("Error generación picking : %s" % e))
 
-
-
+    @api.model
+    def _cron_purchase_order_approved_total(self):
+        _logger.info("Ejecutando CRON - _cron_purchase_order_approved_total ")
+        purchases = self.sudo().search([('state', '=', 'pending'),('send_mail_request','=',False)])
+        for purchase in purchases:
+            approved_count_ids = purchase.approval_request_ids.filtered(lambda l: l.request_status == 'approved')
+            approved_count = len(approved_count_ids.ids)
+            if len(purchase.approval_request_ids.ids) == approved_count and purchase.state == 'pending':
+                template = self.env.ref('bpc_aliadas.mail_template_purchase_order_complete_approved', raise_if_not_found=False)
+                try:
+                    res = template.sudo().send_mail(purchase.id, notif_layout='mail.mail_notification_light', force_send=True, )
+                    _logger.info("Resultado del envío a usuario %s es : %s " % (purchase.user_id.name, res))
+                    purchase.sudo().write({'send_mail_request': True})
+                except Exception as e:
+                    _logger.warning("Error de envío a aprobador: %s " % e)
 
     # def action_rfq_send(self):
     #     '''

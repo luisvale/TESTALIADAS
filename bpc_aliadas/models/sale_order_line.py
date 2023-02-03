@@ -201,8 +201,12 @@ class SaleOrderLine(models.Model):
                                  ('product_id', 'in', self.product_id.ids),
                                  ('categ_id', '=', self.product_id.product_tmpl_id.categ_id.id),
                                  ])
-            find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
-                                     i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
+
+            if self.product_id.check_not_analytic:
+                find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max)
+            else:
+                find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
+                                         i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
             if find_items:
                 pricelist_id = find_items[0].pricelist_id
                 _logger.info("Lista de precio encontrada : %s " % pricelist_id.name)

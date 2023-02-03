@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<!--    <data noupdate="1">-->
-<!--        <record id="rate_purchase_requisition" model="ir.cron">-->
-<!--            <field name="name">Licitación de compras</field>-->
-<!--            <field name="model_id" ref="model_product_template"/>-->
-<!--            <field name="state">code</field>-->
-<!--            <field name="code">model._cron_purchase_requisition_by_product()</field>-->
-<!--            <field name="interval_number">1</field>-->
-<!--            <field name="interval_type">days</field>-->
-<!--            <field name="numbercall">-1</field>-->
-<!--            <field name="doall" eval="False"/>-->
-<!--            <field name="active">True</field>-->
-<!--        </record>-->
-<!--    </data>-->
-     <data >
+    <!--    <data noupdate="1">-->
+    <!--        <record id="rate_purchase_requisition" model="ir.cron">-->
+    <!--            <field name="name">Licitación de compras</field>-->
+    <!--            <field name="model_id" ref="model_product_template"/>-->
+    <!--            <field name="state">code</field>-->
+    <!--            <field name="code">model._cron_purchase_requisition_by_product()</field>-->
+    <!--            <field name="interval_number">1</field>-->
+    <!--            <field name="interval_type">days</field>-->
+    <!--            <field name="numbercall">-1</field>-->
+    <!--            <field name="doall" eval="False"/>-->
+    <!--            <field name="active">True</field>-->
+    <!--        </record>-->
+    <!--    </data>-->
+    <data>
         <record id="cron_maintenance_periodic" model="ir.cron">
-            <field name="name">Mantenimiento periodico</field>
+            <field name="name">Aliadas/Manteniento: Generar mantenimiento periodico</field>
             <field name="model_id" ref="model_maintenance_periodic"/>
             <field name="state">code</field>
             <field name="code">model._cron_maintenance_periodic()</field>
@@ -25,17 +25,54 @@
             <field name="doall" eval="False"/>
             <field name="active">True</field>
         </record>
-         <record id="cron_sale_check_list_date_due" model="ir.cron">
-            <field name="name">Aliadas/Ventas: Notificaciones procesos vencidos</field>
-            <field name="model_id" ref="model_sale_order_check_list_lines"/>
+        <!--         <record id="cron_sale_check_list_date_due" model="ir.cron">-->
+        <!--            <field name="name">Aliadas/Ventas: Notificaciones procesos vencidos</field>-->
+        <!--            <field name="model_id" ref="model_sale_order_check_list_lines"/>-->
+        <!--            <field name="state">code</field>-->
+        <!--            <field name="code">model._cron_due_check_list()</field>-->
+        <!--            <field name="interval_number">1</field>-->
+        <!--            <field name="interval_type">days</field>-->
+        <!--            <field name="numbercall">-1</field>-->
+        <!--            <field name="doall" eval="False"/>-->
+        <!--            <field name="active">True</field>-->
+        <!--        </record>-->
+
+        <record id="cron_sale_order_check_list_documents" model="ir.cron">
+            <field name="name">Aliadas/Ventas: Check list de documentos</field>
+            <field name="model_id" ref="model_sale_order"/>
             <field name="state">code</field>
-            <field name="code">model._cron_due_check_list()</field>
+            <field name="code">model._cron_sale_order_check_list_documents()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
             <field name="doall" eval="False"/>
             <field name="active">True</field>
         </record>
+
+         <record id="cron_sale_order_approved_total" model="ir.cron">
+            <field name="name">Aliadas/Ventas: Notificar aprobación total de orden de venta</field>
+            <field name="model_id" ref="model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_sale_order_approved_total()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active">True</field>
+        </record>
+
+          <record id="cron_purchase_order_approved_total" model="ir.cron">
+            <field name="name">Aliadas/Compras: Notificar aprobación total de orden de compra</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_purchase_order_approved_total()</field>
+           <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active">True</field>
+        </record>
+
     </data>
 
 </odoo>

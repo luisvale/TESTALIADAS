@@ -5,6 +5,8 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import TransactionCase, tagged, Form
 from odoo.tools import is_html_empty
+from collections import defaultdict
+
 import json
 from .. import sale
 import logging
@@ -75,6 +77,8 @@ class SaleOrder(models.Model):
     documents_check_list_lines = fields.One2many(related='partner_id.check_list_lines', readonly=False)  #
 
     link_sale = fields.Char(string='Link sale')
+
+    send_mail_request = fields.Boolean(string='Envío mail aprobación', tracking=True)
 
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
@@ -349,21 +353,27 @@ class SaleOrder(models.Model):
         line_approved_required = self.order_line.filtered(lambda l: l.pricelist_id.required_authorization and self.env.user.id not in l.pricelist_id.user_ids.ids)
         if line_approved_required:
             _logger.info("Se econtraron líneas que requiren aprobación de lista de precios: Total - %s" % len(line_approved_required.ids))
-            for line_pricelist in line_approved_required:
+            pricelist_line = defaultdict(list)
+            for line_price in line_approved_required:
+                pricelist_line[line_price.pricelist_id.id].append(line_price)
+
+
+            for price_list_id, line_pricelist in pricelist_line.items():
                _logger.info("ALIADAS: Evaluación de lista de precios.")
-               _request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
+               #_request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
+               _request = self._exist_request_by_category(category='pricelist', pricelist_id=price_list_id)
                if not _request:
                    continue_process = False
-                   self._create_request('pricelist', line_pricelist.pricelist_id)
+                   self._create_request('pricelist', price_list_id)
 
         #Evaluación de lista de procesos
-        lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
-        if lines_check and self.state == 'compliance':
-            _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
-            _request = self._exist_request_by_category(category='check_list')
-            if not _request:
-                continue_process = False
-                self._create_request('check_list')
+        # lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
+        # if lines_check and self.state == 'compliance':
+        #     _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
+        #     _request = self._exist_request_by_category(category='check_list')
+        #     if not _request:
+        #         continue_process = False
+        #         self._create_request('check_list')
 
         #Evaluación de Moneda
         lines_currency_change = self.order_line.filtered(lambda l: l.currency_external_id and l.product_currency_invoice_id and
@@ -407,17 +417,17 @@ class SaleOrder(models.Model):
 
         return category
 
-    def _exist_request_by_category(self, category, pricelist=False):
+    def _exist_request_by_category(self, category, pricelist_id=False):
         category_id = self._search_category(name=category)
         if not category_id:
             return False
-        if not pricelist:
+        if not pricelist_id:
             _request = self.approval_request_ids.filtered(lambda a: a.category_id == category_id)
         else:
-            _request = self.approval_request_ids.filtered(lambda a: a.category_id == category_id and a.pricelist_id == pricelist)
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id == category_id and a.pricelist_id.id == pricelist_id)
         return _request
 
-    def _create_request(self, mode, pricelist=False):
+    def _create_request(self, mode, price_list_id=False):
         sale_margin_diff = 0
         category_id = self._search_category(name=mode)
 
@@ -439,7 +449,7 @@ class SaleOrder(models.Model):
             'reference': self.name,
             'origin': self.name,
             'sale_id': self.id,
-            'pricelist_id': pricelist.id if mode == 'pricelist' and pricelist else False,
+            'pricelist_id': price_list_id if mode == 'pricelist' and price_list_id else False,
             'sale_margin_diff': sale_margin_diff,
             'request_owner_id': self.env.user.id,
             'department_id': employee.department_id.id
@@ -671,21 +681,22 @@ class SaleOrder(models.Model):
                         categ_local_id = lc.product_id.product_tmpl_id.categ_id
                         classification_id = lc.product_id.product_tmpl_id.classification_id
                         pp_items = self.env['product.pricelist.item'].sudo().search([('product_tmpl_id','=',tmpl_id.id),('combination_type','!=',False)])
-                        if pp_items:
-                            for pp_item in pp_items:
-                                if pp_item.combination_type == 'category' and pp_item.category_add_id.id == categ_local_id.id:
-                                    line.price_unit = pp_item.fixed_price
-                                    line.price_min = pp_item.fixed_price
-                                    line.pricelist_id = pp_item.pricelist_id
-                                elif pp_item.combination_type == 'classification' and classification_id and pp_item.classification_id.id == classification_id.id:
-                                    line.price_unit = pp_item.fixed_price
-                                    line.price_min = pp_item.fixed_price
-                                    line.pricelist_id = pp_item.pricelist_id
-                                elif pp_item.combination_type == 'meter' and pp_item.meter_init <= total_qty <= pp_item.meter_end:
-                                    line.price_unit = pp_item.fixed_price
-                                    line.price_min = pp_item.fixed_price
-                                    line.pricelist_id = pp_item.pricelist_id
-
+                        # Se comentó el día 03-02-2022
+                        # Se cruza con este método: _find_pricelist_by_price
+                        # if pp_items:
+                        #     for pp_item in pp_items:
+                        #         if pp_item.combination_type == 'category' and pp_item.category_add_id.id == categ_local_id.id:
+                        #             line.price_unit = pp_item.fixed_price
+                        #             line.price_min = pp_item.fixed_price
+                        #             line.pricelist_id = pp_item.pricelist_id
+                        #         elif pp_item.combination_type == 'classification' and classification_id and pp_item.classification_id.id == classification_id.id:
+                        #             line.price_unit = pp_item.fixed_price
+                        #             line.price_min = pp_item.fixed_price
+                        #             line.pricelist_id = pp_item.pricelist_id
+                        #         elif pp_item.combination_type == 'meter' and pp_item.meter_init <= total_qty <= pp_item.meter_end:
+                        #             line.price_unit = pp_item.fixed_price
+                        #             line.price_min = pp_item.fixed_price
+                        #             line.pricelist_id = pp_item.pricelist_id
 
     #TODO: ---------------- CRM ------------------
     def _change_stage_opportunity(self, vals):
@@ -811,6 +822,40 @@ class SaleOrder(models.Model):
         vals['sale_id'] = self.ids[0] if len(self.ids) > 0 else False
         return vals
 
+    @api.model
+    def _cron_sale_order_check_list_documents(self):
+        _logger.info("Ejecutando CRON - _cron_sale_order_check_list_documents ")
+        sales = self.sudo().search([('state', '=', 'compliance')])
+        for sale in sales:
+            _logger.info("Orden de venta : %s" % sale.name)
+            line_not_completed = sale.documents_check_list_lines.filtered(lambda l: not l.check)
+            if line_not_completed:
+                _logger.info("Hay %s no completadas aún" % len(line_not_completed.ids))
+                continue
+
+            template = self.env.ref('bpc_aliadas.mail_template_sale_order_check_documents', raise_if_not_found=False)
+            try:
+                res = template.sudo().send_mail(sale.id,notif_layout='mail.mail_notification_light',force_send=True,)
+                _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
+            except Exception as e:
+                _logger.warning("Error de envío a aprobador: %s " % e)
+
+    @api.model
+    def _cron_sale_order_approved_total(self):
+        _logger.info("Ejecutando CRON - _cron_sale_order_approved_total ")
+        sales = self.sudo().search([('state', '=', 'pending'),('send_mail_request','=',False)])
+        for sale in sales:
+            approved_count_ids = sale.approval_request_ids.filtered(lambda l: l.request_status == 'approved')
+            approved_count = len(approved_count_ids.ids)
+            if len(sale.approval_request_ids.ids) == approved_count and sale.state == 'pending':
+                template = self.env.ref('bpc_aliadas.mail_template_sale_order_complete_approved', raise_if_not_found=False)
+                try:
+                    res = template.sudo().send_mail(sale.id, notif_layout='mail.mail_notification_light', force_send=True, )
+                    _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
+                    sale.sudo().write({'send_mail_request': True})
+                except Exception as e:
+                    _logger.warning("Error de envío a aprobador: %s " % e)
+
 
 class SaleOrderChecklistLines(models.Model):
     _name = "sale.order.check_list.lines"
@@ -825,27 +870,26 @@ class SaleOrderChecklistLines(models.Model):
     description = fields.Char(string='Observación')
     date_due = fields.Date(string='F.Vencimiento')
     user_ids = fields.Many2many('res.users')
-
     now = fields.Date(compute='_compute_now')
 
     def _compute_now(self):
         for record in self:
             record.now = datetime.now().date()
 
-    @api.model
-    def _cron_due_check_list(self):
-        list_process = self.sudo().search([('sale_id.state', '=', 'compliance'), '|', ('date_due', '<', datetime.today().date()), ('date_due','=',False)])
-        for lp in list_process:
-            _logger.info("ALIADAS: Evaluando chek list de procesos ID %s correspondiente a la orden %s" % (lp.id, lp.sale_id.name))
-            lp.sudo()._create_activity()
-
-    def _create_activity(self):
-        for record in self:
-            if record.user_ids:
-                _logger.info("ALIADAS: Creando notificación...")
-                for user_id in record.user_ids:
-                    record.sudo().activity_schedule('bpc_aliadas.mail_activity_data_check_list_process',
-                                                    user_id=user_id.id,
-                                                    note='Referencia a Orden %s' % record.sale_id.name)
-            else:
-                _logger.info("ALIADAS: No se crea notificación, no tiene usuarios.")
+    # @api.model
+    # def _cron_due_check_list(self):
+    #     list_process = self.sudo().search([('sale_id.state', '=', 'compliance'), '|', ('date_due', '<', datetime.today().date()), ('date_due','=',False)])
+    #     for lp in list_process:
+    #         _logger.info("ALIADAS: Evaluando chek list de procesos ID %s correspondiente a la orden %s" % (lp.id, lp.sale_id.name))
+    #         lp.sudo()._create_activity()
+    #
+    # def _create_activity(self):
+    #     for record in self:
+    #         if record.user_ids:
+    #             _logger.info("ALIADAS: Creando notificación...")
+    #             for user_id in record.user_ids:
+    #                 record.sudo().activity_schedule('bpc_aliadas.mail_activity_data_check_list_process',
+    #                                                 user_id=user_id.id,
+    #                                                 note='Referencia a Orden %s' % record.sale_id.name)
+    #         else:
+    #             _logger.info("ALIADAS: No se crea notificación, no tiene usuarios.")

@@ -14,8 +14,7 @@ class ProductPricelist(models.Model):
     user_ids = fields.Many2many('res.users', string='Usuarios')
     analytic_account_id = fields.Many2one('account.analytic.account', 'Cuenta analítica')
     is_start = fields.Boolean(string='Es inicio')
-
-    required_authorization = fields.Boolean(string='Requiere autorización')
+    required_authorization = fields.Boolean(string='Requiere autorización', tracking=True)
 
 
 COMB_TYPE = [('category', 'Categoría'),

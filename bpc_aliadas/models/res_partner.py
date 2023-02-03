@@ -196,6 +196,26 @@ class DocumentsChecklistLines(models.Model):
     description = fields.Char(string='Observación')
     date_due = fields.Date(string='Fecha vencimiento')
 
+    @api.model
+    def _cron_due_check_documents(self):
+        self.env['sale.order'].sudo().search([('')])
+
+
+        document_process = self.sudo().search([('sale_id.state', '=', 'compliance'), '|', ('date_due', '<', datetime.today().date()), ('date_due', '=', False)])
+        for doc in document_process:
+            _logger.info("ALIADAS: Evaluando chek list de procesos ID %s correspondiente a la orden %s" % (doc.id, doc.sale_id.name))
+            doc.sudo()._create_activity()
+
+    def _create_activity(self):
+        for record in self:
+            if record.user_ids:
+                _logger.info("ALIADAS: Creando notificación...")
+                for user_id in record.user_ids:
+                    record.sudo().activity_schedule('bpc_aliadas.mail_activity_data_check_list_process',
+                                                    user_id=user_id.id,
+                                                    note='Referencia a Orden %s' % record.sale_id.name)
+            else:
+                _logger.info("ALIADAS: No se crea notificación, no tiene usuarios.")
 
 
 class AccountFiscalPosition(models.Model):
