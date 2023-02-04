@@ -25,6 +25,7 @@ from . import crm_team
 from . import approval_level
 from . import approval
 from . import account_move
+from . import account_move_line
 from . import product
 from . import maintenance_level
 from . import maintenance_periodic
@@ -34,6 +35,7 @@ from . import maintenance_equipment
 from . import maintenance_team
 from . import account_analytic_line
 from . import account_payment
+from . import hr_salary_attachment
 from . import hr_department
 from . import crm_lead
 from . import helpdesk_ticket #add 04-01-23

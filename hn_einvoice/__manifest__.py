@@ -11,7 +11,7 @@
     'company': 'BPC LATAM',
     'website': "https://www.bpc-lat.com/",
     'category': 'Sales',
-    'version': '15.0.5.6',
+    'version': '15.0.5.8',
     # any module necessary for this one to work correctly
     'depends': ['base', 'sale', 'account'],
     # always loaded

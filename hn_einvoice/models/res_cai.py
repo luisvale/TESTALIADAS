@@ -99,7 +99,7 @@ class ResCai(models.Model):
     def _onchange_limit(self):
         for record in self:
             if record.range_start and record.range_end:
-                sp = self._split_cai()
+                sp = record._split_cai()
                 seq_init = sp['seq_init']
                 seq_end = sp['seq_end']
                 record.limit_init = int(seq_init)
@@ -152,13 +152,19 @@ class ResCai(models.Model):
 
     def _complete_fields_purchase(self, splites):
 
-        self.terminal_code = splites['terminal_code']
-        self.sucursal_code = splites['sucursal_code']
+        #self.terminal_code = splites['terminal_code']
+        #self.sucursal_code = splites['sucursal_code']
         env_document = self.env['document.type'].sudo()
         document_id = env_document.search([('code', '=', splites['document_code'])])
         self.document_type_id = document_id
-        self.limit_init = splites['seq_init']
-        self.limit_end = splites['seq_end']
+        self.sudo().write({
+            'terminal_code': splites['terminal_code'],
+            'sucursal_code': splites['sucursal_code'],
+            'limit_init': splites['seq_init'],
+            'limit_end': splites['seq_end'],
+        })
+        #self.limit_init = splites['seq_init']
+        #self.limit_end = splites['seq_end']
         self.partner_id.lines_cai_ids += self
 
     def _complete_fields_sale(self, splites):
@@ -365,3 +371,15 @@ class ResCai(models.Model):
                 next_number = str(sequence_range_id.number_next_actual)
                 next_cai_number = '%s-%s-%s-%s' % (sucursal_code, terminal_code, document_code, next_number.zfill(padding))
             record.next_cai_number = next_cai_number
+
+
+    def act_view_cai_inactive(self):
+        for record in self:
+            record.sudo().state_draft()
+
+    def act_view_cai_active(self):
+        for record in self:
+            try:
+                record.sudo().state_confirmed()
+            except Exception as e:
+                raise ValidationError(_('CAI %s - Error: %s ' % (record.cai, e)))

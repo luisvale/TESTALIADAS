@@ -74,6 +74,10 @@
                         <div class="col-2" style="font-weight: bold">Señor(es):</div>
                         <div class="col-5">
                             <t t-esc="o.partner_id.name"/>
+                            <t t-if="o.partner_id.vat">
+                                -
+                                <t t-esc="o.partner_id.vat"/>
+                            </t>
                         </div>
                         <div class="col-2" style="font-weight: bold">Días entrega:</div>
                         <div class="col-3">
@@ -153,6 +157,21 @@
                         </div>
 
                     </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Plaza:</div>
+                        <div class="col-5">
+                            <t t-if="len(o.order_line.ids) > 0">
+                                <t t-if="o.order_line[0].account_analytic_id">
+                                    <t t-esc="o.order_line[0].account_analytic_id.name"/>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                -
+                            </t>
+                        </div>
+                        <div class="col-5"/>
+
+                    </div>
                 </div>
                 <table class="table table-sm o_main_table mt-4">
                     <thead>
@@ -230,45 +249,60 @@
 
                         </t>
                     </tbody>
-                    <tfooter>
-                        <tr>
-                            <td colspan="5"/>
-                            <td>
-                                Totales:
-                            </td>
-                            <td style="text-align:right">
-                                <t t-esc="t_price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                            <td/>
-                            <td style="text-align:right">
-                                <t t-esc="t_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                            <td style="text-align:right">
-                                <t t-esc="t_discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                            <td style="text-align:right">
-                                <t t-esc="t_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                            <td style="text-align:right">
-                                <t t-esc="t_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                            </td>
-                        </tr>
-                    </tfooter>
+                    <!--                    <tfooter>-->
+                    <!--                        <tr>-->
+                    <!--                            <td colspan="5"/>-->
+                    <!--                            <td>-->
+                    <!--                                Totales:-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td/>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                        </tr>-->
+                    <!--                    </tfooter>-->
                 </table>
-                <div class="row mt-4">
-                    <div class="col-6">
+                <div id="total" class="row justify-content-end">
+                    <div class="col-8">
                         Cantidad de artículos :
                         <t t-esc="pos - 1"/>
-                    </div>
-                    <div class="col-6"/>
-                </div>
-                <div class="row">
-                    <div class="col-6">
+                        <br/>
                         Observaciones :
                         <p t-field="o.notes"/>
                     </div>
-                    <div class="col-6"/>
+                    <div class="col-4">
+                        <table class="table table-sm">
+                            <t t-set="tax_totals" t-value="json.loads(o.tax_totals_json)"/>
+                            <t t-call="account.document_tax_totals"/>
+                        </table>
+                    </div>
                 </div>
+                <!--                <div class="row mt-4">-->
+                <!--                    <div class="col-6">-->
+                <!--                        Cantidad de artículos :-->
+                <!--                        <t t-esc="pos - 1"/>-->
+                <!--                    </div>-->
+                <!--                    <div class="col-6"/>-->
+                <!--                </div>-->
+                <!--                <div class="row">-->
+                <!--                    <div class="col-6">-->
+                <!--                        Observaciones :-->
+                <!--                        <p t-field="o.notes"/>-->
+                <!--                    </div>-->
+                <!--                    <div class="col-6"/>-->
+                <!--                </div>-->
 
 
             </div>
@@ -279,7 +313,7 @@
                 <div class="row">
                     <div class="col-6 text-center">
                         <span>Realizado por:
-                            <t t-esc="o.user_id.name"/>
+<!--                            <t t-esc="o.user_id.name"/>-->
                         </span>
                     </div>
                     <div class="col-6 text-center">
@@ -390,7 +424,7 @@
         <field name="format">custom</field>
         <field name="page_height">297</field>
         <field name="page_width">210</field>
-        <field name="orientation">Landscape</field>
+        <field name="orientation">Portrait</field>
         <field name="margin_top">40</field> <!-- la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja-->
         <field name="header_spacing">35</field>
         <field name="margin_bottom">36</field>
@@ -399,6 +433,22 @@
         <field name="header_line" eval="False"/><!-- mostrar una linea en cabecera-->
         <field name="dpi">90</field>
     </record>
+
+    <!--     <record id="paperformat_purchase_custom" model="report.paperformat">-->
+    <!--        <field name="name">Orden de compra aliadas</field>-->
+    <!--        <field name="default" eval="True"/>-->
+    <!--        <field name="format">custom</field>-->
+    <!--        <field name="page_height">297</field>-->
+    <!--        <field name="page_width">210</field>-->
+    <!--        <field name="orientation">Landscape</field>-->
+    <!--        <field name="margin_top">40</field> &lt;!&ndash; la diferencia (margin_top - header_spacing) es el espacio que queda en la parte superior de la hoja&ndash;&gt;-->
+    <!--        <field name="header_spacing">35</field>-->
+    <!--        <field name="margin_bottom">36</field>-->
+    <!--        <field name="margin_left">7</field>-->
+    <!--        <field name="margin_right">7</field>-->
+    <!--        <field name="header_line" eval="False"/>&lt;!&ndash; mostrar una linea en cabecera&ndash;&gt;-->
+    <!--        <field name="dpi">90</field>-->
+    <!--    </record>-->
 
     <record id="purchase.action_report_purchase_order" model="ir.actions.report">
         <field name="paperformat_id" ref="paperformat_purchase_custom"/>

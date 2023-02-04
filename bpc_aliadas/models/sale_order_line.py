@@ -37,7 +37,8 @@ class SaleOrderLine(models.Model):
 
     pricelist_id = fields.Many2one('product.pricelist', string='Tarifa', ondelete="cascade", default=default_pricelist_order)
     currency_external_id = fields.Many2one('res.currency', string='Moneda')
-    currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='T.Cambio')  # TIPO DE CAMBIO
+    currency_rate = fields.Float(store=True, string='T.Cambio')  # TIPO DE CAMBIO
+    #currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='T.Cambio')  # TIPO DE CAMBIO
     amount_convert = fields.Monetary(string='Conversión', compute='_compute_amount_convert', store=True)
     not_update_price = fields.Boolean(string='No actualizar precio')
 
@@ -47,6 +48,10 @@ class SaleOrderLine(models.Model):
     return_date_format = fields.Date(string='Termina')
 
     find_range = fields.Boolean(help="Encontrado por rango en tarifa")
+
+    product_currency_invoice_id = fields.Many2one('res.currency', string='Moneda facturación producto', related='product_id.currency_invoice_id')
+
+
 
     # @api.constrains('pricelist_id')
     # def _constraint_pricelist_id(self):

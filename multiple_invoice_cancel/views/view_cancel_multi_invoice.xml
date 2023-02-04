@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_cancel_multi_invoice_order_wizard" model="ir.ui.view">
+        <field name="name">Cancel Multi Invoice</field>
+        <field name="model">cancel.multi.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Cancel Invoice Orders">
+                <p class="oe_grey">
+                    Are you sure you want to cancel selected Invoice ?
+                </p>
+                <footer> 
+                    <button name="action_cancel" string="Cancel Invoices" type="object" class="btn-primary"/>
+                    <button string="Not Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+     <!-- <record id="action_automatic_entry" model="ir.actions.server">
+            <field name="name">Automatic Entries</field>
+            <field name="model_id" ref="account.model_account_move_line"/>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="state">code</field>
+            <field name="code">action = records.action_automatic_entry()</field>
+        </record>
+ -->
+    <record id="action_view_cancel_multi_inv_order" model="ir.actions.act_window">
+        <field name="name">Invoice/Bill Cancel</field>
+<!--         <field name="type">ir.actions.act_window</field>
+ -->        <field name="res_model">cancel.multi.invoice</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_move" />
+    </record>
+
+    
+<!-- <act_window name="Cancel Invoice"
+        res_model="cancel.multi.invoice"
+        binding_model="account.move"
+        view_mode="form"
+        multi="True"
+        target="new"
+        key2="client_action_multi"
+        id="action_view_cancel_multi_invoice_order"/>-->
+</odoo>

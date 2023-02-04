@@ -25,6 +25,7 @@ access_approval_interval_line,approval.interval.line,model_approval_interval_lin
 access_approval_level,approval.level,model_approval_level,base.group_user,1,1,1,1
 access_department_authorization_line,department.authorization.line,model_department_authorization_line,base.group_user,1,1,1,1
 access_authorization_interval_line,authorization.interval.line,model_authorization_interval_line,base.group_user,1,1,1,1
+access_hr_salary_attachment_deduction,hr.salary.attachment.deduction,model_hr_salary_attachment_deduction,base.group_user,1,1,1,1
 
 
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- <act_window
+                name="Mass Cancel Sale Order"
+                res_model="mass.cancel.wizard"
+                binding_model="sale.order"
+                binding_views="list"
+                view_mode="form"
+                domain="[('id','in',active_ids)]"
+                target="new"
+                view_id="bi_mass_cancel_all.wizard_mass_cancel"
+                id="mass_cancel_sale_act_windoww"
+        /> -->
+        <record id="mass_cancel_sale_act_window" model="ir.actions.act_window">
+            <field name="name">Mass Cancel Sale Order</field>
+            <field name="res_model">mass.cancel.wizard</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_view_types">list</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bi_mass_cancel_all.wizard_mass_cancel" />
+            <field name="target">new</field>
+        </record>
+        <!-- <act_window
+                name="Mass Cancel Purchase Order"
+                res_model="mass.cancel.wizard.purchase"
+                binding_model="purchase.order"
+                binding_views="list"
+                view_mode="form"
+                target="new"
+                view_id="bi_mass_cancel_all.wizard_mass_cancel_purchase"
+                id="mass_order_purchase_act_windoww"
+        /> -->
+        <record id="mass_order_purchase_act_window" model="ir.actions.act_window">
+            <field name="name">Mass Cancel Purchase Order</field>
+            <field name="res_model">mass.cancel.wizard.purchase</field>
+            <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+            <field name="binding_view_types">list</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bi_mass_cancel_all.wizard_mass_cancel_purchase" />
+            <field name="target">new</field>
+        </record>
+        <!-- <act_window
+                name="Mass Cancel Invoice(s)"
+                res_model="mass.cancel.wizard.invoice"
+                binding_model="account.move"
+                binding_views="list"
+                view_mode="form"
+                target="new"
+                domain="[('id','in',active_ids)]"
+                view_id="bi_mass_cancel_all.wizard_mass_invoice_cancel"
+                id="mass_order_invoice_act_window"
+        /> -->
+        <record id="mass_order_invoice_act_window" model="ir.actions.act_window">
+            <field name="name">Mass Cancel Invoice(s)</field>
+            <field name="res_model">mass.cancel.wizard.invoice</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_view_types">list</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bi_mass_cancel_all.wizard_mass_invoice_cancel" />
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

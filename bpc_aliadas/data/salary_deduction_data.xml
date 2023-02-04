@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="salary_deduction_attachment" model="hr.salary.attachment.deduction">
+        <field name="sequence">1</field>
+        <field name="code">attachment</field>
+        <field name="name">Adjunto de Salario</field>
+        <field name="active">true</field>
+    </record>
+
+    <record id="salary_deduction_assignment" model="hr.salary.attachment.deduction">
+        <field name="sequence">2</field>
+        <field name="code">assignment</field>
+        <field name="name">Asignación de Salario</field>
+        <field name="active">true</field>
+    </record>
+
+    <record id="salary_deduction_child_support" model="hr.salary.attachment.deduction">
+        <field name="sequence">3</field>
+        <field name="code">child_support</field>
+        <field name="name">Manutención de los hijos</field>
+        <field name="active">true</field>
+    </record>
+
+</odoo>

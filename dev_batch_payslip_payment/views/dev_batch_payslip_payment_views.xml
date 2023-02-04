@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+    For Module Support : devintelle@gmail.com  or Skype : devintelle
+-->
+<odoo>
+		<record id="view_batch_pay_payment_form" model="ir.ui.view">
+            <field name="name">view.dev.batch.payslip.payment.form</field>
+            <field name="model">dev.batch.payslip.payment</field>
+            <field name="arch" type="xml">
+                <form string="payment Advice">
+                	<header>
+                		<button string="Load Payslip" name="load_payslip" type="object" class="oe_highlight" states="draft"
+                			groups="hr_payroll.group_hr_payroll_manager" />
+                		<button string="Confirm" name="action_confirm" type="object" class="oe_highlight" states="draft"
+                			groups="hr_payroll.group_hr_payroll_manager" />
+                		<button string="Paid" name="action_paid" type="object" class="oe_highlight" states="confirm" 
+                			groups="account.group_account_manager"/>
+                		<button string="Cancel" name="action_cancel" type="object" class="oe_highlight" states="confirm" />
+                		<button string="Set to Draft" name="action_draft" type="object" class="oe_highlight" states="cancel" />
+                		<button string="Generate Excel" name="export_excel" type="object" class="oe_highlight" states="confirm,paid"/>
+                		
+                		<field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+                	</header>
+					<sheet>	
+						<label for="name" class="oe_edit_only"/>
+						<h2>
+							<field name="name" readonly="1"/>
+						</h2>
+						<group>
+						    <group>
+					             <field name="bank_number" attrs="{'readonly':[('state','!=','draft')]}"/>
+						        <field name="company_bank" attrs="{'readonly':[('state','!=','draft')]}"/>
+						    </group>
+						    <group>
+						    	<field name="start_date" attrs="{'readonly':[('state','!=','draft')]}"/>
+						        <field name="end_date" attrs="{'readonly':[('state','!=','draft')]}"/>
+						        
+						        <field name="payment_date" attrs="{'invisible':[('payment_date','=',False)]}"/>
+						        <field name="company_id" readonly="1"/>
+						        <field name="user_id" invisible="1"/>
+						        <field name="move_id" readonly="1" attrs="{'invisible':[('move_id','=',False)]}"/>
+						    </group>
+						</group>
+						<group string="Accounts">
+							<group>
+								<field name="credit_account_id" required="1" attrs="{'readonly':[('state','!=','draft')]}"/>
+						        <field name="debit_account_id" required="1" attrs="{'readonly':[('state','!=','draft')]}"/>
+							</group>
+							<group>
+<!--								<field name="tax_id" required="1" attrs="{'readonly':[('state','!=','draft')]}"/>-->
+						        <field name="salary_journal_id" required="1" attrs="{'readonly':[('state','!=','draft')]}"/>
+							</group>
+						</group>
+
+						<notebook>
+		                    <page string="Payslip Lines">
+	                            <field name="payslip_line_ids" readonly="1">
+	                                 <tree editable="bottom" >
+			                                <field name="payslip_id" invisible="1"/>
+                                             <field name="name" />
+                                             <field name="employee_id"/>
+                                             <field name="acc_num_id"/>
+                                             <field name="bank_id" />
+                                             <field name="swift_code"/>
+                                             <field name="salary" sum="salary"/>
+                                      </tree>	
+	                            </field>
+	                            <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+		                            <field name="total_amount" />
+		                        </group>
+		                    </page>	
+						</notebook>	
+				</sheet>
+				</form>
+           </field>
+        </record>
+	
+    <record id="view_batch_pay_payment_tree" model="ir.ui.view">
+            <field name="name">view.dev.batch.payslip.payment.tree</field>
+            <field name="model">dev.batch.payslip.payment</field>
+            <field name="arch" type="xml">
+                <tree string="Batch Payslip Payment">
+	               <field name="name"/>
+	               <field name="company_bank"/>
+	               <field name="bank_number"/>
+	               <field name="payment_date"/>
+	               <field name="total_amount"/>
+	               <field name="state"/>
+				</tree>
+           </field>
+        </record>	        
+         
+         
+    <record id="view_batch_payslip_payment_filter" model="ir.ui.view">
+            <field name="name">view.batch.payslip.payment.filter</field>
+            <field name="model">dev.batch.payslip.payment</field>
+            <field name="arch" type="xml">
+                <search string="Batch Payslip Payment">
+                    <field name="name" string="Payment" filter_domain="[('name','ilike',self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="state" string="State" domain="[]" context="{'group_by':'state'}"/>
+                    </group>
+               </search>
+            </field>
+        </record>
+        
+	<record id="action_batch_payslip_payment" model="ir.actions.act_window">
+            <field name="name">Batch Payslip Payment</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">dev.batch.payslip.payment</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click To Create a Batch Payslip Payment...
+              </p>
+            </field>
+        </record>
+    
+	<menuitem  id="dev_batch_payslip_payment_main" name="Batch Payslip Payment" parent="hr_work_entry_contract_enterprise.menu_hr_payroll_root"
+		groups="hr_payroll.group_hr_payroll_manager,account.group_account_manager" sequence="200"/>
+	<menuitem  id="dev_batch_payslip_payment_sub" name="Batch Payslip Payment" parent="dev_batch_payslip_payment_main" action="action_batch_payslip_payment"/>
+
+</odoo>

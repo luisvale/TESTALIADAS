@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<!--
+    Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+    For Module Support : devintelle@gmail.com  or Skype : devintelle
+-->
+<odoo>
+        <!--Email template -->
+        <record id="email_batch_payslip_confirm" model="mail.template">
+            <field name="name">Batch Payslip Confirm Mail</field>
+            <field name="email_from">{{(object.company_id.email and '&quot;%s&quot; &lt;%s&gt;' % (object.company_id.name, object.company_id.email) or '')}}</field>
+            <field name="subject">Batch Payslip Payment {{object.name}} waiting for your action</field> 
+            <field name="model_id" ref="model_dev_batch_payslip_payment"/>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html"><![CDATA[ 
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 14px; color: rgb(34, 34, 34); background-color: #FFF;">
+                   	<p>Hello <b>Account Manager</b>,</p>   
+                   	<p>Payslip Payment batch  <b><t t-out="object.name"></t> </b> is generated into system for following dates of employee payslips.</p>  
+                   	<p>Payslip Proceed dates: <br/>
+                   	Start Date : <b><t t-out="object.start_date"></t></b><br/>
+                   	End Date : <b><t t-out="object.end_date"></t></b></p>  
+                   	<p></p>
+                   	<p>Please process the payslip batch further with accounting entries and close all
+                            open payslip  </p>
+
+                    <p><a t-attf-href="{{object.make_url()}}">Quick link to access document </a></p>
+                    
+                    <p>Regards, <br/>  
+                    <b>HR Manager</b></p>
+                   	
+               </div>
+            
+            ]]></field>
+
+		</record>
+		
+		
+</odoo>

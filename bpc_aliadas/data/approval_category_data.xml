@@ -141,6 +141,27 @@
         </record>
 
 
+        <record id="approval_category_data_sale_change_currency" model="approval.category">
+            <field name="name">Ventas / Cambio de moneda</field>
+            <field name="sequence">604</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VCURRENCY/</field>
+            <field name="approval_type">change_currency</field>
+        </record>
+
+
         <record id="approval_category_data_purchase_general" model="approval.category">
             <field name="name">Compras / Aprobación general</field>
             <field name="sequence">603</field>
@@ -199,6 +220,8 @@
             <field name="sequence_code">SUBSNP/</field>
             <field name="approval_type">subs_new_product</field>
         </record>
+
+
 
 
     </data>

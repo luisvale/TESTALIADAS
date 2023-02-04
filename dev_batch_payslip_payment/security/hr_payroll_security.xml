@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+    For Module Support : devintelle@gmail.com  or Skype : devintelle
+-->
+<odoo>
+    <data noupdate="1">
+        
+        <record id="rule_dev_batch_payslip_payment_company" model="ir.rule">
+            <field name="name">Rule Batch Payslip Multi Company</field>
+            <field name="model_id" ref="model_dev_batch_payslip_payment"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+        
+        
+        
+
+        <record id="hr_payslip_rule_account_manager" model="ir.rule">
+            <field name="name">All Payslip</field>
+            <field name="model_id" ref="hr_payroll.model_hr_payslip"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
+        </record>
+        
+<!--        <record id="hr_payslip_lines_rule_account_manager" model="ir.rule">-->
+<!--            <field name="name">All Payslip Lines</field>-->
+<!--            <field name="model_id" ref="hr_payroll.model_hr_payslip_line"/>-->
+<!--            <field name="domain_force">[(1,'=',1)]</field>-->
+<!--            <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>-->
+<!--        </record>-->
+        
+    </data>
+</odoo>

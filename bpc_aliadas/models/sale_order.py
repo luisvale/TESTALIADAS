@@ -345,9 +345,10 @@ class SaleOrder(models.Model):
         #             self._create_request('pricelist')
         # Alguna de las líneas SI requiere aprobación
 
+        # Evaluación para lista de precios
         line_approved_required = self.order_line.filtered(lambda l: l.pricelist_id.required_authorization and self.env.user.id not in l.pricelist_id.user_ids.ids)
         if line_approved_required:
-            _logger.info("Se econtraron líneas que requiren aprobación: Total - %s" % len(line_approved_required.ids))
+            _logger.info("Se econtraron líneas que requiren aprobación de lista de precios: Total - %s" % len(line_approved_required.ids))
             for line_pricelist in line_approved_required:
                _logger.info("ALIADAS: Evaluación de lista de precios.")
                _request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
@@ -363,6 +364,16 @@ class SaleOrder(models.Model):
             if not _request:
                 continue_process = False
                 self._create_request('check_list')
+
+        #Evaluación de Moneda
+        lines_currency_change = self.order_line.filtered(lambda l: l.currency_external_id and l.product_currency_invoice_id and
+                                                                    l.currency_external_id != l.product_currency_invoice_id)
+        if lines_currency_change:
+            _logger.info("Se econtraron líneas que requiren aprobación de monedas: Total - %s" % len(lines_currency_change.ids))
+            _request = self._exist_request_by_category(category='change_currency')
+            if not _request:
+                continue_process = False
+                self._create_request('change_currency')
 
         return continue_process
 
@@ -385,37 +396,30 @@ class SaleOrder(models.Model):
             record.approval_approved_count = approved_count
             record.approval_cancel_count = cancel_count
 
-    def _exist_request_by_category(self, category, pricelist=False):
-
-        payment_term_id = self.env['approval.category'].sudo().search([('approval_type','=','payment_term'),('company_id','=',self.company_id.id)], limit=1)
-        list_price_id = self.env['approval.category'].sudo().search([('approval_type','=','pricelist'),('company_id','=',self.company_id.id)], limit=1)
-        sale_margin_id = self.env['approval.category'].sudo().search([('approval_type','=','sale_margin'),('company_id','=',self.company_id.id)], limit=1)
-        check_list_id = self.env['approval.category'].sudo().search([('approval_type','=','check_list'),('company_id','=',self.company_id.id)], limit=1)
-
-        LIST_CAT = {
-            'payment_term': payment_term_id.id,
-            'list_price': list_price_id.id,
-            'sale_margin': sale_margin_id.id,
-            'check_list': check_list_id.id,
-        }
-        category_id = LIST_CAT[category]
-        if not pricelist:
-            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id)
+    def _search_category(self, name):
+        if not name:
+            return False
+        category = self.env['approval.category'].sudo().search([('approval_type', '=', name), ('company_id', '=', self.company_id.id)], limit=1)
+        if category:
+            _logger.info("Se encontró categoría : %s " % category.name)
         else:
-            _request = self.approval_request_ids.filtered(lambda a: a.category_id.id == category_id and a.pricelist_id == pricelist)
+            _logger.info("No Se encontró categoría de tipo : %s " % name)
+
+        return category
+
+    def _exist_request_by_category(self, category, pricelist=False):
+        category_id = self._search_category(name=category)
+        if not category_id:
+            return False
+        if not pricelist:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id == category_id)
+        else:
+            _request = self.approval_request_ids.filtered(lambda a: a.category_id == category_id and a.pricelist_id == pricelist)
         return _request
 
     def _create_request(self, mode, pricelist=False):
         sale_margin_diff = 0
-        if mode == 'margin':
-            category_id = self.env['approval.category'].sudo().search([('approval_type','=','sale_margin'),('company_id','=',self.company_id.id)], limit=1)
-            sale_margin_diff = self.env.company.sale_margin - self.margin_test
-        elif mode == 'pricelist':
-            category_id = self.env['approval.category'].sudo().search([('approval_type','=','pricelist'),('company_id','=',self.company_id.id)], limit=1)
-        elif mode == 'payment_term':
-            category_id = self.env['approval.category'].sudo().search([('approval_type','=','payment_term'),('company_id','=',self.company_id.id)], limit=1)
-        elif mode == 'check_list':
-            category_id = self.env['approval.category'].sudo().search([('approval_type','=','check_list'),('company_id','=',self.company_id.id)], limit=1)
+        category_id = self._search_category(name=mode)
 
         if not category_id:
             raise ValidationError(_("Proceso no contemplado para evaluación de aprobación"))
@@ -802,6 +806,10 @@ class SaleOrder(models.Model):
     #         'context': ctx,
     #     }
 
+    def _prepare_invoice(self):
+        vals = super(SaleOrder, self)._prepare_invoice()
+        vals['sale_id'] = self.ids[0] if len(self.ids) > 0 else False
+        return vals
 
 
 class SaleOrderChecklistLines(models.Model):

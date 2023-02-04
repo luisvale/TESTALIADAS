@@ -1,0 +1,165 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* bi_mass_cancel_all
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-22 11:54+0000\n"
+"PO-Revision-Date: 2021-03-22 11:54+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_invoice_cancel
+msgid "Are you sure want to cancel all selected Invoice(s)?"
+msgstr "هل أنت متأكد من أنك تريد إلغاء كافة الفاتورة (الفواتير) المحددة؟"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel_purchase
+msgid "Are you sure want to cancel all selected Purchase Order?"
+msgstr "هل أنت متأكد من أنك تريد إلغاء كل طلبات الشراء المحددة؟"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel
+msgid "Are you sure want to cancel all selected Sale Order?"
+msgstr "هل أنت متأكد من أنك تريد إلغاء كل أوامر البيع المحددة؟"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel_purchase
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_invoice_cancel
+msgid "Cancel"
+msgstr "Cancel"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_invoice_cancel
+msgid "Cancel Invoice"
+msgstr "إلغاء الفاتورة"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel_purchase
+msgid "Cancel Order"
+msgstr "الغاء الطلب"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__create_uid
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__create_uid
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__create_uid
+msgid "Created by"
+msgstr "انشأ من قبل"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__create_date
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__create_date
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__create_date
+msgid "Created on"
+msgstr "تم إنشاؤها على"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__display_name
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__display_name
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__display_name
+msgid "Display Name"
+msgstr "اسم العرض"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__id
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__id
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__id
+msgid "ID"
+msgstr "بطاقة تعريف"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard____last_update
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice____last_update
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase____last_update
+msgid "Last Modified on"
+msgstr "تاريخ آخر تعديل"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__write_uid
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__write_uid
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__write_uid
+msgid "Last Updated by"
+msgstr "آخر تحديث بواسطة"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__write_date
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__write_date
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__write_date
+msgid "Last Updated on"
+msgstr "Last Updated on"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard__mass_cancel
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_cancel_purchase
+msgid "Mass Cancel"
+msgstr "إلغاء الكتلة"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_invoice__mass_cancel_invoice
+msgid "Mass Cancel Invoice"
+msgstr "فاتورة إلغاء جماعية"
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.mass_order_invoice_act_window
+msgid "Mass Cancel Invoice(s)"
+msgstr "فاتورة (فواتير) الإلغاء الجماعي"
+
+#. module: bi_mass_cancel_all
+#: model:ir.model.fields,field_description:bi_mass_cancel_all.field_mass_cancel_wizard_purchase__mass_cancel_purchase
+msgid "Mass Cancel Purchase"
+msgstr "إلغاء الشراء الجماعي"
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.mass_order_purchase_act_windoww
+msgid "Mass Cancel Purchase Order"
+msgstr "إلغاء أمر الشراء الجماعي"
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.mass_cancel_sale_act_windoww
+msgid "Mass Cancel Sale Order"
+msgstr "أمر بيع إلغاء جماعي"
+
+#. module: bi_mass_cancel_all
+#: model_terms:ir.ui.view,arch_db:bi_mass_cancel_all.wizard_mass_invoice_cancel
+msgid "Mass Invoice Cancel"
+msgstr "إلغاء الفاتورة الجماعية"
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.bi_act_mass_cancel_invoice_wizard
+msgid "bi.act.mass.cancel.invoice.wizard"
+msgstr ""
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.bi_act_mass_cancel_purchse_wizard
+msgid "bi.act.mass.cancel.purchase.wizard"
+msgstr ""
+
+#. module: bi_mass_cancel_all
+#: model:ir.actions.act_window,name:bi_mass_cancel_all.bi_act_mass_cancel_wizard
+msgid "bi.act.mass.cancel.wizard"
+msgstr ""
+
+#. module: bi_mass_cancel_all
+#: model:ir.model,name:bi_mass_cancel_all.model_mass_cancel_wizard
+msgid "mass.cancel.wizard"
+msgstr ""
+
+#. module: bi_mass_cancel_all
+#: model:ir.model,name:bi_mass_cancel_all.model_mass_cancel_wizard_invoice
+msgid "mass.cancel.wizard.invoice"
+msgstr ""
+
+#. module: bi_mass_cancel_all
+#: model:ir.model,name:bi_mass_cancel_all.model_mass_cancel_wizard_purchase
+msgid "mass.cancel.wizard.purchase"
+msgstr ""

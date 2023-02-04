@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--Todo: Attributes Tree-->
+        <record model="ir.ui.view" id="view_hr_salary_attachment_deduction_tree">
+            <field name="name">hr.salary.attachment.deduction.tree</field>
+            <field name="model">hr.salary.attachment.deduction</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="input_type_id" required="True"/>
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_hr_salary_attachment_deduction_form" model="ir.ui.view">
+            <field name="name">hr.salary.attachment.deduction.form</field>
+            <field name="model">hr.salary.attachment.deduction</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="code" placeholder="Ej. travel (Minúsculas)"/>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="input_type_id" required="True"/>
+                                <field name="company_id"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_salary_attachment_deduction" model="ir.actions.act_window">
+            <field name="name">Tipos de decucción</field>
+            <field name="res_model">hr.salary.attachment.deduction</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_hr_salary_attachment_deduction_tree"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Creae elemento para check list
+                </p>
+            </field>
+        </record>
+
+
+        <menuitem
+                id="menu_hr_salary_attachment_deduction"
+                action="action_hr_salary_attachment_deduction"
+                parent="hr_payroll.menu_hr_salary_configuration"
+                name="Tipos de deducción"
+                sequence="35"/>
+
+
+    </data>
+</odoo>

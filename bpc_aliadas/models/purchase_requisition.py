@@ -13,7 +13,9 @@ class PurchaseRequisition(models.Model):
     # P1 = Proceso 1, P2 = Proceso 2
     get_purchase = fields.Boolean(compute='_compute_get_purchase') #P1
     purchase_line_ids = fields.Many2many('purchase.order') #P1
-    purchase_order_line_ids = fields.Many2many('purchase.order.line', compute='_compute_purchase_order_line_ids', store=True, readonly=False)
+    purchase_order_line_ids = fields.Many2many('purchase.order.line', compute='_compute_purchase_order_line_ids')
+    price_min = fields.Float(compute='_compute_purchase_order_line_ids', string='Precio mínimo')
+    date_min = fields.Datetime(compute='_compute_purchase_order_line_ids', string='Fecha mínima')
     automatic = fields.Boolean('Automático', help='Se creo automáticamente por medio de un producto requerido', store=True, readonly=True) #P2
     request_id = fields.Many2one('approval.request', compute='_compute_request_id', string='Solicitud', store=True, readonly=False)
     department_id = fields.Many2one('hr.department', string='Departamento')
@@ -25,8 +27,6 @@ class PurchaseRequisition(models.Model):
             else:
                 request_id = record.env['approval.request'].sudo().search([('requisition_id','in',record.ids)], limit=1)
             record.request_id = request_id
-
-
 
     @api.model
     def _domain_analytic(self):
@@ -73,13 +73,22 @@ class PurchaseRequisition(models.Model):
                 for line in record.line_ids:
                     line.sudo().write({'account_analytic_id': record.analytic_account_id.id})
 
-    @api.depends('purchase_line_ids')
+    #@api.depends('purchase_line_ids')
     def _compute_purchase_order_line_ids(self):
         for record in self:
+            price_min = 0.0
+            date_min = datetime.now().date()
             purchase_order_line_ids = False
             if record.purchase_line_ids:
                 purchase_order_line_ids = record.purchase_line_ids.mapped('order_line')
+                if purchase_order_line_ids:
+                    price_min = min(purchase_order_line_ids.mapped('price_unit'))
+                    _logger.info("Precio mínimo: %s " % price_min)
+                    date_min = min(purchase_order_line_ids.mapped('date_planned'))
+                    _logger.info("Fecha mínima: %s " % date_min)
             record.purchase_order_line_ids = purchase_order_line_ids
+            record.price_min = price_min
+            record.date_min = date_min
 
 
 

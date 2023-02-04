@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dev_batch_payslip_payment_hr_manager,dev.batch.payslip.payment.hr,model_dev_batch_payslip_payment,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_dev_batch_payslip_payment_acc_manager,dev.batch.payslip.payment.account,model_dev_batch_payslip_payment,account.group_account_manager,1,1,0,0
+access_dev_payslip_lines_hr_manager,dev.payslip.lines.hr,model_dev_payslip_lines,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_dev_payslip_lines_acc_manager,dev.payslip.lines.account,model_dev_payslip_lines,account.group_account_manager,1,1,0,0
+access_hr_payslip_acc_manager,hr.payslip.account,hr_payroll.model_hr_payslip,account.group_account_manager,1,1,0,0
+access_hr_payslip_line_acc_manager,hr.payslip.line.account,hr_payroll.model_hr_payslip_line,account.group_account_manager,1,1,0,0
+
+access_account_journal_hr_manager,access.account.journal.manager,account.model_account_journal,hr.group_hr_manager,1,0,0,0
+

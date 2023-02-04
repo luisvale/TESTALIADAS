@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record forcecreate="True" id="decimal_change_rate_purchase" model="decimal.precision">
+            <field name="name">Purchase change rate</field>
+            <field name="digits">4</field>
+        </record>
+
+    </data>
+</odoo>

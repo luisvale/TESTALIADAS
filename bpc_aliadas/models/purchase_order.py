@@ -29,8 +29,8 @@ class PurchaseOrder(models.Model):
 
     commercial_ids = fields.One2many(related='partner_id.commercial_ids')
     commercial_id = fields.Many2one('res.partner.commercial', string='Nombre comercial')
-
-    currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='Tipo cambio')  # TIPO DE CAMBIO
+    currency_rate = fields.Float("Currency Rate", compute='_compute_currency_rate', compute_sudo=True, store=True,  digits='Purchase change rate',
+                                 readonly=True, help='Ratio between the purchase order currency and the company currency')
 
     @api.depends('currency_id')
     def _compute_currency_rate(self):
@@ -88,6 +88,7 @@ class PurchaseOrder(models.Model):
     department_id = fields.Many2one('hr.department', string='Departamento')
 
     force_picking = fields.Boolean(string='Incluir picking')
+    force_cancel = fields.Boolean(string='Cancelación forzada')
 
     @api.constrains('advance_check', 'advance_amount')
     def _constraint_advance_check(self):
@@ -110,6 +111,24 @@ class PurchaseOrder(models.Model):
     def button_cancel(self):
         super(PurchaseOrder, self).button_cancel()
         self._unlink_from_budget()
+
+    def button_cancel_force(self):
+        for order in self:
+            for inv in order.invoice_ids:
+                if inv and inv.state not in ('cancel', 'draft'):
+                    raise UserError(_("No se puede cancelar esta orden de compra. Primero debe cancelar las facturas de proveedores relacionadas."))
+
+        self.write({'state': 'cancel', 'mail_reminder_confirmed': False})
+        self._unlink_from_budget()
+
+    def button_reprocess(self):
+        self.ensure_one()
+        _logger.info("Cancelando de forma forzada")
+        self.button_cancel_force()
+        if self.approval_request_ids:
+            _logger.info("Desvinculando aprobaciones: Cantidad de: %s" % len(self.approval_request_ids.ids))
+            self.write({'approval_request_ids': [(3, app.id, 0) for app in self.approval_request_ids]})
+        self.write({'state': 'bidding'})
 
     @api.ondelete(at_uninstall=False)
     def _unlink_if_cancelled(self):
@@ -435,6 +454,7 @@ class PurchaseOrder(models.Model):
     def _prepare_invoice(self):
         res = super(PurchaseOrder, self)._prepare_invoice()
         res['document_type_purchase_id'] = self.env.ref('hn_einvoice.document_factura_electronica').id
+        res['purchase_id'] = self.ids[0] if len(self.ids) > 0 else False
         return res
 
     def action_create_invoice_delivered(self, final):
@@ -623,6 +643,9 @@ class PurchaseOrder(models.Model):
             self.force_purchase = True
         except Exception as e:
             raise ValidationError(_("Error generación picking : %s" % e))
+
+
+
 
     # def action_rfq_send(self):
     #     '''

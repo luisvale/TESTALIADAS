@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_alw_ded_user,access_hr_alw_ded_user,model_hr_alw_ded,base.group_user,1,1,1,0
+access_hr_alw_ded_manager,access_hr_alw_ded_manager,model_hr_alw_ded,hr.group_hr_manager,1,1,1,1
+access_hr_payslip_input_type_usr,access_hr_payslip_input_type_usr,hr_payroll.model_hr_payslip_input_type,base.group_user,1,0,0,0

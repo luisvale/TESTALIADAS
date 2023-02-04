@@ -103,7 +103,7 @@
                 <button name="create_job_position" type="object" string="Crear Puesto" class="btn-primary"
                         attrs="{'invisible': [ '|','|',
                          ('approval_type', '!=', 'job_position'),('request_status', '!=', 'approved'),('job_id','!=',False)]}"/>
-                 <button name="send_mail_approval" type="object" string="Enviar email" class="btn-primary"
+                <button name="send_mail_approval" type="object" string="Enviar email" class="btn-primary"
                         attrs="{'invisible': [('request_status', 'not in', ['pending','approved'])]}"/>
             </xpath>
             <xpath expr="//field[@name='has_product']" position="after">
@@ -122,6 +122,10 @@
             <xpath expr="//field[@name='quantity']" position="before">
                 <field name="user_id" string="Usuario"/>
                 <field name="analytic_account_id" string="Analítica"/>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="before">
+                <button name="action_cancel" string="Cancelación forzada" type="object" groups="bpc_aliadas.group_aliadas_approval_request_cancel_force"
+                        style="background: #e09507;color: white;"/>
             </xpath>
         </field>
     </record>
@@ -203,6 +207,17 @@
         <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">action = records.act_view_refused_request()</field>
+    </record>
+
+    <!-- APROBACIÓN DE FORMA MASIVA -->
+    <record id="window_aliadas_approval_request_cancal_massive" model="ir.actions.server">
+        <field name="name">Cancelar masivamente</field>
+           <field name="groups_id" eval="[(4, ref('bpc_aliadas.group_aliadas_approval_request_cancel_force'))]"/>
+        <field name="model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_model_id" ref="approvals.model_approval_request"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.act_view_cancel_request()</field>
     </record>
 
 </odoo>

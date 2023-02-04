@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_project_time_task_wizard" model="ir.ui.view">
+        <field name="name">Registro Horas</field>
+        <field name="model">project.time.task.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="task_id"/>
+                        </group>
+                        <group>
+                            <field name="timer_start" widget="timer_timer" class="text-secondary mr-auto h2 font-weight-bold"/>
+                            <field name="timer_pause" widget="timer_timer" class="text-secondary mr-auto h2 font-weight-bold" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="display_timer_start_primary" invisible="1"/>
+                        <field name="display_timer_start_secondary" invisible="1"/>
+                        <field name="display_timer_stop" invisible="1"/>
+                        <field name="display_timer_pause" invisible="1"/>
+                        <field name="display_timer_resume" invisible="1"/>
+                        <field name="encode_uom_in_days" invisible="1"/>
+
+                    </group>
+                </sheet>
+                <footer>
+                    <button class="btn-primary" name="action_timer_start" type="object" string="Iniciar" data-hotkey="z" title="Start timer"
+                            attrs="{'invisible': ['|', ('display_timer_start_primary', '=', False), ('encode_uom_in_days', '=', True)]}" groups="hr_timesheet.group_hr_timesheet_user" icon="fa-clock-o"/>
+                    <button class="btn-secondary" name="action_timer_start" type="object" string="Iniciar" data-hotkey="z" title="Start timer"
+                            attrs="{'invisible': ['|', ('display_timer_start_secondary', '=', False), ('encode_uom_in_days', '=', True)]}" groups="hr_timesheet.group_hr_timesheet_user" icon="fa-clock-o"/>
+                    <button class="btn-primary o_fsm_stop" name="action_timer_stop" type="object" string="Parar" data-hotkey="z" title="Stop timer"
+                            attrs="{'invisible': ['|', ('display_timer_stop', '=', False), ('encode_uom_in_days', '=', True)]}" groups="hr_timesheet.group_hr_timesheet_user" icon="fa-clock-o"/>
+                    <button class="btn-secondary" name="action_timer_pause" type="object" string="Pausar" data-hotkey="w" title="Pause timer"
+                            attrs="{'invisible': ['|', ('display_timer_pause', '=', False), ('encode_uom_in_days', '=', True)]}" groups="hr_timesheet.group_hr_timesheet_user"/>
+                    <button class="btn-secondary" name="action_timer_resume" type="object" string="Reanudad" data-hotkey="w" title="Resume timer"
+                            attrs="{'invisible': ['|', ('display_timer_resume', '=', False), ('encode_uom_in_days', '=', True)]}" groups="hr_timesheet.group_hr_timesheet_user"/>
+                    <button string="CERRAR" class="oe_link float-right" special="cancel" icon="fa-times-circle-o"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_time_task_wizard" model="ir.actions.act_window">
+        <field name="name">Registro horas</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">project.time.task.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

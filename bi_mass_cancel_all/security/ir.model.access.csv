@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mass_cancel_sale_user,access.mass.cancel.sale.user,model_mass_cancel_wizard,,1,1,1,0
+access_mass_cancel_purchase_user,access.mass.cancel.purchase.user,model_mass_cancel_wizard_purchase,,1,1,1,0
+access_mass_cancel_invoice_user,access.mass.cancel.invoice.user,model_mass_cancel_wizard_invoice,,1,1,1,0

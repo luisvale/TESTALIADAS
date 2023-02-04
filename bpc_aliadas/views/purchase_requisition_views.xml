@@ -20,10 +20,27 @@
                     </field>
                 </page>
                 <page string="Detalle de órdenes" id="page_lines_purchase">
-                    <field name="purchase_order_line_ids" nolabel="1"/>
+                    <group>
+                        <field name="price_min"/>
+                        <field name="date_min" />
+                    </group>
+                    <field name="purchase_order_line_ids" nolabel="1">
+                        <tree create="false" default_order="price_unit asc, date_planned asc">
+                            <field name="order_id"/>
+                            <field name="name"/>
+                            <field name="partner_id" string="Proveedor"/>
+                            <field name="product_id"/>
+                            <field name="date_planned" decoration-danger="date_planned == parent.date_min"/>
+                            <field name="price_unit" decoration-danger="price_unit == parent.price_min"/>
+                            <field name="product_qty" />
+                            <field name="product_uom" groups="uom.group_uom"/>
+                            <field name="price_subtotal" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </tree>
+                    </field>
                 </page>
                 <page string="Información adicional">
-                    <group >
+                    <group>
                         <group string="Automatización">
                             <field name="automatic"/>
                         </group>
@@ -38,7 +55,7 @@
             </xpath>
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="analytic_account_id" string="Analítica"/>
-                <field name="department_id" />
+                <field name="department_id"/>
             </xpath>
         </field>
     </record>

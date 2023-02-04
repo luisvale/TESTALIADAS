@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_purchase_order_document_reception_aliadas">
+        <t t-if="not company">
+            <!-- Multicompany -->
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+        <div class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-2 col-xs-4 mt32">
+                    <div style="text-align:left;">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 100px; height: 100px; max-width: 150px; display:block; margin-left: auto; margin-right: auto; top: 30%;" alt="Logo"/>
+                    </div>
+                </div>
+                <!--                <div class="col-6 empresa" name="company_address" style="text-transform: uppercase;">-->
+                <div class="col-7 empresa" name="company_address" style="text-align: center; font-size:12px">
+                    <strong style="font-size:16px">
+                        <t t-esc="company.name"/>
+                    </strong>
+                    <br/>
+                    <t t-if="company.street">
+                        <span t-esc="company.street"/>,
+                    </t>
+                    <t t-if="company.city">
+                        <span t-esc="company.city"/>,
+                    </t>
+                    <t t-if="company.state_id">
+                        <span t-esc="company.state_id.name"/>,
+                    </t>
+                    <t t-if="company.country_id">
+                        <span t-esc="company.country_id.name"/>.
+                    </t>
+                    <br/>
+                    <span t-if="company.phone" style="white-space: nowrap;"
+                          t-esc="'Tel: ' + company.phone"/>
+                    <br/>
+                    <span t-if="company.email" style="white-space: nowrap;"
+                          t-esc="'Correo Electrónico: ' + company.email"/>
+                    <br/>
+                    <span t-if="company.vat" style="white-space: nowrap;"
+                          t-esc="'RTN: ' + company.vat"/>
+                </div>
+                <div class="col-3" style="text-align: right; font-size:12px">
+                    <strong>Usuario:</strong>
+                    <t t-esc="o.env.user.name"/>
+                    <br/>
+                    <strong>Fecha:</strong>
+                    <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                    <br/>
+                    <strong>Hora:</strong>
+                    <span t-esc="datetime.datetime.now().strftime('%H:%M:%S')"/>
+                    <br/>
+                </div>
+
+            </div>
+        </div>
+        <div class="article o_report_layout_clean" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+            <t t-set="o" t-value="o.with_context(lang=lang)"/>
+            <div class="page" style="font-size:13px!important;font-weight: lighter !important;">
+                <h2 class="text-center mt-2">
+                    ORDEN DE COMPRA N°
+                    <t t-esc="o.name"/>
+                </h2>
+                <div id="info">
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Señor(es):</div>
+                        <div class="col-5">
+                            <t t-esc="o.partner_id.name"/>
+                            <t t-if="o.partner_id.vat">
+                                -
+                                <t t-esc="o.partner_id.vat"/>
+                            </t>
+                        </div>
+                        <div class="col-2" style="font-weight: bold">Días entrega:</div>
+                        <div class="col-3">
+                            <t t-if="o.date_planned and o.date_approve">
+                                <t t-esc="(o.date_planned.date() - o.date_approve.date()).days"/>
+                            </t>
+                            <t t-elif="o.date_order and o.date_approve">
+                                <t t-esc="(o.date_order.date() - o.date_approve.date()).days"/>
+                            </t>
+                            <t t-else="">
+                                0
+                            </t>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Atención:</div>
+                        <div class="col-5">
+                            <t t-esc="o.commercial_id.name"/>
+                        </div>
+                        <div class="col-2" style="font-weight: bold">Fecha:</div>
+                        <div class="col-3">
+                            <t t-if="o.date_approve">
+                                <t t-esc="o.date_approve"/>
+                            </t>
+                            <t t-elif="o.date_order">
+                                <t t-esc="o.date_order"/>
+                            </t>
+                            <t t-else="">
+                                -
+                            </t>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Dirección:</div>
+                        <div class="col-5">
+                            <t t-esc="o.partner_id.street"/>
+                            <t t-if="o.partner_id.city">
+                                ,
+                                <t t-esc="o.partner_id.city"/>
+                            </t>
+                            <t t-if="o.partner_id.state_id">
+                                ,
+                                <t t-esc="o.partner_id.state_id.name"/>
+                            </t>
+                            <t t-if="o.partner_id.country_id">
+                                ,
+                                <t t-esc="o.partner_id.country_id.name"/>
+                            </t>
+                        </div>
+                        <div class="col-2" style="font-weight: bold">Moneda:</div>
+                        <div class="col-3">
+                            <t t-esc="o.currency_id.name"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Condición pago:</div>
+                        <div class="col-5">
+                            <p t-if="not is_html_empty(o.payment_term_id.note)">
+                                <span t-field="o.payment_term_id.note"/>
+                            </p>
+                        </div>
+                        <div class="col-2" style="font-weight: bold">T/C:</div>
+                        <div class="col-3">
+                            <t t-esc="o.currency_rate"/>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Contacto:</div>
+                        <div class="col-5">
+                            <t t-esc="o.user_id.name"/>
+                        </div>
+                        <div class="col-2" style="font-weight: bold">Origen:</div>
+                        <div class="col-3">
+                            <t t-esc="o.origin"/>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-2" style="font-weight: bold">Plaza:</div>
+                        <div class="col-5">
+                            <t t-if="len(o.order_line.ids) > 0">
+                                <t t-if="o.order_line[0].account_analytic_id">
+                                    <t t-esc="o.order_line[0].account_analytic_id.name"/>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                -
+                            </t>
+                        </div>
+                        <div class="col-5"/>
+
+                    </div>
+                </div>
+                <table class="table table-sm o_main_table mt-4">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #9e6b6b;">
+                            <th>#</th>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Factor</th>
+                            <th>Precio</th>
+                            <th>UMPP</th>
+                            <th>Subtotal</th>
+                            <th>Descuento</th>
+                            <th>Impuesto</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="o.order_line">
+                            <t t-set="pos" t-value="1"/>
+                            <t t-set="t_price" t-value="0"/>
+                            <t t-set="t_subtotal" t-value="0"/>
+                            <t t-set="t_discount" t-value="0"/>
+                            <t t-set="t_tax" t-value="0"/>
+                            <t t-set="t_total" t-value="0"/>
+                            <t t-foreach="o.order_line" t-as="line">
+                                <t t-if="not line.display_type and line.check_purchase">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="pos"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.product_id.default_code"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.name"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.product_qty"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.product_uom.name"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.product_uom.name"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <t t-esc="line.price_unit" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                            <t t-set="t_price" t-value="t_price + line.price_unit"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <t t-esc="line.product_uom.name"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <t t-esc="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                            <t t-set="t_subtotal" t-value="t_subtotal + line.price_subtotal"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            0.00
+                                            <t t-set="t_discount" t-value="t_discount + 0"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <t t-esc="line.price_tax" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                            <t t-set="t_tax" t-value="t_tax + line.price_tax"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <t t-esc="line.price_total" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                            <t t-set="t_total" t-value="t_total + line.price_total"/>
+                                        </td>
+                                    </tr>
+                                    <t t-set="pos" t-value="pos + 1"/>
+                                </t>
+                            </t>
+
+                        </t>
+                    </tbody>
+                    <!--                    <tfooter>-->
+                    <!--                        <tr>-->
+                    <!--                            <td colspan="5"/>-->
+                    <!--                            <td>-->
+                    <!--                                Totales:-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td/>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                            <td style="text-align:right">-->
+                    <!--                                <t t-esc="t_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>-->
+                    <!--                            </td>-->
+                    <!--                        </tr>-->
+                    <!--                    </tfooter>-->
+                </table>
+                <div id="total" class="row justify-content-end">
+                    <div class="col-8">
+                        Cantidad de artículos :
+                        <t t-esc="pos - 1"/>
+                        <br/>
+                        Observaciones :
+                        <p t-field="o.notes"/>
+                    </div>
+                    <div class="col-4">
+                        <table class="table table-sm">
+                            <t t-set="tax_totals" t-value="json.loads(o.tax_totals_json)"/>
+                            <t t-call="account.document_tax_totals"/>
+                        </table>
+                    </div>
+                </div>
+                <!--                <div class="row mt-4">-->
+                <!--                    <div class="col-6">-->
+                <!--                        Cantidad de artículos :-->
+                <!--                        <t t-esc="pos - 1"/>-->
+                <!--                    </div>-->
+                <!--                    <div class="col-6"/>-->
+                <!--                </div>-->
+                <!--                <div class="row">-->
+                <!--                    <div class="col-6">-->
+                <!--                        Observaciones :-->
+                <!--                        <p t-field="o.notes"/>-->
+                <!--                    </div>-->
+                <!--                    <div class="col-6"/>-->
+                <!--                </div>-->
+
+
+            </div>
+            <!--FIN PAGE-->
+            <!-- Footer -->
+            <div class="footer">
+                <br/>
+                <div class="row">
+                    <div class="col-6 text-center">
+                        <span>Realizado por:
+                            <!--                            <t t-esc="o.user_id.name"/>-->
+                        </span>
+                    </div>
+                    <div class="col-6 text-center">
+                        <span>Autorizado por:</span>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12 text-center">
+                        <span>Recibido por:
+                            <!--                            <t t-esc="o.user_id.name"/>-->
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+
+    <template id="document_tax_totals_invoice">
+        <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+            <tr class="o_subtotal">
+                <td>
+                    <strong>SubTotal</strong>
+                </td>
+
+                <td class="text-right">
+                    <span
+                            t-att-class="oe_subtotal_footer_separator"
+                            t-esc="subtotal['formatted_amount']"
+                    />
+                </td>
+            </tr>
+            <tr class="o_subtotal" t-if="document_type_id.code == '01' ">
+                <td>
+                    <strong>Importe Exonerado</strong>
+                </td>
+                <td class="text-right">
+                    <span t-options='{"widget": "monetary", "display_currency": o.currency_id}' t-esc="0.00"/>
+                </td>
+            </tr>
+            <tr class="o_subtotal" t-if="document_type_id.code == '01' ">
+                <td>
+                    <strong>Importe Exento</strong>
+                </td>
+                <td class="text-right">
+                    <span t-options='{"widget": "monetary", "display_currency": o.currency_id}' t-esc="0.00"/>
+                </td>
+            </tr>
+            <tr class="o_subtotal" t-if="document_type_id.code == '01' ">
+                <td>
+                    <strong>Importe Gravado 15%</strong>
+                </td>
+                <td class="text-right">
+                    <span
+                            t-att-class="oe_subtotal_footer_separator"
+                            t-esc="subtotal['formatted_amount']"
+                    />
+                </td>
+            </tr>
+            <tr class="o_subtotal" t-if="document_type_id.code == '01' ">
+                <td>
+                    <strong>Importe Gravado 18%</strong>
+                </td>
+                <td class="text-right">
+                    <span t-options='{"widget": "monetary", "display_currency": o.currency_id}' t-esc="0.00"/>
+                </td>
+            </tr>
+            <tr class="o_subtotal">
+                <td>
+                    <strong>Descuento y Rebajas Otorgados</strong>
+                </td>
+                <td class="text-right">
+                    <span t-esc="total_discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+
+            <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+            <t t-call="account.tax_groups_totals"/>
+        </t>
+
+        <!--Total amount with all taxes-->
+        <tr class="border-black o_total">
+            <td>
+                <strong>Total</strong>
+            </td>
+            <td class="text-right">
+                <span t-esc="tax_totals['formatted_amount_total']"/>
+            </td>
+        </tr>
+        <t t-if="o.currency_id != o.company_currency_id">
+            <tr>
+                <td>
+                    <strong>Total L</strong>
+                </td>
+                <td class="text-right">
+                    <span t-esc="o.amount_total_signed" t-options='{"widget": "monetary", "display_currency": o.company_currency_id}'/>
+                </td>
+            </tr>
+        </t>
+    </template>
+
+
+    <template id="report_purchaseorder_reception">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="bpc_aliadas.report_purchase_order_document_reception_aliadas" t-lang="o.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_purchase_order_reception" model="ir.actions.report">
+        <field name="name">Recepción orden de compra</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bpc_aliadas.report_purchaseorder_reception</field>
+        <field name="report_file">bpc_aliadas.report_purchaseorder_reception</field>
+        <field name="print_report_name">('Purchase Order Reception - %s' % (object.name))</field>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="bpc_aliadas.paperformat_purchase_custom"/>
+    </record>
+
+</odoo>

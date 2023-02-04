@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<!-- Allowance and Deductions -->
+	<record id="view_hr_alw_ded_tree" model="ir.ui.view">
+		<field name="name">hr.alw.ded.tree</field>
+		<field name="model">hr.alw.ded</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="name" />
+				<field name="employee_id" />
+				<!-- <field name="salary_rule_id" /> -->
+				<field name="hr_payslip_input_type_id" />
+				<field name="ad_date" />
+				<field name="amount" />
+				<field name="state" />
+				<field name="company_id" groups="base.group_multi_company" />
+			</tree>
+		</field>
+	</record>
+
+	<record id="view_hr_alw_ded_search" model="ir.ui.view">
+		<field name="name">hr.alw.ded.search</field>
+		<field name="model">hr.alw.ded</field>
+		<field name="arch" type="xml">
+			<search>
+				<field name="employee_id" />
+				<field name="name" string="Name or Description"
+					filter_domain="['|', ('name', 'ilike', self), ('note', 'ilike', self)]" />
+				<field name="hr_payslip_input_type_id" />
+				<separator />
+				<filter string="Allowance" name="ad_type_allow"
+					domain="[('ad_type', '=', 'allowance')]" />
+				<filter string="Deduction" name="ad_type_deduct"
+					domain="[('ad_type', '=', 'deduction')]" />
+				<separator />
+				<filter string="Confirmed" name="confirm" domain="[('state', '=', 'confirm')]" />
+				<filter string="Approved" name="approve" domain="[('state', '=', 'approve')]" />
+				<filter string="Done" name="done" domain="[('state', '=', 'done')]" />
+				<separator />
+				<separator />
+				<group expand="0" string="Group By">
+					<filter string="Employee" name="employee_id" context="{'group_by': 'employee_id'}" />
+					<filter string="Type" name="ad_type" context="{'group_by': 'ad_type'}" />
+					<filter string="Input Type" name="hr_payslip_input_type_id"
+						context="{'group_by': 'hr_payslip_input_type_id'}" />
+					<filter string="Status" name="state" context="{'group_by': 'state'}" />
+					<filter string="Date" name="ad_date" context="{'group_by': 'ad_date'}" />
+					<filter string="Company" name="company_id" context="{'group_by': 'company_id'}"
+						groups="base.group_multi_company" />
+				</group>
+			</search>
+		</field>
+	</record>
+
+	<record id="view_hr_alw_ded_form" model="ir.ui.view">
+		<field name="name">hr.alw.ded.form</field>
+		<field name="model">hr.alw.ded</field>
+		<field name="arch" type="xml">
+			<form>
+				<header>
+					<button name="btn_draft" string="Reset to Draft" type="object"
+						states="cancel" groups="hr.group_hr_manager" />
+					<button name="btn_confirm" string="Confirm" type="object"
+						class="btn-primary" states="draft" />
+					<button name="btn_approve" string="Approve" type="object"
+						class="btn-primary" states="confirm" confirm="Are you sure you want to approve ?"
+						groups="hr.group_hr_manager" />
+					<button name="btn_reject" string="Reject" type="object"
+						class="btn-secondary" states="confirm" groups="hr.group_hr_manager" />
+					<button name="btn_cancel" string="Cancel" type="object"
+						states="confirm,approve" groups="hr.group_hr_manager" />
+					<field name="state" widget="statusbar" statusbar_visible="draft,confirm,approve,done" />
+				</header>
+				<sheet>
+					<label for="name" class="oe_edit_only" />
+					<h1>
+						<field name="name" readonly="1" />
+					</h1>
+					<group>
+						<group>
+							<field name="employee_id"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+							<field name="ad_type" required="1"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+							<field name="hr_payslip_input_type_id" options="{'no_create': 1, 'no_create_edit': 1}"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" required="1" />
+							<field name="company_id" groups="base.group_multi_company"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+						</group>
+						<group>
+							<field name="ad_date" required="1"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+							<field name="amount"
+								attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+							<field name="create_uid" string="Recorded by" />
+							<field name="payslip_id" readonly="1"
+								attrs="{'invisible': [('payslip_id', '=', False)]}" />
+						</group>
+					</group>
+					<label for="note" />
+					<field name="note" required="1"
+						attrs="{'readonly': [('state', 'not in', ['draft'])]}" />
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids" groups="base.group_user" />
+					<!-- <field name="activity_ids" /> -->
+					<field name="message_ids" />
+				</div>
+			</form>
+		</field>
+	</record>
+
+	<record id="action_hr_alw_ded" model="ir.actions.act_window">
+		<field name="name">Allowances &amp; Deductions</field>
+		<field name="res_model">hr.alw.ded</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+
+	<menuitem id="menuitem_hr_alw_ded" sequence="90"
+		action="action_hr_alw_ded" parent="hr_work_entry_contract_enterprise.menu_hr_payroll_root" />
+
+</odoo>
