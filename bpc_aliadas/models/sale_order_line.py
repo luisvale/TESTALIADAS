@@ -40,7 +40,9 @@ class SaleOrderLine(models.Model):
 
 
     def _default_currency_rate(self):
-        currency_rate = self.order_id.currency_rate
+        currency_rate = 1
+        if self.order_id.currency_id != self.env.company.currency_id:
+            currency_rate = self.order_id.currency_rate
         return currency_rate
         #record.currency_rate = currency_rate
 
@@ -178,15 +180,25 @@ class SaleOrderLine(models.Model):
     def _compute_pricelist_line(self):
         for record in self:
             self.currency_external_id = record.pricelist_id.currency_id
+            record._onchange_currency_external_id()
 
-    @api.depends('currency_external_id', 'order_id.date_order')
-    def _compute_currency_rate(self):
+
+    @api.onchange('currency_external_id')
+    def _onchange_currency_external_id(self):
         for record in self:
-            #currency_rate = record.price_subtotal
-            currency_rate = 1
-            if record.order_id.currency_id != record.currency_external_id:
-                currency_rate = record.currency_external_id._convert(currency_rate, record.order_id.currency_id, record.company_id, record.order_id.date_order.date() or datetime.now().date())
-            record.currency_rate = currency_rate
+            if record.currency_external_id == record.env.company.currency_id:
+                record.currency_rate = 1
+
+    # @api.depends('currency_external_id', 'order_id.date_order')
+    # def _compute_currency_rate(self):
+    #     for record in self:
+    #         #currency_rate = record.price_subtotal
+    #         currency_rate = 1
+    #         if record.order_id.currency_id != record.currency_external_id:
+    #             currency_rate = record.currency_external_id._convert(currency_rate, record.order_id.currency_id, record.company_id, record.order_id.date_order.date() or datetime.now().date())
+    #         record.currency_rate = currency_rate
+
+
 
     @api.depends('currency_rate', 'price_subtotal')
     def _compute_amount_convert(self):

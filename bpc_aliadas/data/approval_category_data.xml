@@ -140,6 +140,26 @@
             <field name="approval_type">check_list</field>
         </record>
 
+         <record id="approval_category_data_sale_check_list_documents" model="approval.category">
+            <field name="name">Ventas / No cumple check-list documentos</field>
+            <field name="sequence">604</field>
+            <field name="has_date">no</field>
+            <field name="has_period">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_price_unit">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <!--            <field name="approval_minimum">0</field>-->
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">VCHECKDOC/</field>
+            <field name="approval_type">check_documents</field>
+        </record>
+
 
         <record id="approval_category_data_sale_change_currency" model="approval.category">
             <field name="name">Ventas / Cambio de moneda</field>
