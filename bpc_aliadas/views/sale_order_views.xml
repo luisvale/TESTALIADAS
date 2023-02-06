@@ -36,6 +36,7 @@
                     <field name="create_project_automatic_manual" invisible="1"/>
                     <field name="invoice_payment" invisible="1"/>
                     <field name="purchase_ids" widget="many2many_tags" invisible="1"/>
+                    <field name="analytic_account_id" />
                 </group>
             </xpath>
             <!--            <xpath expr="//group[@name='partner_details']" position="inside">-->

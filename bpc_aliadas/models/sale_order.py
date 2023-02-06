@@ -80,6 +80,8 @@ class SaleOrder(models.Model):
 
     send_mail_request = fields.Boolean(string='Envío mail aprobación', tracking=True)
 
+    analytic_account_id = fields.Many2one('account.analytic.account', 'Cuenta analítica')
+
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
     #     for record in self:
@@ -367,13 +369,13 @@ class SaleOrder(models.Model):
                    self._create_request('pricelist', price_list_id)
 
         #Evaluación de lista de procesos
-        # lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
-        # if lines_check and self.state == 'compliance':
-        #     _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
-        #     _request = self._exist_request_by_category(category='check_list')
-        #     if not _request:
-        #         continue_process = False
-        #         self._create_request('check_list')
+        lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
+        if lines_check and self.state == 'compliance':
+            _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
+            _request = self._exist_request_by_category(category='check_list')
+            if not _request:
+                continue_process = False
+                self._create_request('check_list')
 
         #Evaluación de Moneda
         lines_currency_change = self.order_line.filtered(lambda l: l.currency_external_id and l.product_currency_invoice_id and
@@ -477,6 +479,8 @@ class SaleOrder(models.Model):
     # TODO: ********************************************** PROCESO DE ALQUILER **********************************************
     @api.onchange('pricelist_id', 'order_line')
     def _onchange_pricelist_id(self):
+        if self.pricelist_id and self.pricelist_id.analytic_account_id:
+            self.analytic_account_id = self.pricelist_id.analytic_account_id
         self._eval_lines_pricelist()
         super(SaleOrder, self)._onchange_pricelist_id()
         #self._add_rental_line()
@@ -538,17 +542,21 @@ class SaleOrder(models.Model):
             for line in record.order_line:
                 rental_type = line.rental_type
                 name = line.product_id.name
-                if rental_type in ('consumption','consumption_min','consumption_fixed') and not record.hide_columns_mim_max and \
-                        self.env.user.has_group('bpc_aliadas.group_aliadas_sale_min_max_editable'):
+                if rental_type in ('consumption_min','rental_min','rental_percentage_top'):
                     if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
-                        raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna MÍNIMO o MÁXIMO para el producto %s " % name))
-
-                elif rental_type in ('rental_min', 'rental_percentage', 'rental_percentage_top'):
-                    if rental_type != 'rental_percentage':
-                        if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
-                            raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna MÍNIMO o MÁXIMO para el producto %s " % name))
-                    elif not line.percentage_sale or line.percentage_sale == 0.0:
                         raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna PORCENTAJE SOBRE VENTAS para el producto %s " % name))
+
+                # if rental_type in ('consumption','consumption_min','consumption_fixed') and not record.hide_columns_mim_max and \
+                #         self.env.user.has_group('bpc_aliadas.group_aliadas_sale_min_max_editable'):
+                #     if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
+                #         raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna MÍNIMO o MÁXIMO para el producto %s " % name))
+                #
+                # elif rental_type in ('rental_min', 'rental_percentage', 'rental_percentage_top'):
+                #     if rental_type != 'rental_percentage':
+                #         if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
+                #             raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna MÍNIMO o MÁXIMO para el producto %s " % name))
+                #     elif not line.percentage_sale or line.percentage_sale == 0.0:
+                #         raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna PORCENTAJE SOBRE VENTAS para el producto %s " % name))
 
 
     # #Todo: Restricción para cambio de tarifa

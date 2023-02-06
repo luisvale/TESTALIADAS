@@ -37,7 +37,14 @@ class SaleOrderLine(models.Model):
 
     pricelist_id = fields.Many2one('product.pricelist', string='Tarifa', ondelete="cascade", default=default_pricelist_order)
     currency_external_id = fields.Many2one('res.currency', string='Moneda')
-    currency_rate = fields.Float(store=True, string='T.Cambio')  # TIPO DE CAMBIO
+
+
+    def _default_currency_rate(self):
+        currency_rate = self.order_id.currency_rate
+        return currency_rate
+        #record.currency_rate = currency_rate
+
+    currency_rate = fields.Float(store=True, string='T.Cambio', default=_default_currency_rate)  # TIPO DE CAMBIO
     #currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='T.Cambio')  # TIPO DE CAMBIO
     amount_convert = fields.Monetary(string='Conversión', compute='_compute_amount_convert', store=True)
     not_update_price = fields.Boolean(string='No actualizar precio')
@@ -203,7 +210,11 @@ class SaleOrderLine(models.Model):
                                  ])
 
             if self.product_id.check_not_analytic:
-                find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max)
+                if self.order_id.analytic_account_id:
+                    find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
+                                                          i.pricelist_id.analytic_account_id == self.order_id.analytic_account_id)
+                else:
+                    find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max)
             else:
                 find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
                                          i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
