@@ -432,7 +432,7 @@ class PurchaseOrder(models.Model):
         for line in self.order_line:
 
             # Personalizado para aliadas
-            if not line.check_purchase:
+            if not line.check_purchase and not line.is_downpayment:
                 continue
             # Fin
 
@@ -440,9 +440,9 @@ class PurchaseOrder(models.Model):
                 # Only invoice the section if one of its lines is invoiceable
                 pending_section = line
                 continue
-            if line.display_type != 'line_note' and float_is_zero(line.qty_to_invoice, precision_digits=precision):
+            if line.display_type != 'line_note' and float_is_zero(line.qty_received, precision_digits=precision) and not line.is_downpayment:
                 continue
-            if line.qty_to_invoice > 0 or (line.qty_to_invoice < 0 and final) or line.display_type == 'line_note':
+            if line.qty_received > 0 or (line.qty_received <= 0 and final) or line.display_type == 'line_note':
                 if line.is_downpayment:
                     # Keep down payment lines separately, to put them together
                     # at the end of the invoice, in a specific dedicated section.

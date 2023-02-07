@@ -113,6 +113,9 @@
             <xpath expr="//field[@name='recurring_invoice_line_ids']//tree" position="attributes">
                 <attribute name="decoration-danger">approved_state == 'new'</attribute>
             </xpath>
+             <xpath expr="//group[@name='main']//button[@name='generate_recurring_invoice']" attributes="attributes">
+                <attribute name="groups">base.group_no_one,bpc_aliadas.group_aliadas_subscription_button_invoice</attribute>
+            </xpath>
         </field>
     </record>
 

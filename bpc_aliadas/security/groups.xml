@@ -83,6 +83,11 @@
             <field name="name">APROBACIÓN - Cancelar aprobaciones de forma forzada </field>
             <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
         </record>
+
+            <record id="group_aliadas_subscription_button_invoice" model="res.groups">
+            <field name="name">SUBSCRIPCIÓN - Botón generar factura </field>
+            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>
+        </record>
         <!--          <record id="group_aliadas_purchase_mail_supplier" model="res.groups">-->
         <!--            <field name="name">COMPRAS - Permitir cambio en mail de compras</field>-->
         <!--            <field name="category_id" ref="bpc_aliadas.module_category_aliadas"/>-->
