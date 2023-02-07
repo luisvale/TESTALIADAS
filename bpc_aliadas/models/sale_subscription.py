@@ -240,6 +240,7 @@ class SaleSubscription(models.Model):
 
         day_start_list = []
         if lines_locals:
+            x = 0
             for local in lines_locals:
                 if (local.pickup_start and local.pickup_end) or local.order_line_id:
                     lines, pending_invoiced = local._find_move_line(line.analytic_account_id, line.analytic_account_id.recurring_next_date)
@@ -259,7 +260,8 @@ class SaleSubscription(models.Model):
                     # Precio a facturar
                     # Cuándo se debe dividir entre 30?
                     amount_invoice += (total_subscription / 30 * days)
-                    name = 'SUBS_%s / %s - Días fact.: %s' % (self.ids[0], local.product_id.name, days)
+                    x += 1
+                    name = '(%s) SUBS_%s / %s - Días fact.: %s' % (x, self.ids[0], local.product_id.name, days)
                     tag = self.env['note.tag.bpc'].sudo().search([('name', '=', name)])
                     if tag:
                         tags.append((6, 0, tag.ids))
@@ -315,6 +317,7 @@ class SaleSubscription(models.Model):
             locals_ids = self.recurring_invoice_line_ids.filtered(lambda l: l.product_id.rent_ok)
             amount_invoice = 0.0
             tags = []
+            x = 0
             if locals_ids:
                 for local in locals_ids:
                     pickup_date = local.pickup_start + timedelta(hours=6)
@@ -325,7 +328,8 @@ class SaleSubscription(models.Model):
                     # Precio a facturar
                     # Cuándo se debe dividir entre 30?
                     amount_invoice += (total_subscription / 30 * days)
-                    name = 'SUBS_%s / Mant. %s - Días facturación: %s' % (self.ids[0], local.product_id.name, days)
+                    x += 1
+                    name = '(%s) SUBS_%s / Mant. %s - Días facturación: %s' % (x, self.ids[0], local.product_id.name, days)
                     tag = self.env['note.tag.bpc'].sudo().search([('name', '=', name)])
                     if tag:
                         tags.append((6, 0, tag.ids))
