@@ -131,22 +131,22 @@ class SaleOrder(models.Model):
                 currency_rate = record.currency_id._convert(1, record.company_id.currency_id, record.company_id, record.date_order.date() or datetime.now().date())
             record.currency_rate = currency_rate
 
-    def get_check_list(self):
-        for record in self:
-            list = []
-            check_list_actives = self.env['sale.order.check_list'].sudo().search([('state_active', '=', True), ('company_id', '=', record.company_id.id)])
-            if check_list_actives:
-                for item in check_list_actives:
-                    list.append((
-                        0, 0, {
-                            'check_list_id': item.id
-                        }
-                    ))
-                if list:
-                    record.sudo().write({'check_list_lines': list})
-
-            else:
-                raise ValidationError(_("No hay pasos en el checklist activos."))
+    # def get_check_list(self):
+    #     for record in self:
+    #         list = []
+    #         check_list_actives = self.env['sale.order.check_list'].sudo().search([('state_active', '=', True), ('company_id', '=', record.company_id.id)])
+    #         if check_list_actives:
+    #             for item in check_list_actives:
+    #                 list.append((
+    #                     0, 0, {
+    #                         'check_list_id': item.id
+    #                     }
+    #                 ))
+    #             if list:
+    #                 record.sudo().write({'check_list_lines': list})
+    #
+    #         else:
+    #             raise ValidationError(_("No hay pasos en el checklist activos."))
 
     def update_prices(self):
         if not self.payment_term_id:
@@ -305,7 +305,7 @@ class SaleOrder(models.Model):
         for record in self:
             record.eval_fields()
             if record.eval_limits():
-                _request = self._exist_request_by_category(category='check_list')
+                _request = self._exist_request_by_category(category='check_documents')
                 if _request and _request.request_status == 'approved':
                     res = super(SaleOrder, self).action_confirm()
                     if record.state == 'sale':
@@ -368,14 +368,14 @@ class SaleOrder(models.Model):
                    continue_process = False
                    self._create_request('pricelist', price_list_id)
 
-        #Evaluación de lista de procesos
-        lines_check = self.check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
+        #Evaluación de lista de documentos
+        lines_check = self.documents_check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
         if lines_check and self.state == 'compliance':
             _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
-            _request = self._exist_request_by_category(category='check_list')
+            _request = self._exist_request_by_category(category='check_documents')
             if not _request:
                 continue_process = False
-                self._create_request('check_list')
+                self._create_request('check_documents')
 
         #Evaluación de Moneda
         lines_currency_change = self.order_line.filtered(lambda l: l.currency_external_id and l.product_currency_invoice_id and
@@ -843,7 +843,7 @@ class SaleOrder(models.Model):
 
             template = self.env.ref('bpc_aliadas.mail_template_sale_order_check_documents', raise_if_not_found=False)
             try:
-                res = template.sudo().send_mail(sale.id,notif_layout='mail.mail_notification_light',force_send=True,)
+                res = template.sudo().send_mail(sale.id,notif_layout='mail.mail_notification_light', force_send=True)
                 _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
             except Exception as e:
                 _logger.warning("Error de envío a aprobador: %s " % e)
@@ -851,7 +851,7 @@ class SaleOrder(models.Model):
     @api.model
     def _cron_sale_order_approved_total(self):
         _logger.info("Ejecutando CRON - _cron_sale_order_approved_total ")
-        sales = self.sudo().search([('state', '=', 'pending'),('send_mail_request','=',False)])
+        sales = self.sudo().search([('state', '=', 'pending'), ('send_mail_request','=',False)])
         for sale in sales:
             approved_count_ids = sale.approval_request_ids.filtered(lambda l: l.request_status == 'approved')
             approved_count = len(approved_count_ids.ids)
@@ -863,6 +863,36 @@ class SaleOrder(models.Model):
                     sale.sudo().write({'send_mail_request': True})
                 except Exception as e:
                     _logger.warning("Error de envío a aprobador: %s " % e)
+
+    @api.model
+    def _cron_due_check_documents(self):
+        _logger.info("Ejecutando CRON - _cron_due_check_documents ")
+
+        orders = self.env['sale.order'].sudo().search([('state', '=', 'compliance')])
+
+        if orders:
+            _logger.info("Hay %s ordenes que se encuentran en estado de cumplimiento y no han llegado a la fecha" % len(orders.ids))
+
+            for o in orders:
+                _logger.info("Orden a evaluar : %s" % o.name)
+                document_lines = o.documents_check_list_lines.filtered(lambda l: not l.check and l.date_due and l.date_due < datetime.today().date())
+                if document_lines:
+                    _logger.info("%s Documentos encontrados" % len(document_lines.ids))
+                else:
+                    _logger.info("Documentos no encontrados")
+                for d in document_lines:
+                    _logger.info("Documento %s " % d.check_list_id.name)
+                    _logger.info("ALIADAS: Evaluando chek list de documentos ID %s correspondiente a la orden %s" % (d.id, o.name))
+                    if d.user_ids:
+                        for user_id in d.user_ids:
+                            d.sudo().activity_schedule('bpc_aliadas.mail_activity_data_check_list_process',
+                                                       user_id=user_id.id,
+                                                       note='Referencia a Orden %s' % o.name)
+
+                    else:
+                        _logger.info("ALIADAS: No se crea notificación, no tiene usuarios.")
+        else:
+            _logger.info("NO hay ordenes que se encuentran en estado de cumplimiento y no han llegado a la fecha.")
 
 
 class SaleOrderChecklistLines(models.Model):

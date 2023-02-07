@@ -37,8 +37,20 @@
         <!--            <field name="active">True</field>-->
         <!--        </record>-->
 
+        <record id="cron_sale_check_document_date_due" model="ir.cron">
+            <field name="name">Aliadas/Ventas: Notificaciones documentos vencidos</field>
+            <field name="model_id" ref="model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_due_check_documents()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active">True</field>
+        </record>
+
         <record id="cron_sale_order_check_list_documents" model="ir.cron">
-            <field name="name">Aliadas/Ventas: Check list de documentos</field>
+            <field name="name">Aliadas/Ventas: Check list de documentos completados</field>
             <field name="model_id" ref="model_sale_order"/>
             <field name="state">code</field>
             <field name="code">model._cron_sale_order_check_list_documents()</field>
@@ -49,7 +61,7 @@
             <field name="active">True</field>
         </record>
 
-         <record id="cron_sale_order_approved_total" model="ir.cron">
+        <record id="cron_sale_order_approved_total" model="ir.cron">
             <field name="name">Aliadas/Ventas: Notificar aprobación total de orden de venta</field>
             <field name="model_id" ref="model_sale_order"/>
             <field name="state">code</field>
@@ -61,12 +73,12 @@
             <field name="active">True</field>
         </record>
 
-          <record id="cron_purchase_order_approved_total" model="ir.cron">
+        <record id="cron_purchase_order_approved_total" model="ir.cron">
             <field name="name">Aliadas/Compras: Notificar aprobación total de orden de compra</field>
             <field name="model_id" ref="model_purchase_order"/>
             <field name="state">code</field>
             <field name="code">model._cron_purchase_order_approved_total()</field>
-           <field name="interval_number">5</field>
+            <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
             <field name="doall" eval="False"/>

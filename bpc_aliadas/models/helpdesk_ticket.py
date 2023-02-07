@@ -21,6 +21,8 @@ class HelpdeskTicket(models.Model):
     contract = fields.Char(string='Contrato', index=True, website_form_blacklisted=False)
     subscription_id = fields.Many2one('sale.subscription', string='Subscripción', compute='_compute_subscription_id', store=True,
                                       readonly=False, domain="[('partner_id','=',partner_id)]")
+    contract_name = fields.Char(string='Contrato', related='subscription_id.contract_name')
+
     local_ids = fields.Many2many('product.template', related='subscription_id.local_ids', string='Locales')
     square_id = fields.Many2one('account.analytic.account', string='Plaza')
 

@@ -188,6 +188,8 @@ class SaleOrderLine(models.Model):
         for record in self:
             if record.currency_external_id == record.env.company.currency_id:
                 record.currency_rate = 1
+            else:
+                record.currency_rate = record.order_id.currency_rate
 
     # @api.depends('currency_external_id', 'order_id.date_order')
     # def _compute_currency_rate(self):

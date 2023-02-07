@@ -53,7 +53,8 @@
                 <field name="approval_type" invisible="1"/>
             </xpath>
             <xpath expr="//button[@name='create_request']" position="attributes">
-                <attribute name="attrs">{'invisible': [('approval_type','in',('purchase_approved', 'purchase_budget', 'sale_margin','pricelist','payment_term'))]}</attribute>
+                <attribute name="attrs">{'invisible': [('approval_type','in',('purchase_approved', 'purchase_budget',
+                    'sale_margin','pricelist','payment_term','change_currency','check_documents'))]}</attribute>
             </xpath>
 
         </field>
