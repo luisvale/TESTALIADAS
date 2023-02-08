@@ -12,11 +12,13 @@ class HelpdeskTeam(models.Model):
     _inherit = 'helpdesk.team'
 
     is_maintenance = fields.Boolean(string='Es mantenimiento')
+    sale_team_id = fields.Many2one('crm.team', string='Equipo de ventas')
 
 class HelpdeskTicket(models.Model):
     _inherit = 'helpdesk.ticket'
 
     is_maintenance = fields.Boolean(related='team_id.is_maintenance')
+    sale_team_id = fields.Many2one('crm.team', related='team_id.sale_team_id')
     commercial_name = fields.Many2one('res.partner.commercial', string='Nombre comercial')
     contract = fields.Char(string='Contrato', index=True, website_form_blacklisted=False)
     subscription_id = fields.Many2one('sale.subscription', string='Subscripción', compute='_compute_subscription_id', store=True,

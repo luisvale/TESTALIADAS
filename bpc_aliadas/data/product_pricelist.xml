@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Price list -->
+        <record id="aliadas_pricelist_maintenance" model="product.pricelist">
+            <field name="name">Tarifa mantenimiento</field>
+            <field name="is_maintenance">1</field>
+            <field name="sequence">1000</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+    </data>
+</odoo>

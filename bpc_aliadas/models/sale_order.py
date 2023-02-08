@@ -10,14 +10,16 @@ from collections import defaultdict
 import json
 from .. import sale
 import logging
+
 _logger = logging.getLogger(__name__)
 
-STATE_PROSPECT = [('done', 'Confirmado'), ('draft', 'Prospecto'), ('cancel', 'Rechazado'), ('inactive','Inactivo')]
+STATE_PROSPECT = [('done', 'Confirmado'), ('draft', 'Prospecto'), ('cancel', 'Rechazado'), ('inactive', 'Inactivo')]
+
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    partner_prospect_id = fields.Many2one('res.partner',domain=[('active','=',False),('state','=','draft')], string='Prospecto cliente')
+    partner_prospect_id = fields.Many2one('res.partner', domain=[('active', '=', False), ('state', '=', 'draft')], string='Prospecto cliente')
     partner_prospect_state = fields.Selection(STATE_PROSPECT, compute='_compute_partner_prospect_state', string='Estado cliente')
 
     commercial_ids = fields.One2many(related='partner_id.commercial_ids')
@@ -70,7 +72,7 @@ class SaleOrder(models.Model):
     approval_cancel_count = fields.Float(compute='_compute_approval_required', copy=False, string='Canceladas/En espera')
     approval_force = fields.Boolean()
 
-    currency_rate = fields.Float(compute='_compute_currency_rate', store=True) #TIPO DE CAMBIO
+    currency_rate = fields.Float(compute='_compute_currency_rate', store=True)  # TIPO DE CAMBIO
 
     accept_and_signed = fields.Boolean(string='Aceptada y Firmada')
 
@@ -81,6 +83,8 @@ class SaleOrder(models.Model):
     send_mail_request = fields.Boolean(string='Envío mail aprobación', tracking=True)
 
     analytic_account_id = fields.Many2one('account.analytic.account', 'Cuenta analítica')
+
+    from_maintenance = fields.Boolean(string='Desde mantenimiento')
 
     # @api.onchange('partner_prospect_id')
     # def _onchange_partner_prospect_id(self):
@@ -147,6 +151,14 @@ class SaleOrder(models.Model):
     #
     #         else:
     #             raise ValidationError(_("No hay pasos en el checklist activos."))
+
+    @api.onchange('partner_id')
+    def onchange_partner_id(self):
+        super(SaleOrder, self).onchange_partner_id()
+        if self.from_maintenance:
+            pricelist_id = self.env['product.pricelist'].sudo().search([('is_maintenance', '=', True), ('company_id', '=', self.env.company.id)], limit=1)
+            if pricelist_id:
+                self.update({'pricelist_id': pricelist_id.id})
 
     def update_prices(self):
         if not self.payment_term_id:
@@ -220,7 +232,7 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).write(vals)
         self.test_exist_request_payment_term(vals, 'write', res)
         self._state_lead(vals)
-        #self._send_email_vendor(vals, res)
+        # self._send_email_vendor(vals, res)
         return res
 
     def test_exist_request_payment_term(self, vals, process, res):
@@ -232,7 +244,9 @@ class SaleOrder(models.Model):
 
         def _find(payment_term_id, record):
             _logger.info("ALIADAS: Revisando plazo de pago ...Se necesita ID %s - Usuario ingresa ID %s" % (account_payment_term_immediate_id, payment_term_id))
-            if payment_term_id != account_payment_term_immediate_id:
+            #ENVIA LA SOLICITUD DE PLAZO DE PAGO SI NO ES INMEDIATO Y PROVIENE DE MANTENIMIENTO
+            _logger.info("Proviene de mantenimiento : %s " % record.from_maintenance)
+            if payment_term_id != account_payment_term_immediate_id and record.from_maintenance:
                 # Evaluar si existe alguna solcitud
                 send = False
                 _request = record._exist_request_by_category(category='payment_term')
@@ -246,6 +260,7 @@ class SaleOrder(models.Model):
 
                 else:
                     _logger.info("ALIADAS: NO Se enviará solicitud por categoría término de pago, hay alguna ")
+
         if process == 'write':
             if self.authorization_payment_term:
                 _logger.info("ALIADAS: Write - Solicitando autorización para cambio de plazos de pago")
@@ -276,7 +291,6 @@ class SaleOrder(models.Model):
                     invoice_payment = True
             record.invoice_payment = invoice_payment
 
-
     # def _action_confirm(self):
     #     """ On SO confirmation, some lines should generate a task or a project. """
     #     result = super()._action_confirm()
@@ -292,7 +306,8 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         for record in self:
-            record.eval_fields()
+            if not record.from_maintenance:
+                record.eval_fields()
             if record.eval_limits():
                 res = super(SaleOrder, self).action_confirm()
                 if record.state == 'sale':
@@ -303,10 +318,13 @@ class SaleOrder(models.Model):
 
     def action_continue_process(self):
         for record in self:
+            _logger.info("ALIADAS / Aplicación de button * action_continue_process * - proviene de mant. %s " % record.from_maintenance)
             record.eval_fields()
             if record.eval_limits():
                 _request = self._exist_request_by_category(category='check_documents')
-                if _request and _request.request_status == 'approved':
+                if record.from_maintenance: #Si proviene de mantimiento y ya evaluó la aprobación de margen y pago inmediato entonces que pase a venta
+                    return super(SaleOrder, self).action_confirm()
+                elif _request and _request.request_status == 'approved':
                     res = super(SaleOrder, self).action_confirm()
                     if record.state == 'sale':
                         record._send_email_vendor()
@@ -322,7 +340,6 @@ class SaleOrder(models.Model):
         #     raise ValidationError(_("Hay un proceso en el check list que no se ha completado. Paso : %s" % not_check.check_list_id.name))
         self.action_confirm()
 
-
     def refresh_state(self):
         self._compute_approval_required()
         form = Form(self)
@@ -332,7 +349,7 @@ class SaleOrder(models.Model):
         # Evaluacion de margen
         _logger.info("ALIADAS: Evaluación de margen y lista de precios.")
         continue_process = True
-        if self.margin_test < self.env.company.sale_margin and self.purchase_ids:
+        if self.margin_test < self.env.company.sale_margin and self.purchase_ids and self.from_maintenance:
             _logger.info("ALIADAS: Evaluación de margen.")
             _request = self._exist_request_by_category(category='sale_margin')
             if not _request:
@@ -353,34 +370,33 @@ class SaleOrder(models.Model):
 
         # Evaluación para lista de precios
         line_approved_required = self.order_line.filtered(lambda l: l.pricelist_id.required_authorization and self.env.user.id not in l.pricelist_id.user_ids.ids)
-        if line_approved_required:
+        if line_approved_required and not self.from_maintenance:
             _logger.info("Se econtraron líneas que requiren aprobación de lista de precios: Total - %s" % len(line_approved_required.ids))
             pricelist_line = defaultdict(list)
             for line_price in line_approved_required:
                 pricelist_line[line_price.pricelist_id.id].append(line_price)
 
-
             for price_list_id, line_pricelist in pricelist_line.items():
-               _logger.info("ALIADAS: Evaluación de lista de precios.")
-               #_request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
-               _request = self._exist_request_by_category(category='pricelist', pricelist_id=price_list_id)
-               if not _request:
-                   continue_process = False
-                   self._create_request('pricelist', price_list_id)
+                _logger.info("ALIADAS: Evaluación de lista de precios.")
+                # _request = self._exist_request_by_category(category='list_price', pricelist=line_pricelist.pricelist_id)
+                _request = self._exist_request_by_category(category='pricelist', pricelist_id=price_list_id)
+                if not _request:
+                    continue_process = False
+                    self._create_request('pricelist', price_list_id)
 
-        #Evaluación de lista de documentos
+        # Evaluación de lista de documentos
         lines_check = self.documents_check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
-        if lines_check and self.state == 'compliance':
+        if lines_check and self.state == 'compliance' and not self.from_maintenance:
             _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")
             _request = self._exist_request_by_category(category='check_documents')
             if not _request:
                 continue_process = False
                 self._create_request('check_documents')
 
-        #Evaluación de Moneda
+        # Evaluación de Moneda
         lines_currency_change = self.order_line.filtered(lambda l: l.currency_external_id and l.product_currency_invoice_id and
-                                                                    l.currency_external_id != l.product_currency_invoice_id)
-        if lines_currency_change:
+                                                                   l.currency_external_id != l.product_currency_invoice_id)
+        if lines_currency_change and not self.from_maintenance:
             _logger.info("Se econtraron líneas que requiren aprobación de monedas: Total - %s" % len(lines_currency_change.ids))
             _request = self._exist_request_by_category(category='change_currency')
             if not _request:
@@ -481,9 +497,10 @@ class SaleOrder(models.Model):
     def _onchange_pricelist_id(self):
         if self.pricelist_id and self.pricelist_id.analytic_account_id:
             self.analytic_account_id = self.pricelist_id.analytic_account_id
-        self._eval_lines_pricelist()
+        if not self.from_maintenance:
+            self._eval_lines_pricelist()
         super(SaleOrder, self)._onchange_pricelist_id()
-        #self._add_rental_line()
+        # self._add_rental_line()
 
     def _add_rental_line(self):
         for record in self:
@@ -536,13 +553,12 @@ class SaleOrder(models.Model):
 
         return values
 
-
     def eval_fields(self):
         for record in self:
             for line in record.order_line:
                 rental_type = line.rental_type
                 name = line.product_id.name
-                if rental_type in ('consumption_min','rental_min','rental_percentage_top'):
+                if rental_type in ('consumption_min', 'rental_min', 'rental_percentage_top'):
                     if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
                         raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna PORCENTAJE SOBRE VENTAS para el producto %s " % name))
 
@@ -558,10 +574,9 @@ class SaleOrder(models.Model):
                 #     elif not line.percentage_sale or line.percentage_sale == 0.0:
                 #         raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna PORCENTAJE SOBRE VENTAS para el producto %s " % name))
 
-
     # #Todo: Restricción para cambio de tarifa
     # @api.onchange('pricelist_id', 'order_line')
-        # def _onchange_pricelist_id(self):
+    # def _onchange_pricelist_id(self):
     #     self._eval_lines_pricelist()
     #     return super(SaleOrder, self)._onchange_pricelist_id()
 
@@ -574,8 +589,8 @@ class SaleOrder(models.Model):
 
                 _find_pricelist = record._eval_local_pricelist()
                 if _find_pricelist:
-                   continue
-                #Evaluación de productos solo para renta
+                    continue
+                # Evaluación de productos solo para renta
                 lines_diff = record.order_line.filtered(lambda l: l.product_id.analytic_account_id != analytic_account_id and l.product_id.rent_ok)
                 if lines_diff:
                     for l in lines_diff:
@@ -585,7 +600,7 @@ class SaleOrder(models.Model):
                                                                                                                       l.product_id.name,
                                                                                                                       l.product_id.analytic_account_id.name
                                                                                                                       )
-                        #raise ValidationError(_(msg))
+                        # raise ValidationError(_(msg))
 
     def _eval_local_pricelist(self):
         _find_pricelist = False
@@ -605,7 +620,7 @@ class SaleOrder(models.Model):
                     #         lines_local.pricelist_id = _find_pricelist
             if _find_pricelist:
                 for l in self.order_line:
-                    #if not l.pricelist_id:
+                    # if not l.pricelist_id:
                     l.pricelist_id = _find_pricelist
         return _find_pricelist
 
@@ -685,10 +700,10 @@ class SaleOrder(models.Model):
                         tmpl_id = line.product_id.product_tmpl_id
                         total_qty = sum(line.product_uom_qty for line in lines_local)
                         lc = lines_local[0]
-                        #for lc in lines_local:
+                        # for lc in lines_local:
                         categ_local_id = lc.product_id.product_tmpl_id.categ_id
                         classification_id = lc.product_id.product_tmpl_id.classification_id
-                        pp_items = self.env['product.pricelist.item'].sudo().search([('product_tmpl_id','=',tmpl_id.id),('combination_type','!=',False)])
+                        pp_items = self.env['product.pricelist.item'].sudo().search([('product_tmpl_id', '=', tmpl_id.id), ('combination_type', '!=', False)])
                         # Se comentó el día 03-02-2022
                         # Se cruza con este método: _find_pricelist_by_price
                         # if pp_items:
@@ -706,7 +721,7 @@ class SaleOrder(models.Model):
                         #             line.price_min = pp_item.fixed_price
                         #             line.pricelist_id = pp_item.pricelist_id
 
-    #TODO: ---------------- CRM ------------------
+    # TODO: ---------------- CRM ------------------
     def _change_stage_opportunity(self, vals):
         """Cambiar el estado de la oportunidad"""
         if type(vals) == dict:
@@ -719,7 +734,7 @@ class SaleOrder(models.Model):
         lead_id = self.opportunity_id
         if lead_id:
             if 'state' in vals:
-                if vals['state'] == 'sent' and lead_id.stage_id.type_stage in ('quote','negotiation'):
+                if vals['state'] == 'sent' and lead_id.stage_id.type_stage in ('quote', 'negotiation'):
                     lead_id.lead_next_stage('quote_send')
                 elif vals['state'] == 'sale' and lead_id.stage_id.type_stage == 'document_review':
                     lead_id.lead_next_stage('contract')
@@ -734,7 +749,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         res = dict()
         new_sub_lines = self.order_line.filtered(lambda l: not l.subscription_id and l.subscription_template_id and l.product_id.recurring_invoice)
-        #templates = new_sub_lines.mapped('product_id').mapped('subscription_template_id')
+        # templates = new_sub_lines.mapped('product_id').mapped('subscription_template_id')
         templates = new_sub_lines.mapped('subscription_template_id')
         for template in templates:
             lines = self.order_line.filtered(lambda l: l.subscription_template_id == template and l.product_id.recurring_invoice)
@@ -789,11 +804,10 @@ class SaleOrder(models.Model):
         res = template.sudo().send_mail(sale_order.id, force_send=True, notif_layout='mail.mail_notification_light')
         _logger.info("Envio de correo al comercial - %s" % res)
         msg = _('Estimado, %s . La orden de venta % ha sido confirmada.') % (sale_order.user_id.name, sale_order.name)
-        sale_order.sudo().message_post(body=msg, message_type='comment',subtype_xmlid='mail.mt_comment')
-
-
+        sale_order.sudo().message_post(body=msg, message_type='comment', subtype_xmlid='mail.mt_comment')
 
         # def action_quotation_send(self):
+
     #     ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
     #     self.ensure_one()
     #     template_id = self._find_mail_template()
@@ -843,7 +857,7 @@ class SaleOrder(models.Model):
 
             template = self.env.ref('bpc_aliadas.mail_template_sale_order_check_documents', raise_if_not_found=False)
             try:
-                res = template.sudo().send_mail(sale.id,notif_layout='mail.mail_notification_light', force_send=True)
+                res = template.sudo().send_mail(sale.id, notif_layout='mail.mail_notification_light', force_send=True)
                 _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
             except Exception as e:
                 _logger.warning("Error de envío a aprobador: %s " % e)
@@ -851,7 +865,7 @@ class SaleOrder(models.Model):
     @api.model
     def _cron_sale_order_approved_total(self):
         _logger.info("Ejecutando CRON - _cron_sale_order_approved_total ")
-        sales = self.sudo().search([('state', '=', 'pending'), ('send_mail_request','=',False)])
+        sales = self.sudo().search([('state', '=', 'pending'), ('send_mail_request', '=', False)])
         for sale in sales:
             approved_count_ids = sale.approval_request_ids.filtered(lambda l: l.request_status == 'approved')
             approved_count = len(approved_count_ids.ids)

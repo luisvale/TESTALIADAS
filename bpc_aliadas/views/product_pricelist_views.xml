@@ -8,6 +8,7 @@
                 <field name="analytic_account_id"/>
                 <field name="is_start"/>
                 <field name="required_authorization"/>
+                <field name="is_maintenance"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Usuarios">

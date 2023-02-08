@@ -13,7 +13,7 @@
     <!--            <field name="active">True</field>-->
     <!--        </record>-->
     <!--    </data>-->
-    <data>
+    <data noupdate="1">
         <record id="cron_maintenance_periodic" model="ir.cron">
             <field name="name">Aliadas/Manteniento: Generar mantenimiento periodico</field>
             <field name="model_id" ref="model_maintenance_periodic"/>

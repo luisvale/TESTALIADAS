@@ -15,6 +15,7 @@ class ProductPricelist(models.Model):
     analytic_account_id = fields.Many2one('account.analytic.account', 'Cuenta analítica')
     is_start = fields.Boolean(string='Es inicio')
     required_authorization = fields.Boolean(string='Requiere autorización', tracking=True)
+    is_maintenance = fields.Boolean(string='Es mantenimiento')
 
 
 COMB_TYPE = [('category', 'Categoría'),

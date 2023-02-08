@@ -36,6 +36,31 @@
         </record>
 
         <!-- TREE -->
+        <record model="ir.ui.view" id="view_maintenance_periodic_master_tree">
+            <field name="name">maintenance.periodic.master.tree</field>
+            <field name="model">maintenance.periodic</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree sample="1">
+                    <field name="date_start" optional="show"/>
+                    <field name="date_end" optional="show"/>
+                    <field name="name"/>
+                    <field name="description" optional="show"/>
+                    <field name="user_id"/>
+                    <field name="maintenance_type" optional="show"/>
+                    <field name="maintenance_team_id" optional="show"/>
+                    <field name="state" optional="show"/>
+                    <field name="parent_id" optional="show" />
+                    <field name="purchase_requisition_id" optional="show"/>
+                    <field name="picking_id" optional="show"/>
+                    <field name="currency_id" optional="show"/>
+                    <field name="total_cost_material" optional="show"/>
+                    <field name="total_cost_work" optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+         <!-- TREE -->
         <record model="ir.ui.view" id="view_maintenance_periodic_tree">
             <field name="name">maintenance.periodic.tree</field>
             <field name="model">maintenance.periodic</field>
@@ -50,7 +75,8 @@
                     <field name="maintenance_type" optional="show"/>
                     <field name="maintenance_team_id" optional="show"/>
                     <field name="state" optional="show"/>
-                    <field name="parent_id" optional="show"/>
+                    <field name="level_id" optional="show" />
+                    <field name="parent_id" optional="show" />
                     <field name="purchase_requisition_id" optional="show"/>
                     <field name="picking_id" optional="show"/>
                     <field name="currency_id" optional="show"/>
@@ -144,6 +170,7 @@
                                        widget="many2many_tags"/>
                                 <field name="company_id"/>
                                 <field name="currency_id"/>
+                                <field name="level_id"  attrs="{'invisible': [('is_master','=',True)]}"/>
                             </group>
 
                         </group>
@@ -335,7 +362,7 @@
             <field name="context">{"default_is_master": True}</field>
             <field name="domain">[('is_master','=', True)]</field>
             <field name="view_ids" eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_maintenance_periodic_tree')}),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_maintenance_periodic_master_tree')}),
                 (0, 0, {'view_mode': 'form', 'view_id': ref('view_maintenance_periodic_form')})]"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
