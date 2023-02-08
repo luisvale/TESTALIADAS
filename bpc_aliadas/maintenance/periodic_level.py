@@ -35,7 +35,7 @@ def eval_periodic_child(master):
     child = master.env['maintenance.periodic'].sudo().search([('state', 'not in', ['cancel']), ('parent_id', '=', master.id)],
                                                              order="date_start DESC", limit=1)
 
-    if not child:
+    if not child or child and not child.analytic_line_ids:
         _logger.info("Sin hijos. Se contemplarán todos los niveles hasta la fecha.")
         days_past = (now_date - master.date_start).days
         periodicity_days = periodicity_line_ids.filtered(lambda l: l.days <= days_past)
