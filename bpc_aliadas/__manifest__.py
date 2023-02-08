@@ -10,7 +10,7 @@
     'company': 'BPC LATAM',
     'website': "https://www.bpc-lat.com/",
     'category': 'Sales',
-    'version': '15.0.14.13',
+    'version': '15.0.14.14',
     # any module necessary for this one to work correctly
     'depends': ['base','hn_einvoice', 'purchase_requisition','purchase','sale','sale_renting','sale_subscription','account_budget','sales_team',
                 'purchase_stock', 'approvals', 'purchase_requisition_stock','crm_helpdesk','website_helpdesk_form', 'hr', 'helpdesk_stock',
@@ -77,7 +77,6 @@
         'views/hr_salary_attachment_deduction.xml',  #add 02-02-23
         'website/helpdesk_service.xml', #add 04-01-23
         'data/website_data.xml', #add 04-01-23
-
         #wizard
         'wizard/purchase_order_approved_wizard.xml',
         'wizard/purchase_make_invoice_advance_views.xml',
@@ -85,7 +84,6 @@
         'wizard/sale_subscription_masive_wizard.xml',
         'wizard/account_payment_register_views.xml',
         #'wizard/mail_wizard_invite_views.xml',
-
         #report
         #'report/purchase_order_templates.xml',
         #'report/purchase_quotation_templates.xml',

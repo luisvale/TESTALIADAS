@@ -354,7 +354,7 @@ class SaleOrder(models.Model):
             _request = self._exist_request_by_category(category='sale_margin')
             if not _request:
                 continue_process = False
-                self._create_request('margin')
+                self._create_request('sale_margin')
         # Evalación para lista de preocios
         # line_approved_required = self.order_line.filtered(lambda l: l.approved_required)
         # if line_approved_required:
