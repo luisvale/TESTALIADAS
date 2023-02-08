@@ -7,6 +7,7 @@
             <xpath expr="//field[@name='detailed_type']" position="after">
                 <field name="document_type_sale_id"/>
                 <!--                <field name="auto_requisition"/>-->
+                <field name="check_not_analytic"/>
                 <field name="analytic_account_id"/>
                 <field name="classification_id"/>
                 <field name="rental_type"/>

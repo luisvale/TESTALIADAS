@@ -10,11 +10,12 @@
                     <field name="contract" class="oe_inline"/>
                     <button name="view_subscription_by_contract" attrs="{'invisible': [('contract','=',False)]}"
                             class="btn btn-link ml-2" string="Ver contrato"
-                            title="Ver contrato"
+                            title="Ver contrato" placeholder="Ingrese contrato"
                             icon="fa-arrow-circle-o-right"
                             type="object"/>
                 </div>
                 <field name="subscription_id"/>
+                <field name="contract_name" attrs="{'invisible': [('contract','!=', False)]}" widget="badge"/>
                 <field name="local_ids" widget="many2many_tags"/>
                 <field name="square_id" />
             </xpath>
@@ -31,6 +32,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='ticket_type_id']" position="before">
                 <field name="contract"/>
+                <field name="contract_name" optional="hide"/>
             </xpath>
         </field>
     </record>
@@ -54,6 +56,7 @@
             <xpath expr="//sheet/group[1]" position="after">
                 <group>
                     <field name="is_maintenance"/>
+                    <field name="sale_team_id"/>
                 </group>
             </xpath>
         </field>

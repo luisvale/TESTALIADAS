@@ -45,6 +45,7 @@ class ProductTemplate(models.Model):
     meter2 = fields.Float(string='Medida arrendada', digits=(16, 4))
     meter_real = fields.Float(string='Medida real', digits=(16, 4))
     rental_type = fields.Selection(RENTAL_TYPE, string='Variable')
+    check_not_analytic = fields.Boolean(string='No evaluar cuenta analítica')
     analytic_account_id = fields.Many2one('account.analytic.account', 'Cuenta analítica')
     #auto_requisition = fields.Boolean(string='Auto licitación', help='Genera licitaciones de forma automática, dependiendo de los proveedores')
     document_type_sale_id = fields.Many2one('document.type', domain=[('in_sale', '=', True)], string='Tipo documento')

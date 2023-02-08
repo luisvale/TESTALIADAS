@@ -43,6 +43,8 @@ class MaintenancePeriodic(models.Model):
     state = fields.Selection(STATES, string='Estado', default='draft', tracking=True)
     parent_id = fields.Many2one('maintenance.periodic', string='Origen')
 
+    level_id = fields.Many2one('maintenance.level', string='Nivel', compute='_compute_level_id')
+
     @api.model
     def _default_origin(self):
         location = self.env['stock.location'].sudo().search([('company_id','=',self.env.company.id), ('maintenance_use','=','origin')], limit=1)
@@ -165,8 +167,18 @@ class MaintenancePeriodic(models.Model):
             raise ValidationError(_("En la sección tareas no puede tener líneas con horas reales en cero."))
         self.state = 'finished'
 
+    @api.depends('analytic_line_ids')
+    def _compute_level_id(self):
+        for record in self:
+            level_ids = record.analytic_line_ids.mapped('level_id')
+            if level_ids:
+                record.level_id = level_ids[0]
+            else:
+                record.level_id = False
+
     @api.model
     def _cron_maintenance_periodic(self):
+        _logger.info("Ejecutando CRON _cron_maintenance_periodic")
         #masters = self.sudo().search([('is_master','=',True),('state','=','process'),('active','=',True),('id','=',4)])
         masters = self.sudo().search([('is_master', '=', True), ('state', '=', 'process'), ('active', '=', True)])
         for master in masters:

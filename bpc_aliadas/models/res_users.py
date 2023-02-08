@@ -33,3 +33,4 @@ class ResUsersAnalytics(models.Model):
     default = fields.Boolean(string='Predeterminada')
 
 
+

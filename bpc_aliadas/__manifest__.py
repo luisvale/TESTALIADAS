@@ -10,11 +10,11 @@
     'company': 'BPC LATAM',
     'website': "https://www.bpc-lat.com/",
     'category': 'Sales',
-    'version': '15.0.14.0',
+    'version': '15.0.14.13',
     # any module necessary for this one to work correctly
     'depends': ['base','hn_einvoice', 'purchase_requisition','purchase','sale','sale_renting','sale_subscription','account_budget','sales_team',
                 'purchase_stock', 'approvals', 'purchase_requisition_stock','crm_helpdesk','website_helpdesk_form', 'hr', 'helpdesk_stock',
-                'helpdesk'],
+                'helpdesk', 'industry_fsm_sale'],
     # always loaded
     'data': [
         #security
@@ -29,9 +29,11 @@
         'data/payment_method_data.xml',
         'data/website_helpdesk.xml',
         'data/mail_template_approval_data.xml',
+        'data/mail_template_notify_user.xml',
         'data/sale_mail_template.xml',
         'data/precision_decimal.xml',
         'data/salary_deduction_data.xml',
+        'data/product_pricelist.xml',
         #views
         'views/res_bank_views.xml',
         'views/purchase_requisition_views.xml',

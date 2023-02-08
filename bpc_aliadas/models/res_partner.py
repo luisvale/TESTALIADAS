@@ -181,6 +181,7 @@ class ResPartner(models.Model):
         else:
             raise ValidationError(_("No se encontró subscripciones relacionadas al contacto %s" % self.name))
 
+
 class DocumentsChecklistLines(models.Model):
     _name = "documents.check_list.lines"
     _description = 'Check list documentos'
@@ -188,14 +189,20 @@ class DocumentsChecklistLines(models.Model):
     _order = 'id desc'
 
     partner_id = fields.Many2one('res.partner', string='Partner')
-    now = fields.Date(related='partner_id.now')
+    now = fields.Date(compute='_compute_now')
     check_list_id = fields.Many2one('documents.check_list', string='Paso')
     check_list_type = fields.Selection(related='check_list_id.type')
     check_list_id_sequence = fields.Integer(related='check_list_id.sequence')
     check = fields.Boolean(string='Check')
     description = fields.Char(string='Observación')
     date_due = fields.Date(string='Fecha vencimiento')
+    user_ids = fields.Many2many('res.users')
 
+
+
+    def _compute_now(self):
+        for record in self:
+            record.now = datetime.now().date()
 
 
 class AccountFiscalPosition(models.Model):

@@ -23,9 +23,10 @@
             </xpath>
             <xpath expr="//group[@name='partner_details']" position="replace">
                 <group name="partner_details">
-                    <field name="partner_prospect_id" attrs="{'invisible': [('state','=','sale')]}"
+                    <field name="partner_prospect_id" attrs="{'invisible': ['|',('state','=','sale'),('from_maintenance','=',True)]}"
                            context="{'default_state': 'draft', 'default_active': False, 'default_model': 'sale.order', 'default_order_id': id}"/>
-                    <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
+                    <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}'
+                           attrs="{'invisible': [('state','!=','sale'),('from_maintenance','=',False)]}"/>
                     <field name="partner_prospect_state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"
                            attrs="{'invisible': ['|',('partner_prospect_id','=',False),('state','=','sale')]}"/>
                     <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}" options='{"always_reload": True}' attrs="{'invisible': [('state','!=','sale')]}"/>
@@ -35,7 +36,9 @@
                     <field name="perm_can_project" invisible="1"/>
                     <field name="create_project_automatic_manual" invisible="1"/>
                     <field name="invoice_payment" invisible="1"/>
-                    <field name="purchase_ids" widget="many2many_tags" invisible="1"/>
+                     <field name="analytic_account_id" />
+                    <field name="from_maintenance" />
+                    <field name="purchase_ids" widget="many2many_tags" attrs="{'invisible': [('from_maintenance','!=',True)]}"/>
                 </group>
             </xpath>
             <!--            <xpath expr="//group[@name='partner_details']" position="inside">-->
@@ -106,25 +109,39 @@
             </xpath>
 
             <xpath expr="//notebook" position="inside">
-                <page string="Check-list procesos" groups="bpc_aliadas.group_sale_check_list">
-                    <div class="mb-3">
-                        <button type="object" name="get_check_list" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"
-                                title="Traer pasos de checklist de forma automáctica" attrs="{'invisible': [('state','=','sale')]}"/>
-                    </div>
-                    <field name="check_list_lines">
-                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now or check == False and date_due != False">
-                            <field name="sale_id" invisible="1"/>
-                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id)]"/>
-                            <field name="check_list_id_sequence" invisible="1"/>
-                            <field name="check"/>
-                            <field name="description"/>
-                            <field name="now" invisible="1"/>
-                            <field name="date_due" optional="show"/>
-                            <field name="user_ids" string="Usuarios" widget="many2many_tags" optional="show"/>
-                        </tree>
-                    </field>
-                </page>
-                <page string="Check-list documentos">
+<!--                <page string="Check-list procesos" groups="bpc_aliadas.group_sale_check_list">-->
+<!--                    <div class="mb-3">-->
+<!--                        <button type="object" name="get_check_list" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"-->
+<!--                                title="Traer pasos de checklist de forma automáctica" attrs="{'invisible': [('state','=','sale')]}"/>-->
+<!--                    </div>-->
+<!--                    <field name="check_list_lines">-->
+<!--                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now or check == False and date_due != False">-->
+<!--                            <field name="sale_id" invisible="1"/>-->
+<!--                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id)]"/>-->
+<!--                            <field name="check_list_id_sequence" invisible="1"/>-->
+<!--                            <field name="check"/>-->
+<!--                            <field name="description"/>-->
+<!--                            <field name="now" invisible="1"/>-->
+<!--                            <field name="date_due" optional="show"/>-->
+<!--                            <field name="user_ids" string="Usuarios" widget="many2many_tags" optional="show"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+<!--                </page>-->
+<!--                <page string="Check-list documentos">-->
+<!--                    <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">-->
+<!--                        <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">-->
+<!--                            <field name="partner_id" invisible="1"/>-->
+<!--                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>-->
+<!--                            <field name="now" invisible="1"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+<!--                </page> -->
+                <page string="Check-list documentos" attrs="{'invisible': [('from_maintenance','=',True)]}">
                     <field name="documents_check_list_lines" context="{'default_partner_id': partner_id}">
                         <tree editable="bottom" default_order="check_list_id_sequence asc" decoration-danger="date_due &lt; now and check == False and date_due != False">
                             <field name="partner_id" invisible="1"/>
@@ -134,6 +151,7 @@
                             <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
                             <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="user_ids" string="Usuarios" widget="many2many_tags" optional="show"/>
                             <field name="now" invisible="1"/>
                         </tree>
                     </field>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!-- <record id="mail_template_sale_order_check_list" model="mail.template">
+             <field name="name">Email lista de procesos vencida</field>
+             <field name="model_id" ref="model_sale_order_check_list_lines"/>
+             <field name="subject">Vencimiento de proceso : {{ object.check_list_id.name }}</field>
+             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+             <field name="email_to">{{ object.user_id.email }}</field>
+             <field name="body_html" type="html">
+                 <div style="margin: 0px; padding: 0px;">
+                     <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                         Hola,
+                         <t t-out="object.user_id.name or ''"/>
+                         .
+                         <br/>
+                         <br/>
+                         El proceso con nombre
+                         <strong t-out="object.check_list_id.name or ''"/>
+                         ha vencido el
+                         "<strong t-out="object.date_due"/>" ,
+                         relacionada a
+
+                         <t t-if="object.sale_id">
+                             la orden de venta "<strong t-out="object.sale_id.name or ''"/>"
+                         </t>
+                         <t t-else="">
+                             " - "
+                         </t>,
+                         <br/>
+                     </p>
+                 </div>
+             </field>
+             <field name="auto_delete" eval="True"/>
+         </record>
+ -->
+        <record id="mail_template_sale_order_check_documents" model="mail.template">
+            <field name="name">Email lista de documentos completada</field>
+            <field name="model_id" ref="model_sale_order"/>
+            <field name="subject">Check list documentos de cliente : {{ object.name }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object.user_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola,
+                        <t t-out="object.user_id.name or ''"/>
+                        .
+                        <br/>
+                        <br/>
+                        La lista de documentos del cliente
+                        <strong t-out="object.partner_id.name or ''"/>
+                        ha sido completada:
+                        <br/>
+                        <table style=" border-collapse: collapse;
+                                    margin: 25px 0;
+                                    font-size: 0.9em;
+                                    font-family: sans-serif;
+                                    min-width: 600px;
+                                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+                                    border: 1px">
+                            <t t-set="i" t-value="0"/>
+                            <thead>
+                                <tr style="font-weight: bold; background:#e1dfdf;">
+                                    <th style="width:8%">#</th>
+                                    <th>Descripción</th>
+                                    <th>Check</th>
+                                    <th>Observación</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="object.documents_check_list_lines" t-as="doc">
+                                    <t t-set="i" t-value="i+1"/>
+                                    <tr>
+                                        <td style="text-align:center; color:#b71697">
+                                            <t t-out="i"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <t t-out="doc.check_list_id.name"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <t t-if="doc.check">
+                                                Si
+                                            </t>
+                                            <t t-else="">
+                                                No
+                                            </t>
+                                        </td>
+                                        <td>
+                                            <t t-out="doc.description"/>
+                                        </td>
+                                        <td>
+                                            <t t-out="doc.date_due"/>
+                                        </td>
+
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+
+        <record id="mail_template_sale_order_complete_approved" model="mail.template">
+            <field name="name">Email aprobación completa (Ventas)</field>
+            <field name="model_id" ref="model_sale_order"/>
+            <field name="subject">Orden aprobada : {{ object.name }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object.user_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola,
+                        <t t-out="object.user_id.name or ''"/>
+                        .
+                        <br/>
+                        <br/>
+                        Las solicitudes de aprobación fueron aceptadas, ahora puede consultar el estado de
+                        la orden de venta para pasar a la siguiente etapa.
+                        <strong t-out="object.name or ''"/>
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_purchase_order_complete_approved" model="mail.template">
+            <field name="name">Email aprobación completa (Compras)</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="subject">Orden aprobada : {{ object.name }}</field>
+            <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object.user_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola,
+                        <t t-out="object.user_id.name or ''"/>
+                        .
+                        <br/>
+                        <br/>
+                        Las solicitudes de aprobación fueron aceptadas, ahora puede consultar el estado de
+                        la orden de venta para pasar a la siguiente etapa.
+                        <strong t-out="object.name or ''"/>
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

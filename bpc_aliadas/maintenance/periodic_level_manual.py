@@ -10,8 +10,8 @@ _logger = logging.getLogger(__name__)
 def eval_periodic_child(self):
     master = self.parent_id
     periodicity_line_ids = master.periodicity_line_ids
-    now_date = date.today()
-    #now_date = date(2023, 2, 26)
+    # now_date = date.today()
+    now_date = date(2023, 7, 30)
     # START : master update intervals
     maxim = len(periodicity_line_ids.ids)
     pos = 1
@@ -34,122 +34,71 @@ def eval_periodic_child(self):
         x_pos += 1
     # Fin de actualización de intervalos
 
-    # Agrupación
-    group_factory = []
-    q = 1
-    _logger.info("Agrupando niveles")
-    for level in periodicity_line_ids:
-        y = master.env['maintenance.periodicity.line'].sudo()
-        for i in range(0, q):
-            y += periodicity_line_ids[i]
-            # y.append(periodicity_line_ids[i])
-        group_factory.append(y)
-        q += 1
+    level_to_assign = []
 
-    if group_factory:
-        level_to_assign = []
+    # ÚLTIMO GENERADO
+    child = master.env['maintenance.periodic'].sudo().search([('state', 'not in', ['cancel']),
+                                                              ('parent_id', '=', master.id),
+                                                              ('id', 'not in', self.ids),
+                                                              ],
+                                                             order="date_start DESC", limit=1)
 
-        # LLegó al nivel máximo
-        upper_level = False
+    if not child:
+        _logger.info("Sin hijos. Se contemplarán todos los niveles hasta la fecha.")
+        days_past = (now_date - master.date_start).days
+        periodicity_days = periodicity_line_ids.filtered(lambda l: l.days <= days_past)
 
-        # ÚLTIMO GENERADO
-        child = master.env['maintenance.periodic'].sudo().search([('state', 'not in', ['cancel']), ('parent_id', '=', master.id),
-                                                                  ('id', 'not in', self.ids)],
-                                                                 order="date_start DESC", limit=1)
-        if not child:
-            _logger.info("Sin hijos. Se contemplarán todos los niveles hasta la fecha.")
-            days_past = (now_date - master.date_start).days
-            for x in group_factory:
-                max_days = max(x.mapped('days'))
-                periodicity_days = periodicity_line_ids.filtered(lambda l: l.days == max_days)
-                interval = periodicity_days.interval
-                max_interval_start = periodicity_days.interval_start
-                if days_past >= max_days:
-                    new_date_start = master.date_start + timedelta(days=max_days)
-                    new_date_end = new_date_start + timedelta(days=interval)
+        for periodic_line in periodicity_days:
+            if periodic_line.level_id.id in master.analytic_line_ids.mapped('level_id').ids:
+                new_date_start = master.date_start + timedelta(days=periodic_line.days)
+                new_date_end = new_date_start + timedelta(days=periodic_line.interval)
+                level_to_assign.append({
+                    'start': new_date_start,
+                    'end': new_date_end,
+                    'lines': periodic_line
+                })
+
+    else:
+        level_ids = child.analytic_line_ids.mapped('level_id')  # Últimos niveles generados
+        levels_analytic = master.analytic_line_ids.mapped('level_id')
+        level_top = False
+        for p in periodicity_line_ids:
+            if p.level_id.id in levels_analytic.ids:
+                level_top = p
+
+        refresh = False
+        if level_ids[0] == level_top:
+            refresh = True
+
+        _logger.info("Refresh %s " % refresh)
+
+        if not refresh:
+            level_pending_ids = periodicity_line_ids.mapped('level_id') - level_ids
+        else:
+            level_pending_ids = periodicity_line_ids.mapped('level_id')
+        periodicity_days_to_do = periodicity_line_ids.filtered(lambda l: l.level_id.id in level_pending_ids.ids)  # Periodicidad pendiente
+        periodicity_done = periodicity_line_ids.filtered(lambda l: l.level_id.id in level_ids.ids)  # Periodicidad realizada
+
+        date_return = False
+        for periodic_line in periodicity_days_to_do:
+            if periodic_line.level_id.id in master.analytic_line_ids.mapped('level_id').ids:
+                if not date_return:
+                    date_return = child.date_end
+                new_date_start = date_return + timedelta(days=1)
+                _logger.info("A crear con la fecha %s " % new_date_start)
+                if new_date_start <= now_date:
+                    new_date_end = new_date_start + timedelta(days=periodic_line.interval)
+
+                    date_return = new_date_end
+                    # new_date_start = master.date_start + timedelta(days=periodic_line.days)
+                    # new_date_end = new_date_start + timedelta(days=periodicity_days_to_do.interval)
                     level_to_assign.append({
                         'start': new_date_start,
                         'end': new_date_end,
-                        'lines': x
+                        'lines': periodic_line
                     })
-                    # level_to_assign[new_date_start].append(x)
-                    # level_to_assign.append(x)
-            # level_to_assign = group_factory
-        else:
-            if child and not child.date_start:
-                raise ValidationError(_("Asegúrese que el Mant.Periódico con ID %s tenga una fecha de inicio" % child.id))
-            if child and not child.date_end:
-                raise ValidationError(_("Asegúrese que el Mant.Periódico con ID %s tenga una fecha de fin" % child.id))
 
-            last_line_level = periodicity_line_ids[len(periodicity_line_ids.ids) - 1]  # última línea de nivel de mi tarea master
-            level_last = last_line_level.level_id  # último nivel de mi tarea master
-            leve_ids = child.analytic_line_ids.mapped('level_id').ids  # ids de niveles de mi tareas hijas
-            if level_last.id in leve_ids:
-                _logger.info("Llegó al nivel TOP. Se tomará en cuenta reinicio de proceso de generación de mantenimientos periódicos.")
-                upper_level = True  # Reiniciar el proceso de generación de mant.periódicos
-            else:
-                _logger.info("Aún no llega al nivel TOP, se tomarán los niveles faltantes")
-                upper_level = False  # Continuar con los niveles faltantes
-
-            if not upper_level:
-                parent_periodicity_level_ids = master.periodicity_line_ids.mapped('level_id')  # todos los niveles del padre
-                child_analytic_line_ids = child.analytic_line_ids
-                all_level_ids = child_analytic_line_ids.mapped('level_id')  # todos los niveles de mi mant. periódico hasta el momento
-                lack_levels = parent_periodicity_level_ids - all_level_ids  # niveles faltante
-                sum_intervals = 0
-                for level_id in lack_levels:
-                    for g in group_factory:
-                        leve_ids = g.mapped('level_id')
-                        if level_id.id not in leve_ids.ids:
-                            pass
-                        else:
-                            # ¿A pesar que no está, debería agregarlo?
-                            # Revisar el intervalo del nivel y si sumado a la fecha final es menor a hoy
-                            line_periodicity = master.periodicity_line_ids.filtered(lambda l: l.level_id.id == level_id.id)
-                            interval = line_periodicity.interval
-                            interval_start = line_periodicity.interval_start
-                            # days = line_periodicity.days  # INTERVAL + 1
-                            nex_date_start = child.date_start + timedelta(days=interval_start + sum_intervals)
-                            if nex_date_start <= now_date:  # evaluo si la próxima fecha de inicio de una hipotética tarea periódica es menor a la fecha de hoy
-                                level_to_assign.append({
-                                    'start': nex_date_start,
-                                    'end': nex_date_start + timedelta(days=line_periodicity.interval),
-                                    'lines': g
-                                })
-                                # level_to_assign[nex_date_start].append(g)
-                                sum_intervals += interval_start
-                                # level_to_assign.append(g)
-                                break
-            else:
-                parent_periodicity_level_ids = master.periodicity_line_ids.mapped('level_id')  # todos los niveles del padre
-                for level_id in parent_periodicity_level_ids:
-                    for g in group_factory:
-                        leve_ids = g.mapped('level_id')
-                        if level_id.id not in leve_ids.ids:
-                            pass
-                        else:
-                            # ¿A pesar que no está, debería agregarlo?
-                            # Revisar el intervalo del nivel y si sumado a la fecha final es menor a hoy
-                            line_periodicity = master.periodicity_line_ids.filtered(lambda l: l.level_id.id == level_id.id)
-                            interval = line_periodicity.interval + 1
-                            days = line_periodicity.days  # INTERVAL + 1
-                            nex_date_start = child.date_start + timedelta(days=days)
-                            if nex_date_start <= now_date:  # evaluo si la próxima fecha de inicio de una hipotética tarea periódica es menor a la fecha de hoy
-                                level_to_assign.append({
-                                    'start': nex_date_start,
-                                    'end': nex_date_start + timedelta(days=line_periodicity.interval),
-                                    'lines': g
-                                })
-                                # level_to_assign[nex_date_start].append(g)
-                                # level_to_assign.append(g)
-                                break
-
-                # level_to_assign = group_factory
-
-        return _create_maintenance_periodicity(master, level_to_assign, self)
-
-    else:
-        return "No hay niveles a asignar. Lista vacía."
+    return _create_maintenance_periodicity(master, level_to_assign, self)
 
 
 def _create_maintenance_periodicity(master, level_to_assign, self):

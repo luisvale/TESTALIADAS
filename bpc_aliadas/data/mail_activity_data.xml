@@ -36,5 +36,12 @@
             <field name="active">False</field>
             <field name="res_model">sale.order.check_list.lines</field>
         </record>
+          <record id="mail_activity_data_check_list_documents" model="mail.activity.type">
+            <field name="name">Check-list documentos</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">False</field>
+            <field name="res_model">sale.order.check_list.lines</field>
+        </record>
     </data>
 </odoo>

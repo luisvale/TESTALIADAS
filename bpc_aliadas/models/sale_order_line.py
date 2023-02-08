@@ -37,7 +37,16 @@ class SaleOrderLine(models.Model):
 
     pricelist_id = fields.Many2one('product.pricelist', string='Tarifa', ondelete="cascade", default=default_pricelist_order)
     currency_external_id = fields.Many2one('res.currency', string='Moneda')
-    currency_rate = fields.Float(store=True, string='T.Cambio')  # TIPO DE CAMBIO
+
+
+    def _default_currency_rate(self):
+        currency_rate = 1
+        if self.order_id.currency_id != self.env.company.currency_id:
+            currency_rate = self.order_id.currency_rate
+        return currency_rate
+        #record.currency_rate = currency_rate
+
+    currency_rate = fields.Float(store=True, string='T.Cambio', default=_default_currency_rate)  # TIPO DE CAMBIO
     #currency_rate = fields.Float(compute='_compute_currency_rate', store=True, string='T.Cambio')  # TIPO DE CAMBIO
     amount_convert = fields.Monetary(string='Conversión', compute='_compute_amount_convert', store=True)
     not_update_price = fields.Boolean(string='No actualizar precio')
@@ -171,15 +180,27 @@ class SaleOrderLine(models.Model):
     def _compute_pricelist_line(self):
         for record in self:
             self.currency_external_id = record.pricelist_id.currency_id
+            record._onchange_currency_external_id()
 
-    @api.depends('currency_external_id', 'order_id.date_order')
-    def _compute_currency_rate(self):
+
+    @api.onchange('currency_external_id')
+    def _onchange_currency_external_id(self):
         for record in self:
-            #currency_rate = record.price_subtotal
-            currency_rate = 1
-            if record.order_id.currency_id != record.currency_external_id:
-                currency_rate = record.currency_external_id._convert(currency_rate, record.order_id.currency_id, record.company_id, record.order_id.date_order.date() or datetime.now().date())
-            record.currency_rate = currency_rate
+            if record.currency_external_id == record.env.company.currency_id:
+                record.currency_rate = 1
+            else:
+                record.currency_rate = record.order_id.currency_rate
+
+    # @api.depends('currency_external_id', 'order_id.date_order')
+    # def _compute_currency_rate(self):
+    #     for record in self:
+    #         #currency_rate = record.price_subtotal
+    #         currency_rate = 1
+    #         if record.order_id.currency_id != record.currency_external_id:
+    #             currency_rate = record.currency_external_id._convert(currency_rate, record.order_id.currency_id, record.company_id, record.order_id.date_order.date() or datetime.now().date())
+    #         record.currency_rate = currency_rate
+
+
 
     @api.depends('currency_rate', 'price_subtotal')
     def _compute_amount_convert(self):
@@ -201,8 +222,16 @@ class SaleOrderLine(models.Model):
                                  ('product_id', 'in', self.product_id.ids),
                                  ('categ_id', '=', self.product_id.product_tmpl_id.categ_id.id),
                                  ])
-            find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
-                                     i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
+
+            if self.product_id.check_not_analytic:
+                if self.order_id.analytic_account_id:
+                    find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
+                                                          i.pricelist_id.analytic_account_id == self.order_id.analytic_account_id)
+                else:
+                    find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max)
+            else:
+                find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
+                                         i.pricelist_id.analytic_account_id == self.product_id.product_tmpl_id.analytic_account_id)
             if find_items:
                 pricelist_id = find_items[0].pricelist_id
                 _logger.info("Lista de precio encontrada : %s " % pricelist_id.name)
