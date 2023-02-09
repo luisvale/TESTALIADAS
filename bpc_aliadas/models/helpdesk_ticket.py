@@ -8,6 +8,12 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+class HelpdeskStage(models.Model):
+    _inherit = 'helpdesk.stage'
+
+    send_mail = fields.Boolean(string='Enviar email automático', help='Al activar este campo cuándo el ticket pase a este estado tomará la plantilla de mail'
+                                                                      ' y lo enviará directamente al cliente.')
+
 class HelpdeskTeam(models.Model):
     _inherit = 'helpdesk.team'
 
@@ -27,6 +33,8 @@ class HelpdeskTicket(models.Model):
 
     local_ids = fields.Many2many('product.template', related='subscription_id.local_ids', string='Locales')
     square_id = fields.Many2one('account.analytic.account', string='Plaza')
+
+    #send_mail = fields.Boolean(compute='_compute_send_mail', tracking=True, string='Mail enviado')
 
     @api.constrains('product_id','partner_id')
     def _constraint_product_and_partner(self):
@@ -102,3 +110,17 @@ class HelpdeskTicket(models.Model):
     def _onchange_commercial_name(self):
         if self.commercial_name:
             self.partner_id = self.commercial_name.partner_id
+
+
+    @api.onchange('stage_id')
+    def _onchange_stage_id(self):
+        for record in self:
+            if record.stage_id.send_mail and record.stage_id.template_id:
+                _logger.info("Envío de email para estado : %s " % record.stage_id.name)
+                template = self.env.ref('bpc_aliadas.mail_template_helpdesk_ticket_rejection', raise_if_not_found=False)
+                try:
+                    res = template.sudo().send_mail(record.id, notif_layout='mail.mail_notification_light', force_send=True, )
+                    _logger.info("Resultado del envío: %s " % res)
+                except Exception as e:
+                    _logger.warning("Error de envío de correo en ticket: %s " % e)
+

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="mail_template_helpdesk_ticket_rejection" model="mail.template">
+            <field name="name">Email Helpdesk rechazo</field>
+            <field name="model_id" ref="model_helpdesk_ticket"/>
+            <field name="subject">Ticket : {{ object.name }}</field>
+            <field name="email_from">"{{ object.user_id.name }}" &lt;{{ (object.company_id.email or object.user_id.email) }}&gt;</field>
+            <field name="email_to">{{ object.partner_email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hola
+                        <t t-if="object.partner_id">
+                            , <t t-out="object.partner_id.name or ''"/>.
+                        </t>
+                        <br/>
+                        <br/>
+                        Se le notifica que el ticket con id # <strong t-out="object.id or ''"/> ha sido RECHAZADO.
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

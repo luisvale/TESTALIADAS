@@ -323,7 +323,8 @@ class SaleOrder(models.Model):
             if record.eval_limits():
                 _request = self._exist_request_by_category(category='check_documents')
                 if record.from_maintenance: #Si proviene de mantimiento y ya evaluó la aprobación de margen y pago inmediato entonces que pase a venta
-                    return super(SaleOrder, self).action_confirm()
+                    super(SaleOrder, self).action_confirm()
+                    record.sudo().create_project_manual()
                 elif _request and _request.request_status == 'approved':
                     res = super(SaleOrder, self).action_confirm()
                     if record.state == 'sale':

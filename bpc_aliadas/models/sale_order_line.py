@@ -111,7 +111,7 @@ class SaleOrderLine(models.Model):
 
     def _timesheet_service_generation(self):
         order_id = self.mapped('order_id')
-        if order_id.not_project and not order_id.perm_can_project:
+        if order_id.not_project and not order_id.perm_can_project and not order_id.from_maintenance:
             _logger.info("ALIADAS: NO debería crear proyecto")
             pass
         else:

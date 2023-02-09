@@ -62,4 +62,15 @@
         </field>
     </record>
 
+      <record id="helpdesk_stage_view_form_aliadas" model="ir.ui.view" >
+        <field name="model">helpdesk.stage</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_stage_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sequence']" position="after">
+               <field name="send_mail"/>
+            </xpath>
+        </field>
+    </record>
+
+
 </odoo>
