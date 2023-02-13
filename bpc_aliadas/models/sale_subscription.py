@@ -42,6 +42,11 @@ class SaleSubscription(models.Model):
     approval_approved_count = fields.Float(compute='_compute_approval_required', copy=False, string='Aprobadas')
     approval_cancel_count = fields.Float(compute='_compute_approval_required', copy=False, string='Canceladas/En espera')
 
+    date_renewal = fields.Date(string='Fecha renovación')
+    lead_id = fields.Many2one('crm.lead', string='Lead')
+
+    button_close_available = fields.Boolean(compute='_compute_button_close_available')
+
     @api.model
     def _create_request(self, product_ids):
 
@@ -173,7 +178,7 @@ class SaleSubscription(models.Model):
         self.ensure_one()
         revenue_date_start = self.recurring_next_date
         revenue_date_stop = revenue_date_start + relativedelta(**{PERIODS[self.recurring_rule_type]: self.recurring_interval}) - relativedelta(days=1)
-        lines = self.recurring_invoice_line_ids.filtered(lambda l: not float_is_zero(l.quantity, precision_rounding=l.product_id.uom_id.rounding))
+        lines = self.recurring_invoice_line_ids.filtered(lambda l: not float_is_zero(l.quantity, precision_rounding=l.product_id.uom_id.rounding) and l.approved_state == 'approved')
         list_lines = []
         lines_locals = []
         for line in lines:
@@ -314,7 +319,7 @@ class SaleSubscription(models.Model):
         recurring_next_date = self.recurring_next_date
         #if sale:
         if line.rental_type == 'm2':
-            locals_ids = self.recurring_invoice_line_ids.filtered(lambda l: l.product_id.rent_ok)
+            locals_ids = self.recurring_invoice_line_ids.filtered(lambda l: l.product_id.rent_ok and l.approved_state == 'approved')
             amount_invoice = 0.0
             tags = []
             x = 0
@@ -650,7 +655,7 @@ class SaleSubscription(models.Model):
 
     def _eval_fields(self):
         for record in self:
-            recurring_invoice_line_ids = record.recurring_invoice_line_ids
+            recurring_invoice_line_ids = record.recurring_invoice_line_ids.filtered(lambda l: l.approved_state == 'approved')
             for line in recurring_invoice_line_ids:
                 rental_type = line.rental_type
                 name = line.product_id.name
@@ -664,11 +669,13 @@ class SaleSubscription(models.Model):
                             raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna PORCENTAJE SOBRE VENTAS para el producto %s " % name))
                         # if not line.amount_sale or line.amount_sale == 0.0:
                         #     raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna VENTAS para el producto %s " % name))
+                    elif rental_type == 'consumption':
+                        pass
                     else:
                         if (not line.amount_min or line.amount_min == 0.0) and (not line.amount_max or line.amount_max == 0.0):
                             raise ValidationError(_("Asegúrese de tener un valor ingresado en la columna MÍNIMO o MÁXIMO para el producto %s " % name))
 
-            find_document = recurring_invoice_line_ids.filtered(lambda l: not l.document_type_sale_id)
+            find_document = recurring_invoice_line_ids.filtered(lambda l: not l.document_type_sale_id and l.approved_state == 'approved')
             if find_document:
                 raise ValidationError(_("Asegúrese de establecer un tipo de documento para el producto %s " % name))
 
@@ -712,7 +719,7 @@ class SaleSubscription(models.Model):
     @api.depends('recurring_invoice_line_ids', 'recurring_invoice_line_ids.pending_amount')
     def _compute_check_pending_amount(self):
         for record in self:
-            lines = record.recurring_invoice_line_ids.filtered(lambda r: r.pending_amount > 0.0)
+            lines = record.recurring_invoice_line_ids.filtered(lambda l: l.pending_amount > 0.0 and l.approved_state == 'approved')
             record.check_pending_amount = True if len(lines.ids) > 0 else False
 
     def _lines_to_process(self):
@@ -729,8 +736,8 @@ class SaleSubscription(models.Model):
                         ''' % self.id)
 
         query_res = self._cr.fetchall()
-        ril_all = self.recurring_invoice_line_ids
-        ril_local = self.recurring_invoice_line_ids._filtered_local_by_line()
+        ril_all = self.recurring_invoice_line_ids.filtered(lambda l: l.approved_state == 'approved')
+        ril_local = self.recurring_invoice_line_ids.filtered(lambda l: l.approved_state == 'approved')._filtered_local_by_line()
         ril_not_local = ril_all - ril_local
         lines_list = []
         if ril_local:
@@ -843,7 +850,7 @@ class SaleSubscription(models.Model):
     def _compute_local_ids(self):
         for record in self:
             templates = self.env['product.template'].sudo()
-            for line in record.recurring_invoice_line_ids:
+            for line in record.recurring_invoice_line_ids.filtered(lambda l: l.approved_state == 'approved'):
                 product_rental_id = self.env.ref('bpc_aliadas.rental_product_bpc')
                 if line.product_id.rent_ok and line.product_id.id != product_rental_id.id:
                     templates += line.product_id.product_tmpl_id
@@ -862,8 +869,8 @@ class SaleSubscription(models.Model):
                 pending_count = len(pending_count_ids.ids)
                 approved_count = len(approved_count_ids.ids)
                 cancel_count = len(cancel_count_ids.ids)
-                if len(record.approval_request_ids.ids) == approved_count and record.state == 'pending':
-                    pass
+                #if len(record.approval_request_ids.ids) == approved_count and record.state == 'pending':
+                #    pass
                     #record.state = 'approved'
             record.approval_pending_count = pending_count
             record.approval_approved_count = approved_count
@@ -873,7 +880,57 @@ class SaleSubscription(models.Model):
     def _onchange_maintenance_equipment_ids(self):
         for record in self:
             if record.maintenance_equipment_ids and record.recurring_invoice_line_ids:
-                lines = record.recurring_invoice_line_ids.filtered(lambda l: l.rental_type == 'tonnage')
+                lines = record.recurring_invoice_line_ids.filtered(lambda l: l.rental_type == 'tonnage' and l.approved_state == 'approved')
                 for line in lines:
                     price_unit = sum(e.tonnage_id.price if e.tonnage_id else 0.0 for e in record.maintenance_equipment_ids)
                     line.sudo().write({'price_unit': price_unit})
+
+    def _compute_button_close_available(self):
+        for record in self:
+            button_close_available = False
+            permission = record.env.user.has_group('bpc_aliadas.group_aliadas_subscription_button_close_contract')
+            if not permission:
+                request = record.env['approval.request'].sudo().search([('subscription_id','=', record.id),
+                                                                        ('approval_type','=','subs_close_contract'),
+                                                                        ('company_id','=', record.company_id.id),
+                                                                        ('request_status','=','approved')
+                                                                        ], limit=1)
+                if not request:
+                    _logger.info("No hay solicitud para esta subscripción")
+                else:
+                    button_close_available = True
+            else:
+                button_close_available = True
+
+            record.button_close_available = button_close_available
+
+    @api.model
+    def _cron_led_from_subscription(self):
+        _logger.info("Ejecutando CRON _cron_led_from_subscription")
+        now = datetime.now().date()
+        subscription_to_renewal = self.sudo().search([('date_renewal', '<=', now), ('lead_id', '=', False), ('stage_id.category','=','progress')])
+        if subscription_to_renewal:
+            for subs in subscription_to_renewal:
+
+                try:
+                    lead_id = self.env['crm.lead'].create({
+                        'name': 'Renovación de %s' % subs.name,
+                        'type': 'lead',
+                        'subscription_id': subs.id,
+                        'probability': 50,
+                        'user_id': subs.user_id.id,
+                        'partner_id': subs.partner_id.id,
+                        'partner_prospect_id': subs.partner_id.id,
+                        'email_from': subs.partner_id.email,
+                        'phone': subs.partner_id.phone,
+                        'mobile': subs.partner_id.mobile,
+                    })
+
+                    subs.sudo().write({'lead_id': lead_id.id})
+                except Exception as e:
+                    _logger.info("Error al crear el lead : %s " % e)
+
+
+        else:
+            _logger.info("No hay subscripciones a renovar")
+

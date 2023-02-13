@@ -49,6 +49,7 @@ class CrmLead(models.Model):
 
     partner_prospect_id = fields.Many2one('res.partner', domain=[('active', '=', False), ('state', '=', 'draft')], string='Prospecto cliente')
     partner_prospect_state = fields.Selection(STATE_PROSPECT, compute='_compute_partner_prospect_state', string='Estado cliente')
+    subscription_id = fields.Many2one('sale.subscription', string='Subscripción', tracking=True)
 
     is_paid = fields.Boolean(string='Pagado')
     is_firm = fields.Boolean(string='Firmado')

@@ -658,6 +658,9 @@ class PurchaseOrder(models.Model):
             if len(purchase.approval_request_ids.ids) == approved_count and purchase.state == 'pending':
                 template = self.env.ref('bpc_aliadas.mail_template_purchase_order_complete_approved', raise_if_not_found=False)
                 try:
+                    purchase.sudo().activity_schedule('bpc_aliadas.mail_activity_data_purchase_order_approved',
+                                                  user_id=purchase.user_id.id,
+                                                  note='Las solicitudes de la orden de compra %s han sido aprobadas' % purchase.name)
                     res = template.sudo().send_mail(purchase.id, notif_layout='mail.mail_notification_light', force_send=True, )
                     _logger.info("Resultado del envío a usuario %s es : %s " % (purchase.user_id.name, res))
                     purchase.sudo().write({'send_mail_request': True})

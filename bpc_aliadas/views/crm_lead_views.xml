@@ -20,6 +20,9 @@
                 <field name="partner_prospect_state"  widget="badge" decoration-info="partner_prospect_id == 'draft'" decoration-success="partner_prospect_id == 'done'"
                            attrs="{'invisible': [('partner_prospect_id','=',False)]}"/>
             </xpath>
+            <xpath expr="//field[@name='source_id']" position="after">
+                <field name="subscription_id"/>
+            </xpath>
         </field>
     </record>
 

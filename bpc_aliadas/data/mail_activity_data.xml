@@ -43,5 +43,53 @@
             <field name="active">False</field>
             <field name="res_model">sale.order.check_list.lines</field>
         </record>
+
+           <record id="mail_activity_data_helpdesk_ticket_refused" model="mail.activity.type">
+            <field name="name">Rechazo de ticket</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">helpdesk.ticket</field>
+        </record>
+
+          <record id="mail_activity_data_approval_request_send" model="mail.activity.type">
+            <field name="name">Solicitud de aprobación</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">approval.request</field>
+        </record>
+
+          <record id="mail_activity_data_purchase_order_approved" model="mail.activity.type">
+            <field name="name">Orden de compra aprobada</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">purchase.order</field>
+        </record>
+
+           <record id="mail_activity_data_sale_order_confirm" model="mail.activity.type">
+            <field name="name">Pedido de venta confirmado</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+          <record id="mail_activity_data_sale_order_check_list_documents" model="mail.activity.type">
+            <field name="name">Check list de documentos completados</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+           <record id="mail_activity_data_sale_order_approved_request" model="mail.activity.type">
+            <field name="name">Consulta aprobacioón</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="sequence">40</field>
+            <field name="active">True</field>
+            <field name="res_model">sale.order</field>
+        </record>
     </data>
 </odoo>

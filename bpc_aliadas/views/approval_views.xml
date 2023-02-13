@@ -54,7 +54,8 @@
             </xpath>
             <xpath expr="//button[@name='create_request']" position="attributes">
                 <attribute name="attrs">{'invisible': [('approval_type','in',('purchase_approved', 'purchase_budget',
-                    'sale_margin','pricelist','payment_term','change_currency','check_documents'))]}</attribute>
+                    'sale_margin','pricelist','payment_term','change_currency','check_documents'))]}
+                </attribute>
             </xpath>
 
         </field>
@@ -79,7 +80,8 @@
         <field name="inherit_id" ref="approvals.approval_request_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='request_main']" position="inside">
-                <field name="sale_id" attrs="{'invisible': [('sale_id','=',False)]}"/>
+                <field name="approval_type"/>
+                <field name="sale_id" attrs="{'invisible': [('sale_id','=',False),('approval_type','!=','sale_percentage')]}" options="{'no_create': True}"/>
                 <field name="origin" invisible="1"/>
                 <field name="purchase_id" attrs="{'invisible':[('approval_type','not in',['purchase_advance','purchase_approved','purchase_budget'])],
                     'required':[('approval_type','=','purchase_advance')]}" domain="[('state','=','purchase')]"/>
@@ -90,10 +92,10 @@
                 'required':[('approval_type','=','purchase_advance'),('purchase_advance_amount','=',0.0)]}"/>
                 <field name="requisition_id" attrs="{'invisible':[('requisition_id','=',False)]}"/>
                 <field name="requisition_currency_id" attrs="{'required': [('approval_type','=','purchase_requisition')], 'invisible': [('approval_type','!=','purchase_requisition')]}"/>
-                <field name="department_id" attrs="{'required': [('approval_type','in',('job_position','purchase_requisition','purchase'))]}"/>
+                <field name="department_id" attrs="{'required': [('approval_type','in',('job_position','purchase_requisition','purchase'))]}" options="{'no_create': True}"/>
                 <field name="job_id" attrs="{'invisible': [('job_id','=',False)]}"/>
                 <field name="pricelist_id" attrs="{'invisible': [('pricelist_id','=',False)]}"/>
-                <field name="subscription_id" attrs="{'invisible': [('subscription_id','=',False)]}"/>
+                <field name="subscription_id" attrs="{'invisible':[('approval_type', 'not in', ['subs_new_product','subs_close_contract','subs_plus_mac'])]}"/>
                 <field name="product_ids" attrs="{'invisible': [('subscription_id','=',False)]}" widget="many2many_tags"/>
                 <field name="sale_margin_diff" attrs="{'invisible':[('approval_type','!=','sale_margin')]}"/>
             </xpath>
@@ -149,13 +151,21 @@
         <field name="inherit_id" ref="approvals.approval_product_line_view_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='quantity']" position="after">
+                <field name="category_id" invisible="1"/>
                 <field name="approval_type" invisible="1"/>
                 <field name="price_unit" attrs="{
                     'column_invisible': [('parent.has_price_unit', '=', 'no')],
                     'required': [('parent.has_price_unit', '=', 'required'), ('parent.request_status', '!=', 'new')],
                     }"/>
-                <field name="account_id" attrs="{'invisible': [('approval_type', '!=', 'purchase_requisition')]}"/>
-                <field name="analytic_id" attrs="{'invisible': [('approval_type', '!=', 'purchase_requisition')]}"/>
+                <field name="account_id" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_requisition')]}"/>
+                <field name="analytic_id" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_requisition')]}"/>
+                <field name="percentage" attrs="{'column_invisible': [('parent.approval_type', '!=', 'sale_percentage')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='description']" position="attributes">
+                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac'])]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_uom_id']" position="attributes">
+                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac'])]}</attribute>
             </xpath>
         </field>
     </record>
@@ -213,7 +223,7 @@
     <!-- APROBACIÓN DE FORMA MASIVA -->
     <record id="window_aliadas_approval_request_cancal_massive" model="ir.actions.server">
         <field name="name">Cancelar masivamente</field>
-           <field name="groups_id" eval="[(4, ref('bpc_aliadas.group_aliadas_approval_request_cancel_force'))]"/>
+        <field name="groups_id" eval="[(4, ref('bpc_aliadas.group_aliadas_approval_request_cancel_force'))]"/>
         <field name="model_id" ref="approvals.model_approval_request"/>
         <field name="binding_model_id" ref="approvals.model_approval_request"/>
         <field name="binding_view_types">list</field>

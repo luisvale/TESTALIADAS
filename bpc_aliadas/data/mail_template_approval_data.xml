@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record id="approval_template_approver_user" model="mail.template">
-            <field name="name">Email aprobación</field>
+            <field name="name">Aliadas: Email aprobación</field>
             <field name="model_id" ref="model_approval_approver"/>
             <field name="subject">Nueva aprobación: {{ object.request_id.name }}</field>
             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>

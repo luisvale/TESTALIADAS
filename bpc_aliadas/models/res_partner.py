@@ -198,11 +198,18 @@ class DocumentsChecklistLines(models.Model):
     date_due = fields.Date(string='Fecha vencimiento')
     user_ids = fields.Many2many('res.users')
 
-
-
     def _compute_now(self):
         for record in self:
             record.now = datetime.now().date()
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = 'Doc. de %s' % record.partner_id.name
+            result.append((record.id, name))
+
+        return result
+
 
 
 class AccountFiscalPosition(models.Model):

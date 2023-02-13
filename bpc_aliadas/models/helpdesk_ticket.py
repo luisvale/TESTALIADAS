@@ -119,6 +119,9 @@ class HelpdeskTicket(models.Model):
                 _logger.info("Envío de email para estado : %s " % record.stage_id.name)
                 template = self.env.ref('bpc_aliadas.mail_template_helpdesk_ticket_rejection', raise_if_not_found=False)
                 try:
+                    record.sudo().activity_schedule('bpc_aliadas.mail_activity_data_helpdesk_ticket_refused',
+                                                    user_id=record.user_id.id,
+                                                    note='Rechazo de ticket: %s' % record.name)
                     res = template.sudo().send_mail(record.id, notif_layout='mail.mail_notification_light', force_send=True, )
                     _logger.info("Resultado del envío: %s " % res)
                 except Exception as e:

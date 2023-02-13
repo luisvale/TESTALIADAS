@@ -25,7 +25,10 @@ SELECTION_ADD = [('purchase_advance', 'Permitir anticipo (Ventas)'),
                  ('check_documents', 'Check-list documentos (Ventas)'),
                  ('payment_term', 'Plazos de pago (Ventas)'),
                  ('change_currency', 'Cambio de moneda (Ventas)'),
+                 ('sale_percentage', 'Porcentaje en producto (Ventas)'),
                  ('subs_new_product', 'Nuevo producto (Subscripción)'),
+                 ('subs_close_contract', 'Rescindir contrato (Subscripción)'),
+                 ('subs_plus_mac', 'Aumento de MAC (Subscripción)'),
                  ]
 
 
@@ -79,8 +82,17 @@ class ApprovalRequest(models.Model):
         else:
             return False
 
+    approval_type = fields.Selection(related='category_id.approval_type', string='Tipo aprobación')
     analytic_account_id = fields.Many2one('account.analytic.account', domain=_domain_analytic, default=_default_analytic)
-    sale_id = fields.Many2one('sale.order', string='Orden venta')
+
+    @api.model
+    def _domain_sale_id(self):
+        if self.category_id.approval_type == 'sale_percentage':
+            return [('state', 'not in', ['sale', 'cancel'])]
+        else:
+            return []
+
+    sale_id = fields.Many2one('sale.order', string='Orden venta', domain=_domain_sale_id)
     purchase_id = fields.Many2one('purchase.order', string='Orden compra')
     purchase_advance_amount = fields.Float(related='purchase_id.advance_amount', string='Anticipo de orden')
     advance_payment_method = fields.Selection([('percentage', 'Porcentaje'), ('fixed', 'Monto fijo')], string='Tipo anticipo', default='percentage')  # P2 - Anticipo
@@ -95,7 +107,6 @@ class ApprovalRequest(models.Model):
     subscription_id = fields.Many2one('sale.subscription', string='Subscripción')
     product_ids = fields.Many2many('product.product', string='Productos')
     sale_margin_diff = fields.Float(string='Diferencia en margen')
-
     link_approval = fields.Char(string='Link aprobación')
 
     # @api.depends('approver_ids.status', 'approver_ids.required')
@@ -117,7 +128,6 @@ class ApprovalRequest(models.Model):
                 if category_id.id == self.env.ref('bpc_aliadas.approval_category_data_purchase_advance').id and record.purchase_id:
                     if not record.purchase_id.approval_request_advance:
                         record.purchase_id.sudo().write({'approval_request_advance': record.id})
-
                 # elif category_id.id == self.env.ref('bpc_aliadas.approval_category_data_purchase_general').id:
                 #     order_id = self.env['purchase.order'].sudo().search([('name','=', record.origin)])
                 #     if order_id:
@@ -127,10 +137,31 @@ class ApprovalRequest(models.Model):
                 #             if amount_permission < order_id.amount_total:
                 #                 raise ValidationError(_("Estimado %s . Usted no puede aprobar esta solicitud, puesto que el monto de la orden de compra %s excede"
                 #                                         " a lo que tiene ud permitido." % (record.env.user.name, order_id.name)))
-
                 elif record.approval_type == 'purchase_requisition':
                     _logger.info("ALIADAS: Creando licitación de forma automática")
                     record.sudo().create_purchase_requisition()
+                elif record.approval_type == 'sale_percentage' and record.sale_id:
+                    product_line_ids = record.product_line_ids
+                    order_line_ids = record.sale_id.order_line
+                    for l in product_line_ids:
+                        o_line = order_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
+                        if o_line:
+                            o_line.sudo().write({'discount': l.percentage})
+                elif record.approval_type == 'subs_plus_mac' and record.subscription_id:
+                    product_line_ids = record.product_line_ids
+                    recurring_invoice_line_ids = record.subscription_id.recurring_invoice_line_ids
+                    for l in product_line_ids:
+                        o_line = recurring_invoice_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
+                        if o_line:
+                            o_line.sudo().write({'price_unit': l.price_unit})
+
+                elif record.approval_type == 'subs_new_product' and record.subscription_id:
+                    product_ids = record.product_ids
+                    recurring_invoice_line_ids = record.subscription_id.recurring_invoice_line_ids
+                    for l in product_ids:
+                        o_line = recurring_invoice_line_ids.filtered(lambda o: o.product_id.id == l.id)
+                        if o_line:
+                            o_line.sudo().write({'approved_state': 'approved'})
 
                 else:
                     pass
@@ -228,17 +259,17 @@ class ApprovalRequest(models.Model):
             users_to_category_approver = defaultdict(lambda: self.env['approval.category.approver'])
             for approver in request.category_id.approver_ids:
                 users_to_category_approver[approver.user_id.id] |= approver
-            new_users = request.category_id.user_ids #usuarios a evaluar
+            new_users = request.category_id.user_ids  # usuarios a evaluar
             if request.approval_type in ('purchase_approved', 'purchase_budget'):
                 user_ids = request.department_id.authorization_line_ids.mapped('user_id')
-                new_users = user_ids #completo con los usuarios de las autorizaciones por dpto
+                new_users = user_ids  # completo con los usuarios de las autorizaciones por dpto
             manager_user = 0
             employee = self.env['hr.employee'].search([('user_id', '=', request.request_owner_id.id)], limit=1)
             if request.category_id.manager_approval:
                 if employee.parent_id.user_id:
                     new_users |= employee.parent_id.user_id
                     manager_user = employee.parent_id.user_id.id
-            if employee and request.approval_type not in ('purchase_approved','purchase_budget'):
+            if employee and request.approval_type not in ('purchase_approved', 'purchase_budget'):
                 if employee.department_id:
                     _logger.info("Empleado encontrado. Se añade departamento %s" % employee.department_id.name)
                 request.department_id = employee.department_id
@@ -299,8 +330,8 @@ class ApprovalRequest(models.Model):
                                 _logger.info("APROBACIÓN: Aprobación de compra - departamento %s " % request.department_id.name)
                                 if request.department_id.authorization_line_ids:
                                     amount_lines_id = self.env['department.authorization.line'].sudo().search([('department_id', 'in', request.department_id.ids),
-                                                                                                                ('company_id', '=', request.company_id.id),
-                                                                                                                ('user_id', '=', user.id)], limit=1)
+                                                                                                               ('company_id', '=', request.company_id.id),
+                                                                                                               ('user_id', '=', user.id)], limit=1)
 
                                     if amount_lines_id:
                                         for a in amount_lines_id.amount_lines:
@@ -320,7 +351,7 @@ class ApprovalRequest(models.Model):
                                                 'status': 'new',
                                                 'required': required,
                                                 'amount': users_to_category_approver[user.id].amount,  # Personalizado para aliadas
-                                                #'amount_lines': [(6, 0, line.ids)] if line else False,
+                                                # 'amount_lines': [(6, 0, line.ids)] if line else False,
                                                 'interval_amount_lines': [(6, 0, amount_lines_id.amount_lines.ids)] if amount_lines_id.amount_lines else False,
                                                 'level_id': amount_lines_id.level_id.id
                                             }))
@@ -403,6 +434,9 @@ class ApprovalRequest(models.Model):
                     'email_from': self.env.user.email_formatted,
                     'author_id': self.env.user.partner_id.id,
                 }
+                line.sudo().activity_schedule('bpc_aliadas.mail_activity_data_approval_request_send',
+                                              user_id=line.user_id.id,
+                                              note='Se solicita aprobación para: %s' % self.name)
                 res = template.sudo().send_mail(line.id,
                                                 notif_layout='mail.mail_notification_light',
                                                 force_send=True,
@@ -411,12 +445,10 @@ class ApprovalRequest(models.Model):
             except Exception as e:
                 _logger.warning("Error de envío a aprobador: %s " % e)
 
-
     def send_mail_approval(self):
         self.ensure_one()
         self._create_url()
         self._send_email()
-
 
     #
     # def _eval_departmens(self):
@@ -509,8 +541,16 @@ class ApprovalRequest(models.Model):
             else:
                 status = 'new'
             request.request_status = status
-            #Evaluar condiciones
+            # Evaluar condiciones
             request._eval_conditions()
+
+    @api.onchange('sale_id')
+    def _onchange_sale_id(self):
+        for record in self:
+            if record.sale_id and record.sale_id.state == 'sale' and record.approval_type == 'sale_percentage':
+                order_name = record.sale_id.name
+                record.sudo().update({'sale_id': False})
+                raise ValidationError(_("Asegúrese de seleccionar una orden de venta que no esté en estado  - Pedido de venta - Orden # %s " % order_name))
 
 
 class ApprovalProductLine(models.Model):
@@ -521,6 +561,7 @@ class ApprovalProductLine(models.Model):
     price_unit = fields.Float("Precio unitario", default=1.0)
     account_id = fields.Many2one('account.account', string='Cuenta')
     analytic_id = fields.Many2one('account.analytic.account', string='Cuenta Analítica')
+    percentage = fields.Float(string='Porcentaje')
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
@@ -532,6 +573,33 @@ class ApprovalProductLine(models.Model):
                 record.account_id = account_id
             else:
                 record.account_id = False
+                if record.approval_type in ['sale_percentage']:
+                    domain = record._domain_product_id()
+                    if domain:
+                        return {'domain': {'product_id': domain}}
+                elif record.approval_type in ['subs_plus_mac']:
+                    domain = record._domain_product_mac()
+                    if domain:
+                        return {'domain': {'product_id': domain}}
+
+    @api.model
+    def _domain_product_id(self):
+        if self.approval_request_id.sale_id:
+            product_ids = self.approval_request_id.sale_id.mapped('order_line').mapped('product_id').ids
+            return [('id', 'in', product_ids)]
+        else:
+            return []
+
+    @api.model
+    def _domain_product_mac(self):
+        if self.approval_request_id.subscription_id:
+            product_ids = self.approval_request_id.subscription_id.mapped('recurring_invoice_line_ids').mapped('product_id').ids
+            return [('id', 'in', product_ids)]
+        else:
+            return []
+
+    # product_id = fields.Many2one('product.product', string="Products", check_company=True, domain=_domain_product_id)
+    # analytic_account_id = fields.Many2one('account.analytic.account', domain=_domain_analytic, default=_default_analytic)
 
 
 class ApprovalApprover(models.Model):
@@ -569,13 +637,13 @@ class ApprovalApprover(models.Model):
     #                 lines += app.amount_lines
     #         record.amount_lines = lines
 
-
     def name_get(self):
         result = []
         for r in self:
             name = r.user_id.name
             result.append((r.id, name))
         return result
+
 
 class ApprovalCategoryApprover(models.Model):
     _inherit = 'approval.category.approver'

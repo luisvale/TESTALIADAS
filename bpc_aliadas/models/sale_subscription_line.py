@@ -64,7 +64,7 @@ class SaleSubscriptionLine(models.Model):
     approved_state = fields.Selection(STATE_NEW_LINE, string='Estado', default='approved')
 
     @api.depends('quantity', 'discount', 'price_unit', 'analytic_account_id.pricelist_id', 'uom_id', 'company_id', 'amount_consumption', 'amount_sale',
-                 'percentage_sale', 'amount_min', 'amount_max')
+                 'percentage_sale', 'amount_min', 'amount_max', 'rental_type')
     def _compute_amount(self):
         """
         Compute the amounts of the Subscription line.

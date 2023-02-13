@@ -11,10 +11,16 @@
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="before">
                 <field name="contract_name" readonly="1"/>
+                <field name="button_close_available" />
+            </xpath>
+              <xpath expr="//button[@name='%(sale_subscription.sale_subscription_close_reason_wizard_action)d']" position="attributes">
+                <attribute name="attrs">{'invisible': [('button_close_available', '=', False)]}</attribute>
             </xpath>
             <xpath expr="//field[@name='date_start']" position="after">
                 <field name="date_end"/>
-                <field name="check_pending_amount"/>
+                <field name="check_pending_amount" invisible="1"/>
+                <field name="date_renewal"/>
+                <field name="lead_id" attrs="{'invisible': [('lead_id', '=', False)]}"/>
             </xpath>
             <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='product_id']" position="after">
                 <field name="document_type_sale_id" optional="show"/>
@@ -113,7 +119,7 @@
             <xpath expr="//field[@name='recurring_invoice_line_ids']//tree" position="attributes">
                 <attribute name="decoration-danger">approved_state == 'new'</attribute>
             </xpath>
-             <xpath expr="//group[@name='main']//button[@name='generate_recurring_invoice']" attributes="attributes">
+             <xpath expr="//group[@name='main']//button[@name='generate_recurring_invoice']" position="attributes">
                 <attribute name="groups">base.group_no_one,bpc_aliadas.group_aliadas_subscription_button_invoice</attribute>
             </xpath>
         </field>

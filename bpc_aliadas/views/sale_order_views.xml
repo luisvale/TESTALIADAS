@@ -104,7 +104,7 @@
                 <attribute name="attrs">{'readonly': [('state','in',('sale','approved'))]}</attribute>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="state" readonly="0"/>
+<!--                <field name="state" readonly="0"/>-->
                 <field name="accept_and_signed"/>
             </xpath>
 
@@ -179,6 +179,12 @@
                 <field name="commercial_id" domain="[('id', 'in', commercial_ids)]" options="{'no_open': True, 'no_create': True}"/>
             </xpath>
             <xpath expr="//button[@name='action_quotation_send'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//button[@name='action_quotation_send'][3]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//button[@name='action_quotation_send'][4]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//button[@name='action_quotation_send'][1]" position="attributes">

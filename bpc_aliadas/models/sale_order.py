@@ -104,6 +104,15 @@ class SaleOrder(models.Model):
     #         if record.partner_id and record.partner_prospect_state == 'done' and not record.accept_and_signed:
     #             raise ValidationError(_("No puede confirmar el cliente si la orden no está - Aceptada y Firmada -"))
 
+    @api.constrains('date_order')
+    def _constraint_date_order(self):
+        for record in self:
+            now = datetime.now().date()
+            _logger.info("COMPARACIÓN DE FECHAS ")
+            _logger.info("Date order : %s ## Ahora: %s " % (record.date_order, now))
+            if record.date_order.date() < now:
+                raise ValidationError(_("No puede ingresar una fecha menor a la de hoy %s" % now))
+
     @api.constrains('state')
     def _constraint_order_state(self):
         for record in self:
@@ -798,47 +807,96 @@ class SaleOrder(models.Model):
         sale_order = self
         action = self.env.ref('sale.action_orders')
         menu = self.env.ref('sale.menu_sale_order')
-        url = "/web#id=%s&action=%s&model=sale.order&view_type=form&menu_id=%s" % (sale_order.id, action.id, menu.id)
-        complete_url = '%s%s' % (base_url, url)
-        self.sudo().write({'link_sale': complete_url})
-        template = self.env.ref('bpc_aliadas.email_template_sale_order_confirm', raise_if_not_found=False)
-        res = template.sudo().send_mail(sale_order.id, force_send=True, notif_layout='mail.mail_notification_light')
-        _logger.info("Envio de correo al comercial - %s" % res)
-        msg = _('Estimado, %s . La orden de venta % ha sido confirmada.') % (sale_order.user_id.name, sale_order.name)
-        sale_order.sudo().message_post(body=msg, message_type='comment', subtype_xmlid='mail.mt_comment')
+        try:
+            sale_order.sudo().activity_schedule('bpc_aliadas.mail_activity_data_sale_order_confirm',
+                                                user_id=sale_order.user_id.id,
+                                                note='El pedido de venta %s fue confirmado.' % sale_order.name)
+            url = "/web#id=%s&action=%s&model=sale.order&view_type=form&menu_id=%s" % (sale_order.id, action.id, menu.id)
+            complete_url = '%s%s' % (base_url, url)
+            self.sudo().write({'link_sale': complete_url})
+            template = self.env.ref('bpc_aliadas.email_template_sale_order_confirm', raise_if_not_found=False)
+            res = template.sudo().send_mail(sale_order.id, force_send=True, notif_layout='mail.mail_notification_light')
+            _logger.info("Envio de correo al comercial - %s" % res)
+            msg = _('Estimado, %s . La orden de venta % ha sido confirmada.') % (sale_order.user_id.name, sale_order.name)
+            sale_order.sudo().message_post(body=msg, message_type='comment', subtype_xmlid='mail.mt_comment')
+        except Exception as e:
+            pass
 
-        # def action_quotation_send(self):
+    def action_quotation_send(self):
+        if self._is_prospect():
+            return self.action_quotation_send_prospect()
+        else:
+            return super(SaleOrder, self).action_quotation_send()
 
-    #     ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
-    #     self.ensure_one()
-    #     template_id = self._find_mail_template()
-    #     lang = self.env.context.get('lang')
-    #     template = self.env['mail.template'].browse(template_id)
-    #     if template.lang:
-    #         lang = template._render_lang(self.ids)[self.id]
-    #     ctx = {
-    #         'default_model': 'sale.order',
-    #         'default_res_id': self.ids[0],
-    #         'default_use_template': bool(template_id),
-    #         'default_template_id': template_id,
-    #         'default_composition_mode': 'comment',
-    #         'mark_so_as_sent': True,
-    #         'custom_layout': "mail.mail_notification_paynow",
-    #         'proforma': self.env.context.get('proforma', False),
-    #         'force_email': True,
-    #         'model_description': self.with_context(lang=lang).type_name,
-    #         'default_partner_ids': self.partner_prospect_id.ids,
-    #         'default_partner_prospect_id': self.partner_prospect_id.id
-    #     }
-    #     return {
-    #         'type': 'ir.actions.act_window',
-    #         'view_mode': 'form',
-    #         'res_model': 'mail.compose.message',
-    #         'views': [(False, 'form')],
-    #         'view_id': False,
-    #         'target': 'new',
-    #         'context': ctx,
-    #     }
+    def _is_prospect(self):
+        if self.partner_prospect_state == 'draft':
+            return True
+        else:
+            return False
+
+    def action_quotation_send_prospect(self):
+        self.ensure_one()
+        if not self.partner_id.email:
+            raise ValidationError(_("Se necesita el email del cliente"))
+        template_id = self._find_mail_template()
+        template = self.env['mail.template'].sudo().browse(template_id)
+        res = template.sudo().send_mail(self.ids[0], notif_layout='mail.mail_notification_paynow', force_send=True)
+        _logger.info("Resultado del envío: %s " % res)
+        if res:
+            self.sudo().write({'state': 'sent'})
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'success',
+                    'title': _('Bien!'),
+                    'message': _("Se envió el email correctamente"),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'info',
+                    'title': _('Algo pasó!'),
+                    'message': _("Problemas en el envío del email"),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+
+        # ''' Opens a wizard to compose an email, with relevant mail template loaded by default '''
+        # self.ensure_one()
+        # template_id = self._find_mail_template()
+        # lang = self.env.context.get('lang')
+        # template = self.env['mail.template'].browse(template_id)
+        # if template.lang:
+        #     lang = template._render_lang(self.ids)[self.id]
+        #
+        # ctx = {
+        #     'default_model': 'sale.order',
+        #     'default_res_id': self.ids[0],
+        #     'default_use_template': bool(template_id),
+        #     'default_template_id': template_id,
+        #     'default_composition_mode': 'comment',
+        #     'mark_so_as_sent': True,
+        #     'custom_layout': "mail.mail_notification_paynow",
+        #     'proforma': self.env.context.get('proforma', False),
+        #     'force_email': True,
+        #     'model_description': self.with_context(lang=lang).type_name,
+        #     'default_partner_ids': self.partner_prospect_id.ids,
+        #     'default_partner_prospect_id': self.partner_prospect_id.id
+        # }
+        # return {
+        #     'type': 'ir.actions.act_window',
+        #     'view_mode': 'form',
+        #     'res_model': 'mail.compose.message',
+        #     'views': [(False, 'form')],
+        #     'view_id': False,
+        #     'target': 'new',
+        #     'context': ctx,
+        # }
 
     def _prepare_invoice(self):
         vals = super(SaleOrder, self)._prepare_invoice()
@@ -858,6 +916,9 @@ class SaleOrder(models.Model):
 
             template = self.env.ref('bpc_aliadas.mail_template_sale_order_check_documents', raise_if_not_found=False)
             try:
+                sale.sudo().activity_schedule('bpc_aliadas.mail_activity_data_sale_order_check_list_documents',
+                                           user_id=sale.user_id.id,
+                                           note='El check list de documentos de la orden %s ha sido completada' % sale.name)
                 res = template.sudo().send_mail(sale.id, notif_layout='mail.mail_notification_light', force_send=True)
                 _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
             except Exception as e:
@@ -873,6 +934,9 @@ class SaleOrder(models.Model):
             if len(sale.approval_request_ids.ids) == approved_count and sale.state == 'pending':
                 template = self.env.ref('bpc_aliadas.mail_template_sale_order_complete_approved', raise_if_not_found=False)
                 try:
+                    sale.sudo().activity_schedule('bpc_aliadas.mail_activity_data_sale_order_approved_request',
+                                                  user_id=sale.user_id.id,
+                                                  note='La orden de venta %s ha sido aprobada en su totalidad, consulte su estado.' % sale.name)
                     res = template.sudo().send_mail(sale.id, notif_layout='mail.mail_notification_light', force_send=True, )
                     _logger.info("Resultado del envío a usuario %s es : %s " % (sale.user_id.name, res))
                     sale.sudo().write({'send_mail_request': True})
@@ -903,6 +967,16 @@ class SaleOrder(models.Model):
                             d.sudo().activity_schedule('bpc_aliadas.mail_activity_data_check_list_process',
                                                        user_id=user_id.id,
                                                        note='Referencia a Orden %s' % o.name)
+
+                            template = self.env.ref('bpc_aliadas.mail_template_sale_order_check_document_due', raise_if_not_found=False)
+                            try:
+                                email_values = {
+                                    'email_to': user_id.partner_id.email or user_id.login,
+                                }
+                                res = template.sudo().send_mail(d.id, notif_layout='mail.mail_notification_light', force_send=True, email_values=email_values)
+                                _logger.info("Resultado del envío: %s " % res)
+                            except Exception as e:
+                                _logger.warning("Error de envío de correo en ticket: %s " % e)
 
                     else:
                         _logger.info("ALIADAS: No se crea notificación, no tiene usuarios.")

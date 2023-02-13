@@ -85,6 +85,18 @@
             <field name="active">True</field>
         </record>
 
+        <record id="cron_sale_subscription_lead_automatic" model="ir.cron">
+            <field name="name">Aliadas/Subscripción: Crear lead para renovación</field>
+            <field name="model_id" ref="model_sale_subscription"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_led_from_subscription()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active">True</field>
+        </record>
+
     </data>
 
 </odoo>

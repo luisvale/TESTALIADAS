@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
-        <!-- <record id="mail_template_sale_order_check_list" model="mail.template">
-             <field name="name">Email lista de procesos vencida</field>
-             <field name="model_id" ref="model_sale_order_check_list_lines"/>
-             <field name="subject">Vencimiento de proceso : {{ object.check_list_id.name }}</field>
-             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
-             <field name="email_to">{{ object.user_id.email }}</field>
+         <record id="mail_template_sale_order_check_document_due" model="mail.template">
+             <field name="name">Aliadas: Email lista de documentos vencida</field>
+             <field name="model_id" ref="model_documents_check_list_lines"/>
+             <field name="subject">Vencimiento de documento : {{ object.check_list_id.name }}</field>
+             <field name="email_from">"{{ object.env.company.name }}" &lt;{{ (object.env.company.email or user.email) }}&gt;</field>
+<!--             <field name="email_to">{{ object.user_id.email }}</field>-->
              <field name="body_html" type="html">
                  <div style="margin: 0px; padding: 0px;">
                      <p style="margin: 0px; padding: 0px; font-size: 13px;">
-                         Hola,
-                         <t t-out="object.user_id.name or ''"/>
-                         .
+                         Hola!
+<!--                         <t t-out="object.user_id.name or ''"/>-->
+<!--                         .-->
                          <br/>
                          <br/>
-                         El proceso con nombre
+                         El documento con nombre
                          <strong t-out="object.check_list_id.name or ''"/>
                          ha vencido el
                          "<strong t-out="object.date_due"/>" ,
-                         relacionada a
-
-                         <t t-if="object.sale_id">
-                             la orden de venta "<strong t-out="object.sale_id.name or ''"/>"
+                         relacionado al cliente
+                         <t t-if="object.partner_id">
+                             "<strong t-out="object.partner_id.name or ''"/>"
                          </t>
                          <t t-else="">
                              " - "
@@ -33,9 +32,8 @@
              </field>
              <field name="auto_delete" eval="True"/>
          </record>
- -->
         <record id="mail_template_sale_order_check_documents" model="mail.template">
-            <field name="name">Email lista de documentos completada</field>
+            <field name="name">Aliadas: Email lista de documentos completada</field>
             <field name="model_id" ref="model_sale_order"/>
             <field name="subject">Check list documentos de cliente : {{ object.name }}</field>
             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
@@ -107,7 +105,7 @@
 
 
         <record id="mail_template_sale_order_complete_approved" model="mail.template">
-            <field name="name">Email aprobación completa (Ventas)</field>
+            <field name="name">Aliadas: Email aprobación completa (Ventas)</field>
             <field name="model_id" ref="model_sale_order"/>
             <field name="subject">Orden aprobada : {{ object.name }}</field>
             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
@@ -131,7 +129,7 @@
         </record>
 
         <record id="mail_template_purchase_order_complete_approved" model="mail.template">
-            <field name="name">Email aprobación completa (Compras)</field>
+            <field name="name">Aliadas: Email aprobación completa (Compras)</field>
             <field name="model_id" ref="model_purchase_order"/>
             <field name="subject">Orden aprobada : {{ object.name }}</field>
             <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
