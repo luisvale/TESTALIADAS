@@ -260,7 +260,7 @@ class ApprovalRequest(models.Model):
             for approver in request.category_id.approver_ids:
                 users_to_category_approver[approver.user_id.id] |= approver
             new_users = request.category_id.user_ids  # usuarios a evaluar
-            if request.approval_type in ('purchase_approved', 'purchase_budget'):
+            if request.approval_type in ['purchase_approved']:
                 user_ids = request.department_id.authorization_line_ids.mapped('user_id')
                 new_users = user_ids  # completo con los usuarios de las autorizaciones por dpto
             manager_user = 0
@@ -269,7 +269,7 @@ class ApprovalRequest(models.Model):
                 if employee.parent_id.user_id:
                     new_users |= employee.parent_id.user_id
                     manager_user = employee.parent_id.user_id.id
-            if employee and request.approval_type not in ('purchase_approved', 'purchase_budget'):
+            if employee and request.approval_type not in ['purchase_approved']:
                 if employee.department_id:
                     _logger.info("Empleado encontrado. Se añade departamento %s" % employee.department_id.name)
                 request.department_id = employee.department_id
@@ -318,7 +318,7 @@ class ApprovalRequest(models.Model):
                                 'level_id': level_id.id if level_id else False
                             }))
 
-                    elif request.approval_type in ('purchase_approved', 'purchase_budget') and request.purchase_id:
+                    elif request.approval_type in ['purchase_approved'] and request.purchase_id:
                         if request.department_id:
                             _next = self._evaluation_department(user, request)
                             _logger.info('_NEXT: %s ' % _next)
@@ -359,6 +359,15 @@ class ApprovalRequest(models.Model):
                                         _logger.info("APROBACIÓN: No hay intervalos encontrados")
                                 else:
                                     _logger.info("APROBACIÓN : No hay autorizaciones ligadas a este departamento")
+
+                    elif request.approval_type in ['purchase_budget'] and request.purchase_id:
+                        approver_id_vals.append(Command.create({
+                            'user_id': user.id,
+                            'status': 'new',
+                            'required': required,
+                            'amount': users_to_category_approver[user.id].amount,  # Personalizado para aliadas
+                            'level_id': level_id.id if level_id else False
+                        }))
 
                     else:
                         _next = self._evaluation_department(user, request)

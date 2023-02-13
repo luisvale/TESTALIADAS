@@ -130,6 +130,10 @@
                 <button name="action_cancel" string="Cancelación forzada" type="object" groups="bpc_aliadas.group_aliadas_approval_request_cancel_force"
                         style="background: #e09507;color: white;"/>
             </xpath>
+            <xpath expr="//button[@name='action_draft']" position="before">
+                <button name="action_draft" string="Borrador forzado" type="object" groups="bpc_aliadas.group_aliadas_approval_request_draft_force"
+                        style="background: #e09507;color: white;"/>
+            </xpath>
         </field>
     </record>
 
