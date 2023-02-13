@@ -409,7 +409,7 @@ class ApprovalRequest(models.Model):
                 raise UserError(_('This request needs to be approved by your manager. There is no user linked to your manager.'))
             if not self.approver_ids.filtered(lambda a: a.user_id.id == employee.parent_id.user_id.id):
                 raise UserError(_('This request needs to be approved by your manager. Your manager is not in the approvers list.'))
-        if len(self.approver_ids) < self.approval_minimum and self.approval_type not in ('purchase_approved', 'purchase_budget'):
+        if len(self.approver_ids) < self.approval_minimum and self.approval_type not in ['purchase_approved']:
             raise UserError(_("You have to add at least %s approvers to confirm your request.", self.approval_minimum))
         if self.requirer_document == 'required' and not self.attachment_number:
             raise UserError(_("You have to attach at lease one document."))
@@ -541,7 +541,7 @@ class ApprovalRequest(models.Model):
                     status = 'refused'
                 elif status_lst.count('new'):
                     status = 'new'
-                elif request.approval_type in ('purchase_approved', 'purchase_budget') and status_lst.count('approved') < len(request.approver_ids.ids):
+                elif request.approval_type in ['purchase_approved'] and status_lst.count('approved') < len(request.approver_ids.ids):
                     status = 'pending'
                 elif status_lst.count('approved') >= minimal_approver and required_approved:
                     status = 'approved'
