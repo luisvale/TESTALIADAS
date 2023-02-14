@@ -420,7 +420,7 @@ class SaleSubscription(models.Model):
                     values['price_unit'] = amount_invoice
                     values['note_tag'] = tags
 
-        elif line.rental_type in ('consumption', 'consumption_min', 'consumption_fixed','rental_min', 'rental_percentage', 'rental_percentage_top'):
+        elif line.rental_type in ('consumption', 'consumption_min', 'consumption_fixed','rental_min', 'rental_percentage', 'rental_percentage_top','fixed'):
             #values['price_unit'] = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
             #price_subtotal = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
             tags = []
