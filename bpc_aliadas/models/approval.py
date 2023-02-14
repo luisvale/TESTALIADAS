@@ -236,10 +236,16 @@ class ApprovalRequest(models.Model):
             if department_id:
                 if record.department_id:
                     add = False
-                    if department_id.id in record.department_id.departament_ids.ids or department_id.id == record.department_id.id:
-                        add = True
-                    if add:
-                        _next = True
+                    if record.approval_type != 'purchase_requisition':
+                        if department_id.id in record.department_id.departament_ids.ids or department_id.id == record.department_id.id:
+                            add = True
+                        if add:
+                            _next = True
+                    else:
+                        if department_id.id == record.department_id.id:
+                            add = True
+                        if add:
+                            _next = True
                 else:
                     _logger.info("La solicitud no tiene un departament asignado, quizá el propietario no se ecuentra como empleado o no tiene Dep.")
             else:
