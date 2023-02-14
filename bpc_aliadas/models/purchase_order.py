@@ -131,7 +131,7 @@ class PurchaseOrder(models.Model):
         if self.approval_request_ids:
             _logger.info("Desvinculando aprobaciones: Cantidad de: %s" % len(self.approval_request_ids.ids))
             self.write({'approval_request_ids': [(3, app.id, 0) for app in self.approval_request_ids]})
-        self.sudo().write({'state': 'bidding'})
+        self.sudo().write({'state': 'bidding', 'approved': False})
         self.sudo().write({'send_mail_request': False})
 
     @api.ondelete(at_uninstall=False)
