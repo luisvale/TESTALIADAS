@@ -27,12 +27,9 @@ class PurchaseOrderApprovedWizard(models.TransientModel):
             for o in order_id.purchase_o_ids:
                 o.button_cancel()
 
-        order_id.sudo()._compute_exist_budget()
+        #order_id.sudo()._compute_exist_budget()
 
-        if order_id.exist_budget:
-           order_id.sudo().button_evaluation_to_draft()
-        else:
-            pass
+        order_id.sudo().button_evaluation_to_draft()
             #order_id.sudo()._create_request('purchase_budget')
 
         #order_id.sudo().button_confirm()
