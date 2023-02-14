@@ -52,6 +52,10 @@
                 <field name="date_end" optional="hide"/>
             </xpath>
             <xpath expr="//field[@name='recurring_invoice_line_ids']//tree/field[@name='quantity']" position="before">
+                <field name="contract_start" optional="hide"/>
+                <field name="contract_end" optional="hide"/>
+                <field name="type_invoiced" optional="show"/>
+                <field name="range_periodicity" optional="show" attrs="{'required': [('type_invoiced','=', 'continue')]}"/>
                 <field name="pickup_start" optional="show"/>
                 <field name="pickup_end" optional="show"/>
             </xpath>

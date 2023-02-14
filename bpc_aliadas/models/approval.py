@@ -360,7 +360,8 @@ class ApprovalRequest(models.Model):
                                 else:
                                     _logger.info("APROBACIÓN : No hay autorizaciones ligadas a este departamento")
 
-                    elif request.approval_type in ['purchase_budget'] and request.purchase_id:
+                    elif request.approval_type in ['purchase_budget', 'job_position', 'check_documents'] and request.purchase_id:
+                        #NO CONTEMPLAN EL USO DE DPTOS Y AUTORIZADORES
                         approver_id_vals.append(Command.create({
                             'user_id': user.id,
                             'status': 'new',

@@ -68,9 +68,6 @@ class AccountMove(models.Model):
             else:
                 raise ValidationError(_("No se encontró subscripción para número de contrato %s " % self.subscription_contract_name))
 
-
-
-
     def _compute_category_id(self):
         for record in self:
             category_id = False

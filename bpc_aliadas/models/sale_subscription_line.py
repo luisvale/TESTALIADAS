@@ -33,6 +33,8 @@ RENTAL_TYPE = [
 
 STATE_NEW_LINE = [('new', 'Nuevo'), ('approved', 'Aprobada')]
 
+TYPE_INVOICED = [('continue', 'Periodicidad'), ('unique', 'Único')]
+
 class SaleSubscriptionLine(models.Model):
     _inherit = "sale.subscription.line"
 
@@ -43,8 +45,8 @@ class SaleSubscriptionLine(models.Model):
     amount_max = fields.Float(string='Máximo')
     percentage_sale = fields.Float(string='% sobre venta', help='Porcentaje sobre venta')
     rental_type = fields.Selection(RENTAL_TYPE, string='Variable')
-    date_init = fields.Date(string='Inicio facturación')  # Fecha desde la cual inicia la próxima facturación
-    date_end = fields.Date(string='Fin facturación')  # Fecha desde la cual inicia la próxima facturación
+    date_init = fields.Date(string='Inicio prox.facturación')  # Fecha desde la cual inicia la próxima facturación
+    date_end = fields.Date(string='Fin prox.facturación')  # Fecha desde la cual inicia la próxima facturación
     document_type_sale_id = fields.Many2one('document.type', domain=[('in_sale', '=', True)], string='Tipo doc.')
     currency_pricelist = fields.Many2one('res.currency', string='Moneda tarifa')
     currency_external_id = fields.Many2one('res.currency', string='Facturar en')
@@ -57,11 +59,17 @@ class SaleSubscriptionLine(models.Model):
     pickup_start = fields.Date(string='F.Inicio')
     pickup_end = fields.Date(string='F.Final')
 
+    contract_start = fields.Date(string='Inicio contrato')
+    contract_end = fields.Date(string='Fin contrato')
+
     tax_ids = fields.Many2many('account.tax', string='Impuestos', domain=[('type_tax_use', '=', 'sale')])
     tax_amount = fields.Monetary(string='T.impuesto',compute='_compute_total_subscription')
     total_subscription = fields.Monetary(string='Total', compute='_compute_total_subscription')
 
     approved_state = fields.Selection(STATE_NEW_LINE, string='Estado', default='approved')
+
+    type_invoiced = fields.Selection(TYPE_INVOICED, string='Tipo facturación', default='continue')
+    range_periodicity = fields.Integer(string='Días', default=30)
 
     @api.depends('quantity', 'discount', 'price_unit', 'analytic_account_id.pricelist_id', 'uom_id', 'company_id', 'amount_consumption', 'amount_sale',
                  'percentage_sale', 'amount_min', 'amount_max', 'rental_type')
@@ -174,15 +182,21 @@ class SaleSubscriptionLine(models.Model):
         pending_amount = 0.0
         subscription = record.analytic_account_id
         recurring_next_date = subscription.recurring_next_date
-        if not subscription._filtered_local(record):
-            lines, pending_invoiced = record._find_move_line(subscription, recurring_next_date)
-            if lines and not pending_invoiced:
-                for l in lines:
-                    if l.currency_id != subscription.currency_id:
-                        if record.price_subtotal > l.credit and record.amount_convert > l.price_unit:
+        #if not subscription._filtered_local(record):
+        lines, pending_invoiced = record._find_move_line(subscription, recurring_next_date)
+        if lines and not pending_invoiced:
+            for l in lines:
+                if l.currency_id != subscription.currency_id:
+                    if record.price_subtotal > l.credit and record.amount_convert > l.price_unit:
+                        if self.rental_type == 'consumption_fixed': #Para consumo y monto fijo, se envía todo el monto, no solo el pendiente
+                            pending_amount += record.amount_convert
+                        else:
                             pending_amount += record.amount_convert - l.price_unit
-                    else:
-                        if record.price_subtotal > l.price_unit:
+                else:
+                    if record.price_subtotal > l.price_unit:
+                        if self.rental_type == 'consumption_fixed':
+                            pending_amount += record.price_subtotal
+                        else:
                             pending_amount += record.price_subtotal - l.price_unit
         return pending_amount
 
