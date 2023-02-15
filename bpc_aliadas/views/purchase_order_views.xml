@@ -28,40 +28,44 @@
                         <field name="approval_request_advance"/>
                         <field name="approval_request_advance_status"/>
                         <field name="force_purchase" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"/>
-                        <field name="exist_budget" />
+                        <field name="exist_budget"/>
                         <field name="force_cancel" groups="bpc_aliadas.group_purchase_purchase_order_force_cancel"/>
                     </group>
                     <group id="info_right"/>
                 </group>
             </xpath>
             <xpath expr="//header" position="inside">
-<!--                <button name="button_evaluation_to_draft" states="evaluation" string="APROBAR" type="object"-->
-<!--                        confirm="Está seguro de aprobar la órden?. Pasará a estado Presupuesto"/>-->
+                <!--                <button name="button_evaluation_to_draft" states="evaluation" string="APROBAR" type="object"-->
+                <!--                        confirm="Está seguro de aprobar la órden?. Pasará a estado Presupuesto"/>-->
                 <button name="button_bidding_to_draft" states="bidding" string="PRESUPUESTO" type="object" data-hotkey="l"
                         confirm="Está seguro de pasar a presupuesto?"/>
                 <button name="button_draft_to_bidding" states="draft" string="LICITACIÓN" type="object"
                         confirm="Está seguro de pasar a proceso de licitación?"/>
                 <button name="action_continue_process" string="Continuar proceso" class="btn-primary" type="object"
                         attrs="{'invisible': [('state','!=','approved')]}"/>
-                  <button name="button_exist_budget" string="Disponibilidad presupuesto" class="btn-primary" type="object"
+                <button name="button_exist_budget" string="Disponibilidad presupuesto" class="btn-primary" type="object"
                         attrs="{'invisible': [('state','!=','on_hold')]}"/>
                 <button name="refresh_state" string="Consultar aprobación" class="btn-primary" type="object"
                         attrs="{'invisible': [('state','not in',['pending','evaluation'])]}"/>
                 <button name="button_bidding_to_purchase" states="bidding,on_hold,pending" string="PEDIDO FORZADO" type="object" data-hotkey="l"
                         confirm="Está seguro de pasar a pedido de compra?" groups="bpc_aliadas.group_aliadas_purchase_order_change_state"
                         style="background: #e09507;color: white;"/>
-                 <button name="button_cancel_force" states="purchase" string="CANCELACIÓN FORZADA" type="object" data-hotkey="l"
+                <button name="button_cancel_force" states="purchase" string="CANCELACIÓN FORZADA" type="object" data-hotkey="l"
                         confirm="Está seguro de cancelar la orden de compra?" groups="bpc_aliadas.group_purchase_purchase_order_force_cancel"
                         style="background: #e09507;color: white;"/>
-                 <button name="button_reprocess" states="evaluation,draft,on_hold,pending,approved,sent,purchase" string="REPROCESAR" type="object"
+                <button name="button_reprocess" states="evaluation,draft,on_hold,pending,approved,sent,purchase" string="REPROCESAR" type="object"
                         confirm="Está seguro de reprocesar la orden de compra?. Esto implica que volverá a pasar por todo el proceso desde licitación."
-                         class="btn-primary"/>
+                        class="btn-primary"/>
+                <button name="button_budget_force" states="purchase" string="BUSCAR PRESUPUESTO" type="object" data-hotkey="l"
+                        confirm="Está seguro de asignar un presupuestos a esta orden?" groups="bpc_aliadas.group_purchase_purchase_order_force_budget"
+                        style="background: #e09507;color: white;"/>
             </xpath>
             <xpath expr="//field[@name='order_line']//tree/field[@name='account_analytic_id']" position="attributes">
                 <attribute name="optional">show</attribute>
                 <attribute name="attrs">{'readonly': [('state', 'in', ('purchase', 'to approve','done', 'cancel'))],
-                                         'required': [('display_type', '=', False)]}</attribute>
-<!--                <attribute name="required">True</attribute>-->
+                    'required': [('display_type', '=', False)]}
+                </attribute>
+                <!--                <attribute name="required">True</attribute>-->
             </xpath>
             <xpath expr="//field[@name='order_line']//tree/field[@name='account_analytic_id']" position="after">
                 <field name="account_id"/>
@@ -120,6 +124,12 @@
                         </div>
                     </div>
                 </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_view_budget_lines"
+                        class="oe_stat_button" string="Presupuestos"
+                        icon="fa-paperclip">
+                </button>
             </xpath>
         </field>
     </record>

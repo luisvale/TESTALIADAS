@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from datetime import date, timedelta, datetime
 import json
 import logging
@@ -72,7 +72,7 @@ class CrossoveredBudgetLines(models.Model):
                     if total_budget < sub_total and not line.order_id.force_budget:
                         _logger.info("ALIADAS - Pasó el limite de presupuesto, pasará a estado * evaluation *")
                         line.sudo().write({'limit_budget': True})
-                        return True
+                        return True, 'limit'
                     else:
                         amount_line = sub_total
                         #Si pasa evaluamos el monto de la línea a qué o cuáles presupuesto se le asignará
@@ -106,11 +106,18 @@ class CrossoveredBudgetLines(models.Model):
                                         budget._add_budget_info(line, to_used)
                                         amount_line = amount_line - to_used
                                     budget.purchase_line_ids += line
+                else:
+                    _logger.info("No se encontró presupuesto: no_find")
+                    return False, 'no_find'
+
             else:
                 _logger.info("Analítica: %s " % account_analytic_id)
                 _logger.info("Cuenta contable: %s " % account_id)
+        else:
+            #return False, ''
+            _logger.info("Debe enviar al menos una línea como parámetrro")
 
-        return False
+        return False, 'ok'
 
     def _add_budget_info(self, line, amount):
         info_budget = []

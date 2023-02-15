@@ -124,6 +124,91 @@ class PurchaseOrder(models.Model):
         self.write({'state': 'cancel', 'mail_reminder_confirmed': False})
         self._unlink_from_budget()
 
+    def action_view_budget_lines(self):
+        self.ensure_one()
+        budget_lines = self.env['crossovered.budget.lines'].sudo()
+        _find_budgets = self._find_budget_by_line()
+        for line in _find_budgets:
+            if line['budget']:
+                budget_lines += line['budget']
+
+        if budget_lines:
+            return {
+                'name': _('Presupuestos de orden de compra %s ' % self.name),
+                'view_mode': 'list',
+                'res_model': 'crossovered.budget.lines',
+                # 'view_id': self.env.ref('bpc_aliadas.move_line_history_tree').id,
+                'views': [(self.env.ref('account_budget.view_crossovered_budget_line_tree').id, 'list')],
+                'type': 'ir.actions.act_window',
+                'target': 'current',
+                'domain': [('id', 'in', budget_lines.ids)],
+                'context': {'expand': True, 'create': False, 'fsm_mode': True}
+            }
+        else:
+            raise ValidationError(_("No hay líneas relacionadas a presupuesto"))
+
+    def _find_budget_by_line(self):
+        self.ensure_one()
+        budget_lines = self.env['crossovered.budget.lines'].sudo().search([('purchase_line_ids', '!=', False)])
+        _find = []
+        for line in self.order_line:
+            b_line = budget_lines.filtered(lambda b: line.id in b.purchase_line_ids.ids)
+            if b_line:
+                _find.append({'line': line, 'budget': b_line})
+            else:
+                _find.append({'line': line, 'budget': False})
+        return _find
+
+    def button_budget_force(self):
+        for record in self:
+            #ANTES DE ASIGNAR PRESUPUESTOS, BUSCAR SI TIENEN O NO
+            _find_budgets = record._find_budget_by_line()
+            lines = self.env['purchase.order.line']
+            for line in _find_budgets:
+                if not line['budget']:
+                    pol = line['line']
+                    _logger.info("Linea con ID %s y producto %s necesita presupuesto" % (pol.id, pol.product_id.name))
+                    lines += pol
+
+            if not lines:
+                _logger.info("ALIADAS: Al parecer todas las líneas.")
+                continue
+
+            process, notes = record.sudo()._eval_budget(lines=lines)
+            # note => ok, no_find, limit
+            _logger.info("ALIADAS: Continuar con el proceso luego de la asignación de presupuestos ? %s " % process)
+            if process:
+                no_find = 0
+                for note in notes:
+                    if note == 'no_find':
+                        no_find += 1
+
+                if no_find == len(notes) and no_find > 0:
+                    type_note = 'info'
+                    title = 'Observación'
+                    message = _("No se encontraron presupuestos")
+                else:
+                    type_note = 'success'
+                    title = 'Bien!'
+                    message = _("Se asignaron todas las líneas a presupuestos de forma correcta")
+            else:
+                line_limit_budget = record.order_line.filtered(lambda l: l.limit_budget)
+                type_note = 'warning'
+                title = 'Observación'
+                message = _("Hay %s líneas que no fueron asigandas a un presupuesto por límite." % len(line_limit_budget))
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': type_note,
+                    'title': title,
+                    'message': message,
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+
+
     def button_reprocess(self):
         self.ensure_one()
         _logger.info("Cancelando de forma forzada")
@@ -153,7 +238,7 @@ class PurchaseOrder(models.Model):
 
     def button_evaluation_to_draft(self):
         for record in self:
-            process = record.sudo()._eval_budget()
+            process, note = record.sudo()._eval_budget()
             if not process:
                 record.sudo()._create_request('purchase_budget')
                 record.sudo().write({'state': 'evaluation', 'limit_budget': True})
@@ -220,10 +305,10 @@ class PurchaseOrder(models.Model):
                 if record.exist_budget:
                     exist_budget = record.exist_budget
                 else:
-                    exist_budget = record._find_budget()
+                    exist_budget = record._find_budget(button=True)
             record.exist_budget = exist_budget
 
-    def _find_budget(self):
+    def _find_budget(self, button=True):
         self.ensure_one()
         _next = True
         message = ''
@@ -245,33 +330,38 @@ class PurchaseOrder(models.Model):
                 order.sudo().write({'state': 'on_hold', 'message_budget': message})
                 _next = False
             else:
-                order.sudo().button_evaluation_to_draft()
+                if button:
+                    order.sudo().button_evaluation_to_draft()
 
         _logger.info("ALIADAS: Existe presupuesto %s " % _next)
 
         return _next
 
 
-    def _eval_budget(self):
+    def _eval_budget(self, lines=False):
         self.ensure_one()
         date_order = self.date_order
         process = True
-        for line in self.order_line:
+        order_line = self.order_line if not lines else lines
+        notes = []
+        for line in order_line:
             if not line.check_purchase:
                 _logger.info("ALIADAS : Línea con producto %s no procede a evaluación de presupuesto" % line.product_id.name)
                 continue
             limit_budget = False
             if line.account_analytic_id:
-                _logger.info("ALIADAS : Se enalizará presupuesto para la cuenta anlítica - %s" % line.account_analytic_id.name)
-                limit_budget = self.env['crossovered.budget.lines'].sudo()._find_analytic_line(line, date_order)
+                _logger.info("ALIADAS : Se analizará presupuesto para la cuenta anlítica - %s" % line.account_analytic_id.name)
+                limit_budget, note = self.env['crossovered.budget.lines'].sudo()._find_analytic_line(line, date_order)
+                _logger.info("LLegó a limite de presupuesto %s - nota %s" % (limit_budget, note))
+                notes.append(note)
+                #note => ok, no_find, limit
                 _logger.info("ALIADAS - Response _find_analytic_line %s " % limit_budget)
             line.limit_budget = limit_budget
 
-        line_limit_budget = self.order_line.filtered(lambda l: l.limit_budget)
+        line_limit_budget = order_line.filtered(lambda l: l.limit_budget)
         if line_limit_budget:
             process = False
-
-        return process
+        return process, notes
 
     # # TODO: *************** APROBACIÓN DE PRESUPUESTO ******************
     # @api.depends('order_line', 'order_line.limit_budget')
