@@ -5,6 +5,8 @@ from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 from datetime import datetime, date
 import json
+import logging
+_logger = logging.getLogger(__name__)
 
 class NoteTagBpc(models.Model):
 
@@ -143,5 +145,4 @@ class AccountMove(models.Model):
                         })
 
         return tax_lines_data
-
 

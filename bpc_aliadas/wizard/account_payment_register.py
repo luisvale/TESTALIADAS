@@ -19,8 +19,11 @@ class AccountPaymentRegister(models.TransientModel):
         context = self.env.context
         if 'params' in context:
             params = context['params']
-            if 'model' in params and 'id' in params:
+            if 'model' in params and 'id' in params and params['model'] == 'account.move':
                 move = self.env[params['model']].sudo().browse(params['id'])
+            elif 'active_model' in context and context['active_model'] and 'active_id' in context:
+                move = self.env[context['active_model']].sudo().browse(context['active_id'])
+            if move:
                 partner_id = move.partner_id
                 if move.move_type in ('in_invoice','in_refund') and partner_id.pay_method_ids:
                     return [('id', 'in', partner_id.pay_method_ids.ids)]

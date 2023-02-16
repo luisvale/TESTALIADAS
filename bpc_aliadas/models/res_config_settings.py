@@ -21,6 +21,8 @@ class ResCompany(models.Model):
 
     hr_employee_sequence_id = fields.Many2one('ir.sequence', string='Secuencia')
 
+    account_budget_analytic_supplier_disabled = fields.Boolean()
+
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -35,6 +37,9 @@ class ResConfigSettings(models.TransientModel):
     invoice_data_footer = fields.Text(related='company_id.invoice_data_footer', readonly=False)
 
     hr_employee_sequence_id = fields.Many2one('ir.sequence', string='Secuencia', related='company_id.hr_employee_sequence_id', readonly=False)
+
+    account_budget_analytic_supplier_disabled = fields.Boolean(help='Inhabilitar el mapeo de presupuestos para cuenta analíticas desde facturas de compra',
+                                                               related='company_id.account_budget_analytic_supplier_disabled', readonly=False)
 
 
     def generate_hr_employee_sequence_id(self):

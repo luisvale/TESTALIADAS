@@ -74,3 +74,16 @@ class AccountMoveLine(models.Model):
             _logger.info("Balance nuevo : %s " % balance)
 
         return _next, balance
+
+
+    def create_analytic_lines(self):
+        if not self._find_disabled():
+            return super(AccountMoveLine, self).create_analytic_lines()
+        else:
+            _logger.info("No aplicará líneas analíticas con presupuestos para factura %s " % self[0].move_id.name)
+
+    def _find_disabled(self):
+        line = self[0]
+        if line.company_id.account_budget_analytic_supplier_disabled and line.move_id.move_type in ['in_invoice','in_refund']:
+            return True
+        return False
