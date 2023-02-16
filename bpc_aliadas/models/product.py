@@ -20,6 +20,11 @@ RENTAL_TYPE = [
     ('tonnage', 'Tonelaje'),
 ]
 
+COMB_TYPE = [('category', 'Categoría'),
+             ('classification', 'Clasificación'),
+             ('meter', 'Metraje'),
+             ]
+
 
 class ProductCategory(models.Model):
     _inherit = 'product.category'
@@ -57,6 +62,8 @@ class ProductTemplate(models.Model):
 
     currency_id = fields.Many2one('res.currency', 'Currency', compute='_compute_currency_id', readonly=False)
     currency_invoice_id = fields.Many2one('res.currency', string='Moneda facturación')
+
+    combination_type = fields.Selection(COMB_TYPE, string='Tipo Combinación')
 
 
     @api.depends('company_id', 'currency_invoice_id')

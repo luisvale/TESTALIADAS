@@ -26,6 +26,7 @@ access_approval_level,approval.level,model_approval_level,base.group_user,1,1,1,
 access_department_authorization_line,department.authorization.line,model_department_authorization_line,base.group_user,1,1,1,1
 access_authorization_interval_line,authorization.interval.line,model_authorization_interval_line,base.group_user,1,1,1,1
 access_hr_salary_attachment_deduction,hr.salary.attachment.deduction,model_hr_salary_attachment_deduction,base.group_user,1,1,1,1
+access_account_analytic_account_aliadas,account.analytic.account,analytic.model_account_analytic_account,bpc_aliadas.group_aliadas_account_analytic_account_create,1,1,1,1
 
 
 

@@ -9,6 +9,7 @@
                 <!--                <field name="auto_requisition"/>-->
                 <field name="check_not_analytic"/>
                 <field name="analytic_account_id"/>
+                <field name="combination_type"/>
                 <field name="classification_id"/>
                 <field name="rental_type"/>
                 <field name="is_free" attrs="{'invisible': [('rent_ok','=',False)]}"/>
