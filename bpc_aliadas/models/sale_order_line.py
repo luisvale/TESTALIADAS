@@ -227,6 +227,26 @@ class SaleOrderLine(models.Model):
                 if self.order_id.analytic_account_id:
                     find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max and
                                                           i.pricelist_id.analytic_account_id == self.order_id.analytic_account_id)
+                    search_pricelist = find_items
+                    lines_local = self.order_id.order_line._filtered_local()
+                    if lines_local:
+                        total_qty = sum(line.product_uom_qty for line in lines_local)
+                        local_1 = lines_local[0]
+                        for p in search_pricelist:
+                            if self.product_id.combination_type == p.combination_type:
+                                if p.combination_type == 'category' and local_1.categ_id == p.category_add_id:
+                                    find_items = p
+                                    break
+                                elif p.combination_type == 'classification' and p.classification_id == local_1.classification_id:
+                                    find_items = p
+                                    break
+                                elif p.combination_type == 'meter' and p.meter_init <= total_qty <= p.meter_end:
+                                    find_items = p
+                                    break
+
+                    else:
+                        _logger.info("No hay locales en orden %s " % self.order_id.name)
+
                 else:
                     find_items = items.filtered(lambda i: i.price_min <= price_unit <= i.price_max)
             else:

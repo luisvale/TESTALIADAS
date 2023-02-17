@@ -50,7 +50,7 @@
                     <field name="maintenance_type" optional="show"/>
                     <field name="maintenance_team_id" optional="show"/>
                     <field name="state" optional="show"/>
-                    <field name="parent_id" optional="show" />
+                    <field name="parent_id" optional="show"/>
                     <field name="purchase_requisition_id" optional="show"/>
                     <field name="picking_id" optional="show"/>
                     <field name="currency_id" optional="show"/>
@@ -60,7 +60,7 @@
             </field>
         </record>
 
-         <!-- TREE -->
+        <!-- TREE -->
         <record model="ir.ui.view" id="view_maintenance_periodic_tree">
             <field name="name">maintenance.periodic.tree</field>
             <field name="model">maintenance.periodic</field>
@@ -75,8 +75,8 @@
                     <field name="maintenance_type" optional="show"/>
                     <field name="maintenance_team_id" optional="show"/>
                     <field name="state" optional="show"/>
-                    <field name="level_id" optional="show" />
-                    <field name="parent_id" optional="show" />
+                    <field name="level_id" optional="show"/>
+                    <field name="parent_id" optional="show"/>
                     <field name="purchase_requisition_id" optional="show"/>
                     <field name="picking_id" optional="show"/>
                     <field name="currency_id" optional="show"/>
@@ -118,6 +118,17 @@
                         <field name="state" widget="statusbar" statusbar_visible="draft,pending,done,process,finished,cancel"/>
                     </header>
                     <sheet>
+                         <div class="oe_button_box" name="button_box">
+                             <field name="picking_ids" invisible="1"/>
+                            <button type="object" class="oe_stat_button" icon="fa-th-large" name="view_all_picking" attrs="{'invisible': [('picking_ids','=',[])]}">
+                                <div class="o_form_field o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="picking_count" />
+                                    </span>
+                                    <span class="o_stat_text">Transferencias</span>
+                                </div>
+                            </button>
+                        </div>
                         <div class="oe_title">
                             <label for="name" string="Código"/>
                             <h1>
@@ -145,7 +156,7 @@
                                 <!--                                        icon="fa-arrow-circle-o-right"-->
                                 <!--                                        type="object"/>-->
                                 <field name="date_start"/>
-                                <field name="date_end" attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <field name="date_end"/>
                                 <field name="description"/>
                                 <field name="is_master" attrs="{'invisible': [('is_master','=',False)]}"/>
                                 <field name="maintenance_type"/>
@@ -170,7 +181,7 @@
                                        widget="many2many_tags"/>
                                 <field name="company_id"/>
                                 <field name="currency_id"/>
-                                <field name="level_id"  attrs="{'invisible': [('is_master','=',True)]}"/>
+                                <field name="level_id" attrs="{'invisible': [('is_master','=',True)]}"/>
                             </group>
 
                         </group>
@@ -204,6 +215,14 @@
                         </group>
                         <notebook>
                             <page name="page_materials" string="Lista materiales">
+                                <field name="picking_line_add" invisible="1"/>
+                                <div attrs="{'invisible': [('picking_line_add','=',False)]}">
+                                    <button name="create_new_picking"
+                                            class="btn btn-link ml-2" string="Crear picking"
+                                            icon="fa-arrow-circle-o-right"
+                                            type="object"
+                                            help="Generará un picking con las cantidades nuevas"/>
+                                </div>
                                 <field name="material_line_ids">
                                     <tree editable="bottom" decoration-danger="stock &lt;= 0"
                                           decoration-success="stock &gt;= 0 and stock &gt;= quantity">
@@ -215,6 +234,7 @@
                                         <field name="mode" optional="show"/>
                                         <field name="currency_id" optional="show"/>
                                         <field name="quantity"/>
+                                        <field name="quantity_add" sum="Nuevas cantidades" readonly="1"/>
                                         <field name="cost"/>
                                         <field name="subtotal"/>
                                     </tree>
@@ -265,8 +285,8 @@
                                                     icon="fa-arrow-circle-o-right"
                                                     type="object"/>
                                         </div>
-<!--                                        <field name="location_init_id"/>-->
-<!--                                        <field name="location_end_id"/>-->
+                                        <!--                                        <field name="location_init_id"/>-->
+                                        <!--                                        <field name="location_end_id"/>-->
                                     </group>
                                 </group>
                             </page>

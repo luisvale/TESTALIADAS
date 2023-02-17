@@ -103,8 +103,16 @@ class HelpdeskTicket(models.Model):
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
+        self._clean_data()
         if self.partner_id:
             return {'domain': {'product_id': [('active', '=', True)]}}
+
+
+    def _clean_data(self):
+        self.contract = False
+        self.commercial_name = False
+        self.local_ids = []
+        self.product_id = False
 
     @api.onchange('commercial_name')
     def _onchange_commercial_name(self):

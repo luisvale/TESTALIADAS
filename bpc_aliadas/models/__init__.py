@@ -41,6 +41,9 @@ from . import crm_lead
 from . import helpdesk_ticket #add 04-01-23
 from . import project_task #add 04-01-23
 from . import stock_location #add 04-01-23
+from . import stock_picking #add 17-02-23
 from . import hr_employee #add 10-01-23
 from . import portal_mixin #add 12-02-23
+from . import mail_activity #add 17-02-23
+
 

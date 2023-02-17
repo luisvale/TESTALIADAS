@@ -42,6 +42,7 @@ class MaintenanceMaterialLine(models.Model):
     mode = fields.Selection(MODE, string='Estado')
     currency_id = fields.Many2one('res.currency', string='Moneda')
     quantity = fields.Float(string='Cantidad')
+    quantity_add = fields.Float(string='Cantidad extra', compute='_compute_quantity_add', store=True, readonly=False)
     cost = fields.Monetary(string='Costo')
     subtotal = fields.Monetary(string='Subtotal', compute='_compute_subtotal', store=True)
 
@@ -50,7 +51,7 @@ class MaintenanceMaterialLine(models.Model):
         for record in self:
             record.subtotal = record.cost * record.quantity
 
-    @api.depends('warehouse_id')
+    @api.depends('warehouse_id','quantity')
     def _compute_stock(self):
         for record in self:
             stock = 0.0
@@ -67,3 +68,36 @@ class MaintenanceMaterialLine(models.Model):
         for record in self:
             if record.product_id:
                 record.cost = record.product_id.standard_price
+
+    @api.depends('quantity')
+    def _compute_quantity_add(self):
+        for record in self:
+            quantity_add = 0.0
+            if record.product_id:
+                picking_ids = record.maintenance_id.picking_ids
+                if not picking_ids:
+                    picking_ids = record.maintenance_id.picking_id
+                picking_draft = picking_ids.filtered(lambda p: p.state == 'draft')
+                if picking_draft:
+                    picking_draft = picking_draft[0]
+                    quantity_add = record._new_qty(picking_draft, qty_include=True, qty=record.quantity)
+
+                for picking in picking_ids:
+                    quantity_add = record._new_qty(picking, qty_include=False, qty=record.quantity)
+
+            record.quantity_add = quantity_add
+
+
+    def _new_qty(self, picking, qty_include, qty):
+        moves = picking.move_ids_without_package.filtered(lambda l: l.product_id.product_tmpl_id == self.product_id)
+        if not moves:
+            return 0.0
+        total_qty = sum(m.product_uom_qty for m in moves)
+        new_qty = qty - total_qty
+        if qty_include:
+            move = moves[0]
+            move.sudo().write({'product_uom_qty': move.product_uom_qty + new_qty})
+
+        return new_qty
+
+

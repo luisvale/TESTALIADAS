@@ -57,7 +57,7 @@
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="4" style="background:#f0e1e1">
+                            <th colspan="5" style="background:#f0e1e1">
                                 RENTA:
                             </th>
                         </tr>
@@ -116,8 +116,9 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-esc="l_one.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
-
-
+                                    <t t-if="l_one.currency_external_id != l_one.currency_id">
+                                        ( <span t-esc="l_one.amount_convert" t-options='{"widget": "monetary", "display_currency": l_one.currency_external_id}'/>)
+                                    </t>
                                 </td>
                                 <t t-set="l_one_total" t-value="l_one_total + l_one.price_total"/>
                                 <t t-set="l_one_tax" t-value="l_one_tax + l_one.price_tax"/>
@@ -149,7 +150,7 @@
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="4" style="background:#f0e1e1">
+                            <th colspan="5" style="background:#f0e1e1">
                                 SERVICIOS:
                             </th>
                         </tr>
@@ -205,6 +206,9 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-esc="l_recurring.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                    <t t-if="l_recurring.currency_external_id != l_recurring.currency_id">
+                                        ( <span t-esc="l_recurring.amount_convert" t-options='{"widget": "monetary", "display_currency": l_recurring.currency_external_id}'/>)
+                                    </t>
                                 </td>
                                 <t t-set="l_recurring_total" t-value="l_recurring_total + l_recurring.price_total"/>
                                 <t t-set="l_recurring_tax" t-value="l_recurring_tax + l_recurring.price_tax"/>
@@ -324,6 +328,9 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-esc="l_other.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                     <t t-if="l_other.currency_external_id != l_other.currency_id">
+                                        ( <span t-esc="l_other.amount_convert" t-options='{"widget": "monetary", "display_currency": l_other.currency_external_id}'/>)
+                                    </t>
                                 </td>
                                 <t t-set="l_other_total" t-value="l_other_total + l_other.price_total"/>
                                 <t t-set="l_other_tax" t-value="l_other_tax + l_other.price_tax"/>
@@ -354,7 +361,7 @@
                 <table class="table table-sm o_main_table mt-4">
                     <thead style="display: table-row-group">
                         <tr>
-                            <th colspan="4" style="background:#f0e1e1">
+                            <th colspan="5" style="background:#f0e1e1">
                                 A PAGAR CON LA FIRMA DEL CONTRATO:
                             </th>
                         </tr>
@@ -413,6 +420,9 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-esc="l_other.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                                     <t t-if="l_other.currency_external_id != l_other.currency_id">
+                                        ( <span t-esc="l_other.amount_convert" t-options='{"widget": "monetary", "display_currency": l_other.currency_external_id}'/>)
+                                    </t>
                                 </td>
                                 <t t-set="not_total_other_total" t-value="not_total_other_total + l_other.price_total"/>
                                 <t t-set="not_total_other_tax" t-value="not_total_other_tax + l_other.price_tax"/>

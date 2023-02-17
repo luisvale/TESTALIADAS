@@ -62,6 +62,10 @@ class MaintenancePeriodic(models.Model):
     purchase_requisition_ids = fields.Many2many('purchase.requisition', string='Licitaciones')
 
     picking_id = fields.Many2one('stock.picking', string='Picking', tracking=True, copy=False)
+    picking_ids = fields.Many2many('stock.picking', string="Picking's", tracking=True, copy=False)
+    picking_count = fields.Integer(compute='_compute_picking_count')
+    picking_line_add = fields.Boolean(compute='_compute_picking_line_add')
+
     company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True, default=lambda self: self.env.company)
     currency_id = fields.Many2one(related="company_id.currency_id", string="Moneda", readonly=True, store=True, compute_sudo=True)
     total_cost_material = fields.Monetary(string='Costo materiales', store=True, compute='_compute_total')
@@ -183,8 +187,11 @@ class MaintenancePeriodic(models.Model):
         masters = self.sudo().search([('is_master', '=', True), ('state', '=', 'process'), ('active', '=', True)])
         for master in masters:
             _logger.info("ALIADAS: Evaluando master name %s " % master.name)
-            res = maintenance.periodic_level.eval_periodic_child(master)
-            _logger.info("ALIADAS: Respuesta - %s " % res)
+            if master.date_end <= datetime.now().date():
+                _logger.info("ALIADAS: Tarea master venció el %s " % master.date_end)
+            else:
+                res = maintenance.periodic_level.eval_periodic_child(master)
+                _logger.info("ALIADAS: Respuesta - %s " % res)
 
 
     def complete_data(self):
@@ -202,3 +209,40 @@ class MaintenancePeriodic(models.Model):
             #     record.location_init_id = False
             #     record.location_end_id = False
             #     print("FFF")
+
+    def _compute_picking_count(self):
+        for record in self:
+            record.picking_count = len(record.picking_ids.ids)
+
+    #@api.depends('material_line_ids')
+    def _compute_picking_line_add(self):
+        for record in self:
+            picking_line_add = False
+            m_line = record.material_line_ids.filtered(lambda l: l.quantity_add > 0)
+            if m_line:
+                picking_line_add = True
+            record.picking_line_add = picking_line_add
+
+    def create_new_picking(self):
+        "También servirá para crear nuevo picking"
+        "Productos realizados"
+        """Crear un CRON PARA ESTO, y ver si tenemos stock(Esto lo evaluamos con la VALIDACIÓN DEL picking)"""
+        # self.consult_stock()
+        process, error = maintenance.picking._eval_products(self, process_qty_news=True)
+        if process:
+            _logger.info("Procesando : %s" % process)
+            self._compute_picking_line_add()
+
+        else:
+            raise ValidationError(_(error))
+
+    def view_all_picking(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.picking',
+            'views': [(False, 'list'), (False, 'form')],
+            'view_mode': 'list,form',
+            'target': 'current',
+            'name': 'Transferencias de Mantenimiento %s ' % self.name,
+            'domain': [('id', 'in', self.picking_ids.ids)],
+        }
