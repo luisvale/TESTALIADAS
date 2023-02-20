@@ -104,6 +104,16 @@ class SaleOrder(models.Model):
     #         if record.partner_id and record.partner_prospect_state == 'done' and not record.accept_and_signed:
     #             raise ValidationError(_("No puede confirmar el cliente si la orden no está - Aceptada y Firmada -"))
 
+    @api.constrains('order_line')
+    def _constraint_sale_order_line(self):
+        for record in self:
+            lines_local = record.order_line._filtered_local()
+            for local1 in lines_local:
+                local_equal = lines_local.filtered(lambda l: l != local1 and local1.product_id == l.product_id)
+                if local_equal:
+                    pass
+
+
     @api.constrains('date_order')
     def _constraint_date_order(self):
         for record in self:

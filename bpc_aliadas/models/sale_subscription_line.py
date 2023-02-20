@@ -92,7 +92,7 @@ class SaleSubscriptionLine(models.Model):
 
             # Evaliación de montos 08-11-2022
             rental_type = line.rental_type
-            price_subtotal = line._eval_min_max(rental_type, price, price_subtotal)
+            price_subtotal = line._eval_min_max(rental_type, line.price_unit, price_subtotal)
             line.price_subtotal = price_subtotal
             line.pending_amount = line._compute_pending_amount()
 
