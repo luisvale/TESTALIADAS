@@ -16,8 +16,11 @@ class NoteTagBpc(models.Model):
     name = fields.Char('Tag Name', required=True, translate=True)
     color = fields.Integer('Color Index')
 
+    # _sql_constraints = [
+    #     ('name_uniq', 'unique (name)', "Tag name already exists !"),
+    # ]
     _sql_constraints = [
-        ('name_uniq', 'unique (name)', "Tag name already exists !"),
+        ('name_uniq', 'check(1=1)', "Tag name already exists !"),
     ]
 
 
