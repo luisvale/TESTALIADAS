@@ -37,7 +37,7 @@ class SaleOrder(models.Model):
     invoice_payment = fields.Boolean(help='Al menos una factura cancelada', compute='_compute_invoice_payment', store=True)
     payment_term_id = fields.Many2one('account.payment.term', string='Plazo de pago', check_company=True,  # Unrequired company
                                       domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]", default=_default_payment_term,
-                                      required=True)
+                                      required=False)
 
     state = fields.Selection([
         ('draft', 'Quotation'),

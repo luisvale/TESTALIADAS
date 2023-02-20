@@ -56,6 +56,7 @@
             <xpath expr="//sheet/group[1]" position="after">
                 <group>
                     <field name="is_maintenance"/>
+                    <field name="maintenance_type" attrs="{'invisible': [('is_maintenance','=',False)]}"/>
                     <field name="sale_team_id"/>
                 </group>
             </xpath>

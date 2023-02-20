@@ -60,7 +60,9 @@ class SaleOrderLine(models.Model):
 
     product_currency_invoice_id = fields.Many2one('res.currency', string='Moneda facturación producto', related='product_id.currency_invoice_id')
 
-
+    product_standard_price = fields.Float(related='product_id.standard_price')
+    product_cost_currency_id = fields.Many2one('res.currency', related='product_template_id.cost_currency_id')
+    purchase_order_line_id = fields.Many2one('purchase.order.line', string='Linea PO')
 
     # @api.constrains('pricelist_id')
     # def _constraint_pricelist_id(self):

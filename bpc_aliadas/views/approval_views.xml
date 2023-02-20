@@ -54,7 +54,7 @@
             </xpath>
             <xpath expr="//button[@name='create_request']" position="attributes">
                 <attribute name="attrs">{'invisible': [('approval_type','in',('purchase_approved', 'purchase_budget',
-                    'sale_margin','pricelist','payment_term','change_currency','check_documents'))]}
+                    'sale_margin','pricelist','payment_term','change_currency','check_documents','subs_new_product'))]}
                 </attribute>
             </xpath>
 
@@ -95,7 +95,7 @@
                 <field name="department_id" attrs="{'required': [('approval_type','in',('job_position','purchase_requisition','purchase'))]}" options="{'no_create': True}"/>
                 <field name="job_id" attrs="{'invisible': [('job_id','=',False)]}"/>
                 <field name="pricelist_id" attrs="{'invisible': [('pricelist_id','=',False)]}"/>
-                <field name="subscription_id" attrs="{'invisible':[('approval_type', 'not in', ['subs_new_product','subs_close_contract','subs_plus_mac'])]}"/>
+                <field name="subscription_id" attrs="{'invisible':[('approval_type', 'not in', ['subs_new_product','subs_close_contract','subs_plus_mac','subscription_percentage'])]}"/>
                 <field name="product_ids" attrs="{'invisible': [('subscription_id','=',False)]}" widget="many2many_tags"/>
                 <field name="sale_margin_diff" attrs="{'invisible':[('approval_type','!=','sale_margin')]}"/>
             </xpath>
@@ -125,6 +125,12 @@
             <xpath expr="//field[@name='quantity']" position="before">
                 <field name="user_id" string="Usuario"/>
                 <field name="analytic_account_id" string="Analítica"/>
+                <label for="date_start" string="Vigencia" attrs="{'invisible': [('approval_type','not in',['sale_percentage','subscription_percentage'])]}"/>
+                <div class="o_row" string="Vigencia" attrs="{'invisible': [('approval_type','not in',['sale_percentage','subscription_percentage'])]}">
+                    <field name="date_start" class="oe_inline text-center" nolabel="1"/>
+                    <span class="oe_inline"> - </span>
+                    <field name="date_end" class="oe_inline text-center" nolabel="1"/>
+                </div>
             </xpath>
             <xpath expr="//button[@name='action_cancel']" position="before">
                 <button name="action_cancel" string="Cancelación forzada" type="object" groups="bpc_aliadas.group_aliadas_approval_request_cancel_force"
@@ -163,13 +169,13 @@
                     }"/>
                 <field name="account_id" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_requisition')]}"/>
                 <field name="analytic_id" attrs="{'column_invisible': [('parent.approval_type', '!=', 'purchase_requisition')]}"/>
-                <field name="percentage" attrs="{'column_invisible': [('parent.approval_type', '!=', 'sale_percentage')]}"/>
+                <field name="percentage" attrs="{'column_invisible': [('parent.approval_type', 'not in', ['sale_percentage','subscription_percentage'])]}"/>
             </xpath>
             <xpath expr="//field[@name='description']" position="attributes">
-                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac'])]}</attribute>
+                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac','subscription_percentage'])]}</attribute>
             </xpath>
             <xpath expr="//field[@name='product_uom_id']" position="attributes">
-                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac'])]}</attribute>
+                <attribute name="attrs">{'column_invisible': [('parent.approval_type', 'in', ['sale_percentage','subs_plus_mac','subscription_percentage'])]}</attribute>
             </xpath>
         </field>
     </record>

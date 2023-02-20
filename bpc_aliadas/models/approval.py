@@ -26,6 +26,7 @@ SELECTION_ADD = [('purchase_advance', 'Permitir anticipo (Ventas)'),
                  ('payment_term', 'Plazos de pago (Ventas)'),
                  ('change_currency', 'Cambio de moneda (Ventas)'),
                  ('sale_percentage', 'Porcentaje en producto (Ventas)'),
+                 ('subscription_percentage', 'Porcentaje en producto (Subscripción)'),
                  ('subs_new_product', 'Nuevo producto (Subscripción)'),
                  ('subs_close_contract', 'Rescindir contrato (Subscripción)'),
                  ('subs_plus_mac', 'Aumento de MAC (Subscripción)'),
@@ -109,6 +110,9 @@ class ApprovalRequest(models.Model):
     sale_margin_diff = fields.Float(string='Diferencia en margen')
     link_approval = fields.Char(string='Link aprobación')
 
+    date_start = fields.Date(string='Inicio',default=fields.Date.context_today)
+    date_end = fields.Date(string='Fin',default=fields.Date.context_today)
+
     # @api.depends('approver_ids.status', 'approver_ids.required')
     # def _compute_request_status(self):
     #     super(ApprovalRequest, self)._compute_request_status()
@@ -147,6 +151,13 @@ class ApprovalRequest(models.Model):
                         o_line = order_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
                         if o_line:
                             o_line.sudo().write({'discount': l.percentage})
+                elif record.approval_type == 'subscription_percentage' and record.subscription_id:
+                    product_line_ids = record.product_line_ids
+                    recurring_invoice_line_ids = record.subscription_id.recurring_invoice_line_ids
+                    for l in product_line_ids:
+                        o_line = recurring_invoice_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
+                        if o_line:
+                            o_line.sudo().write({'discount': l.percentage})
                 elif record.approval_type == 'subs_plus_mac' and record.subscription_id:
                     product_line_ids = record.product_line_ids
                     recurring_invoice_line_ids = record.subscription_id.recurring_invoice_line_ids
@@ -165,6 +176,7 @@ class ApprovalRequest(models.Model):
 
                 else:
                     pass
+
 
     def create_purchase_requisition(self):
         # Creacion de requisito de compra (LICITACION)
@@ -568,6 +580,32 @@ class ApprovalRequest(models.Model):
                 record.sudo().update({'sale_id': False})
                 raise ValidationError(_("Asegúrese de seleccionar una orden de venta que no esté en estado  - Pedido de venta - Orden # %s " % order_name))
 
+    @api.model
+    def _cron_date_limit(self):
+        _logger.info("Ejecutando CRON _cron_date_limit")
+        now = datetime.now().date()
+        _logger.info("ALIADAS : Hoy %s " % now)
+        approvals = self.sudo().search([('approval_type', 'in', ['sale_percentage', 'subscription_percentage'])], ('date_end', '!=', False))
+        for approval in approvals:
+            _logger.info("ALIADAS : Solicitud %s " % approval.name)
+            _logger.info("ALIADAS : Vence el %s " % approval.date_end)
+            _logger.info("ALIADAS : Dias pasados %s " % (now - approval.date_end).days)
+            if approval.date_end <= now:
+                if approval.sale_id:
+                    product_line_ids = approval.product_line_ids
+                    order_line_ids = approval.sale_id.order_line
+                    for l in product_line_ids:
+                        o_line = order_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
+                        if o_line:
+                            o_line.sudo().write({'discount': 0})
+                elif approval.subscription_id:
+                    product_line_ids = approval.product_line_ids
+                    recurring_invoice_line_ids = approval.subscription_id.recurring_invoice_line_ids
+                    for l in product_line_ids:
+                        o_line = recurring_invoice_line_ids.filtered(lambda o: o.product_id.id == l.product_id.id)
+                        if o_line:
+                            o_line.sudo().write({'discount': 0})
+
 
 class ApprovalProductLine(models.Model):
     _inherit = 'approval.product.line'
@@ -589,8 +627,11 @@ class ApprovalProductLine(models.Model):
                 record.account_id = account_id
             else:
                 record.account_id = False
-                if record.approval_type in ['sale_percentage']:
-                    domain = record._domain_product_id()
+                if record.approval_type in ['sale_percentage','subscription_percentage']:
+                    if record.approval_type == 'sale_percentage':
+                        domain = record._sale_domain_product_id()
+                    else:
+                        domain = record._subscription_domain_product_id()
                     if domain:
                         return {'domain': {'product_id': domain}}
                 elif record.approval_type in ['subs_plus_mac']:
@@ -599,9 +640,17 @@ class ApprovalProductLine(models.Model):
                         return {'domain': {'product_id': domain}}
 
     @api.model
-    def _domain_product_id(self):
+    def _sale_domain_product_id(self):
         if self.approval_request_id.sale_id:
             product_ids = self.approval_request_id.sale_id.mapped('order_line').mapped('product_id').ids
+            return [('id', 'in', product_ids)]
+        else:
+            return []
+
+    @api.model
+    def _subscription_domain_product_id(self):
+        if self.approval_request_id.subscription_id:
+            product_ids = self.approval_request_id.subscription_id.mapped('recurring_invoice_line_ids').mapped('product_id').ids
             return [('id', 'in', product_ids)]
         else:
             return []

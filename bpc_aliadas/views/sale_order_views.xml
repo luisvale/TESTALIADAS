@@ -38,7 +38,7 @@
                     <field name="invoice_payment" invisible="1"/>
                      <field name="analytic_account_id" />
                     <field name="from_maintenance" />
-                    <field name="purchase_ids" widget="many2many_tags" attrs="{'invisible': [('from_maintenance','!=',True)]}"/>
+                    <field name="purchase_ids" widget="many2many_tags" attrs="{'invisible': [('from_maintenance','!=',True)]}"  options="{'no_create': True}"/>
                 </group>
             </xpath>
             <!--            <xpath expr="//group[@name='partner_details']" position="inside">-->
@@ -49,6 +49,9 @@
             </xpath>
             <xpath expr="//button[@name='action_confirm'][2]" position="attributes">
                 <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                <attribute name="required">1</attribute>
             </xpath>
             <xpath expr="//button[@name='action_quotation_send']" position="before">
                 <button name="create_project_manual" string="Crear proyecto" class="btn-primary" type="object"
@@ -73,6 +76,11 @@
                 <field name="approved_required" optional="hide"/>
                 <field name="pricelist_id" optional="show" attrs="{'required': [('display_type', '=', False)]}"/>
                 <field name="not_update_price" optional="hide"/>
+                <field name="purchase_order_line_id" attrs="{'column_invisible':  [('parent.from_maintenance','=',False)]}"
+                domain="[('order_id','in',parent.purchase_ids)]"  options="{'no_create': True}"/>
+                <field name="product_cost_currency_id" invisible="1"/>
+                <field name="product_standard_price" attrs="{'column_invisible':  [('parent.from_maintenance','=',False)]}"
+                 widget='monetary' options="{'currency_field': 'product_cost_currency_id'}"/>
                 <!--                <field name="price_min" optional="hide"/>-->
 
             </xpath>
@@ -95,7 +103,7 @@
                 <field name="product_currency_invoice_id" optional="hide"/>
                 <field name="subscription_template_id" optional="show"/>
                 <field name="document_type_sale_id" string="Tipo doc."/>
-                <field name="rental_type"/>
+                <field name="rental_type" attrs="{'column_invisible':  [('parent.from_maintenance','=',True)]}"/>
             </xpath>
             <xpath expr="//field[@name='order_line']//tree/field[@name='tax_id']" position="after">
                 <field name="price_tax" optional="show"/>

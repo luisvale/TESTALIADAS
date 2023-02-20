@@ -97,6 +97,18 @@
             <field name="active">True</field>
         </record>
 
+         <record id="cron_approval_request_date_limit" model="ir.cron">
+            <field name="name">Aliadas/Aprobación: Retornar a cero los porcentajes al vencer la fecha final.</field>
+            <field name="model_id" ref="model_approval_request"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_date_limit()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active">False</field>
+        </record>
+
     </data>
 
 </odoo>

@@ -7,6 +7,7 @@ from datetime import datetime, date
 import logging
 _logger = logging.getLogger(__name__)
 
+_MAINTENANCE_TYPE = [('internal','Interno'), ('external','Externo')]
 
 class HelpdeskStage(models.Model):
     _inherit = 'helpdesk.stage'
@@ -19,6 +20,7 @@ class HelpdeskTeam(models.Model):
 
     is_maintenance = fields.Boolean(string='Es mantenimiento')
     sale_team_id = fields.Many2one('crm.team', string='Equipo de ventas')
+    maintenance_type = fields.Selection(_MAINTENANCE_TYPE, string='Tipo mant.', default='internal')
 
 class HelpdeskTicket(models.Model):
     _inherit = 'helpdesk.ticket'
@@ -93,6 +95,16 @@ class HelpdeskTicket(models.Model):
                         record.product_id = subscription_id.local_ids[0].product_variant_id
             record.subscription_id = subscription_id
             record.square_id = square_id
+            if record.subscription_id:
+                record._complete_data_partner()
+
+    def _complete_data_partner(self):
+        self.ensure_one()
+        self.partner_id = self.subscription_id.partner_id
+        if self.partner_id:
+            self.partner_name = self.partner_id.name
+            self.partner_phone = self.partner_id.phone
+            self.partner_email = self.partner_id.email
 
     @api.onchange('local_ids')
     def _onchange_local_ids(self):

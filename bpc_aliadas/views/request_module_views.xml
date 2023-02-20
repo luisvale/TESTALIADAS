@@ -5,7 +5,8 @@
         <field name="name">Nueva solicitud</field>
         <field name="res_model">approval.category</field>
         <field name="view_mode">kanban,tree,form</field>
-        <field name="domain">[('approval_type','in', ['purchase_requisition','purchase_advance','job_position','purchase'])]</field>
+        <field name="domain">[('approval_type','in', ['purchase_requisition','purchase_advance','job_position','purchase','sale_percentage',
+            'subs_close_contract','subs_plus_mac','subscription_percentage'])]</field>
     </record>
 
     <record id="approval_request_action_all" model="ir.actions.act_window">
