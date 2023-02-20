@@ -19,6 +19,8 @@ class CrossoveredBudget(models.Model):
             if crossovered_budget_line:
                 crossovered_budget_line.sudo().write({'check_control': record.check_control})
 
+    crossovered_budget_line = fields.One2many('crossovered.budget.lines', 'crossovered_budget_id', 'Budget Lines',copy=True, readonly=False)
+
 
 class CrossoveredBudgetLines(models.Model):
     _inherit = "crossovered.budget.lines"
@@ -185,3 +187,9 @@ class CrossoveredBudgetLines(models.Model):
                         total += info['amount']
                 record.reserved_amount_total = total
             record._compute_reserved_amount()
+
+    def act_delete_purchase_ids(self):
+        #Desvincular ordenes de compra
+        for record in self:
+            record.purchase_line_ids = []
+            record._compute_purchase_ids()

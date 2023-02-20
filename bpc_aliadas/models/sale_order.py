@@ -395,6 +395,9 @@ class SaleOrder(models.Model):
                     self._create_request('pricelist', price_list_id)
 
         # Evaluación de lista de documentos
+        lines_check_without_due = self.documents_check_list_lines.filtered(lambda c: not c.date_due)
+        if lines_check_without_due:
+            raise ValidationError(_("Asegúrese de que la líneas de check list tengan una fecha de vencimiento."))
         lines_check = self.documents_check_list_lines.filtered(lambda c: not c.check or c.date_due < datetime.now().date())
         if lines_check and self.state == 'compliance' and not self.from_maintenance:
             _logger.info("ALIADAS : Se encontraron líneas que no tienen marcado el check o han vencido")

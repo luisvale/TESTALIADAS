@@ -523,7 +523,7 @@ class ApprovalRequest(models.Model):
 
     def _eval_pricelist(self):
         if self.sale_id and self.approval_type == 'pricelist':
-            pricelist_id = self.sale_id.pricelist_id
+            pricelist_id = self.pricelist_id
             approver_line = self.mapped('approver_ids').filtered(lambda approver: approver.user_id == self.env.user)
             if pricelist_id.id not in approver_line.pricelist_ids.ids:
                 raise ValidationError(_("No puede aprobar una lista de precios a la cual no tiene autorización. Lista de precio %s " % pricelist_id.name))

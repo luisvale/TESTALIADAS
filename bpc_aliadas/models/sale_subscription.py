@@ -287,7 +287,8 @@ class SaleSubscription(models.Model):
 
                     days = (recurring_next_date - date_init).days + 1  # El valor +1 indica que se cobrará desde el primer día
                     #price_subtotal = local.price_subtotal
-                    total_subscription = local.total_subscription
+                    #total_subscription = local.total_subscription
+                    total_subscription = local.price_subtotal
                     # Precio a facturar
                     # Cuándo se debe dividir entre 30?
 
@@ -403,7 +404,8 @@ class SaleSubscription(models.Model):
                             pickup_date = pickup_date.date()
                         days = (recurring_next_date - pickup_date).days
                         #Evaluamos si los días que han pasado es igual o mayor a los días que tengo que facturar
-                        total_subscription = local.total_subscription if line.currency_id == line.currency_external_id else local.amount_convert
+                        #total_subscription = local.total_subscription if line.currency_id == line.currency_external_id else local.amount_convert
+                        total_subscription = local.price_subtotal if line.currency_id == line.currency_external_id else local.amount_convert
                         # Precio a facturar
                         # Cuándo se debe dividir entre 30?
                         days = self._find_days_by_month(pickup_date, recurring_next_date, days)
@@ -425,7 +427,8 @@ class SaleSubscription(models.Model):
             #price_subtotal = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
             tags = []
             x += 1
-            total_subscription = line.total_subscription if line.currency_id == line.currency_external_id else line.amount_convert
+            #total_subscription = line.total_subscription if line.currency_id == line.currency_external_id else line.amount_convert
+            total_subscription = line.price_subtotal if line.currency_id == line.currency_external_id else line.amount_convert
             if line.pickup_start:
                 pickup_date = line.pickup_start + timedelta(hours=6)
                 days = (recurring_next_date - (pickup_date.date() if type(pickup_date) == datetime else pickup_date)).days
