@@ -186,7 +186,7 @@ class SaleSubscription(models.Model):
             else:
                 values = self._prepare_invoice_line(line, fiscal_position, revenue_date_start, revenue_date_stop)
                 if values:
-                    list_lines.append((0, 0, ))
+                    list_lines.append((0, 0, values))
 
         # Evluando añadir producto renta a la facturación
         if lines_locals:
@@ -451,6 +451,7 @@ class SaleSubscription(models.Model):
                     values['price_unit'] = total_subscription
                     values['note_tag'] = tags
 
+        _logger.info("Valor de X en subscripción %s" % x)
         if x > 0:
             subscription = line.analytic_account_id
             values['subscription_line_ids'] = [(6, 0, line.ids)]
