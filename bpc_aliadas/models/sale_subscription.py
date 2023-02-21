@@ -432,7 +432,7 @@ class SaleSubscription(models.Model):
             if line.pickup_start:
                 pickup_date = line.pickup_start + timedelta(hours=6)
                 days = (recurring_next_date - (pickup_date.date() if type(pickup_date) == datetime else pickup_date)).days
-
+                days = self._find_days_by_month(pickup_date, recurring_next_date, days)
                 _next = False
                 if line.type_invoiced == 'continue' and days >= line.range_periodicity:
                     _next = True

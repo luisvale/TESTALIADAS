@@ -10,7 +10,7 @@
     'company': 'BPC LATAM',
     'website': "https://www.bpc-lat.com/",
     'category': 'Sales',
-    'version': '15.0.15.20',
+    'version': '15.0.15.21',
     # any module necessary for this one to work correctly
     'depends': ['base', 'hn_einvoice', 'purchase_requisition','purchase','sale','sale_renting','sale_subscription','account_budget','sales_team',
                 'purchase_stock', 'approvals', 'purchase_requisition_stock','crm_helpdesk','website_helpdesk_form', 'hr', 'helpdesk_stock',
