@@ -192,6 +192,6 @@ class CrossoveredBudgetLines(models.Model):
         #Desvincular ordenes de compra
         for record in self:
             if record.purchase_line_ids:
-                for pl in record. record.purchase_line_ids:
+                for pl in record.purchase_line_ids:
                     record.sudo().write({'purchase_line_ids': [(3, pl.id)]})
                 record._compute_purchase_ids()
