@@ -806,11 +806,11 @@ class SaleSubscription(models.Model):
         invoice['document_type_sale_id'] = document_type_sale_id
         list_lines = []
         for line in manual_lines:
-            if not self._filtered_local(line):
-                values = self._prepare_invoice_line(line, False, line.date_init, line.date_end)
-                values = self._prepare_invoice_line_aliadas(values, line, True)
-                if values:
-                    list_lines.append((0, 0, values))
+            #if not self._filtered_local(line): //Comentado por que aplica para todo
+            values = self._prepare_invoice_line(line, False, line.date_init, line.date_end)
+            values = self._prepare_invoice_line_aliadas(values, line, True)
+            if values:
+                list_lines.append((0, 0, values))
 
         #clear
         for line in manual_lines:

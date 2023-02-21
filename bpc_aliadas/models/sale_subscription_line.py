@@ -121,7 +121,7 @@ class SaleSubscriptionLine(models.Model):
             amount = self.amount_consumption * price + value
 
         # TODO: PAra rentas no tomar en cuenta la cantidad de la subscripción
-        elif rental_type == 'rental_min':  # Renta con monto fijo
+        elif rental_type == 'rental_min':  # Renta con monto fijo/mínimo
             if self.amount_sale > 0.0:
                 result = round(self.amount_sale * (self.percentage_sale / 100), 2)
                 if result > self.amount_min:
