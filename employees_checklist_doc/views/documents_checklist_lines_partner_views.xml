@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--Todo: Attributes Tree-->
+        <record model="ir.ui.view" id="view_employee_documents_checklist_lines_tree">
+            <field name="name">employee.documents.check_list.linest.tree</field>
+            <field name="model">employee.documents.check_list.lines</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="employee_id" required="1"/>
+                    <field name="check_list_id"/>
+                    <field name="check_list_type"/>
+                    <field name="check_list_id_sequence"/>
+                    <field name="check"/>
+                    <field name="description"/>
+                    <field name="date_due"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_employee_documents_checklist_lines_form" model="ir.ui.view">
+            <field name="name">employee.documents.check_list.lines.form</field>
+            <field name="model">employee.documents.check_list.lines</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="employee_id" required="1"/>
+                                <field name="check_list_id"/>
+                                <field name="check_list_type"/>
+                                <field name="check_list_id_sequence"/>
+                            </group>
+                            <group>
+                                <field name="check"/>
+                                <field name="description"/>
+                                <field name="date_due"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_employee_documents_checklist_lines_sale" model="ir.actions.act_window">
+            <field name="name">Check list detallado por cliente</field>
+            <field name="res_model">employee.documents.check_list.lines</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_employee_documents_checklist_lines_tree"/>
+            <field name="domain">[('check_list_type','=','sale')]</field>
+            <field name="context">{'default_check_list_type': 'sale', 'check_list_type': 'sale'}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Creae elemento para check list
+                </p>
+            </field>
+        </record>
+
+        <record id="action_employee_documents_checklist_lines_purchase" model="ir.actions.act_window">
+            <field name="name">Check list detallado por proveedor</field>
+            <field name="res_model">employee.documents.check_list.lines</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_employee_documents_checklist_lines_tree"/>
+            <field name="domain">[('check_list_type','=','purchase')]</field>
+            <field name="context">{'default_check_list_type': 'purchase', 'check_list_type': 'purchase'}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Creae elemento para check list
+                </p>
+            </field>
+        </record>
+
+
+<!--        <menuitem id="menu_sale_order_checklist_sale"-->
+<!--                  name="Check List detallado"-->
+<!--                  parent="sale.menu_sale_config"-->
+<!--                  action="action_documents_checklist_lines_sale"-->
+<!--                  sequence="100"/>-->
+
+        <menuitem id="menu_employee_checklist_purchase"
+                  name="Check List detallado"
+                  parent="hr.menu_human_resources_configuration"
+                  action="action_employee_documents_checklist_lines_purchase"
+                  sequence="192"/>
+
+    </data>
+</odoo>

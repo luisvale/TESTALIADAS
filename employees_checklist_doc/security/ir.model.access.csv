@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_documents_check_list,employee.documents.check_list,model_employee_documents_check_list,,1,1,1,1
+access_employee_documents_check_list_lines,employee.documents.check_list.lines,model_employee_documents_check_list_lines,,1,1,1,1
+
+
+

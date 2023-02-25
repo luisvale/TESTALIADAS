@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <record id="inherited_view_employee_form" model="ir.ui.view">
+        <field name="name">inherited.view.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook" position="inside">
+                <page string="Check list docs. empleado">
+                    <div class="mb-3">
+                        <button type="object" name="get_check_list" string="Cargar check list" icon="fa-arrow-right" class="btn-primary"
+                                title="Traer pasos de checklist de forma automáctica"/>
+                    </div>
+                    <field name="check_list_lines" context="{'default_type': 'sale'}" options="{'no_create': True}">
+                        <tree editable="bottom" default_order="check_list_id_sequence asc">
+                            <field name="employee_id" invisible="1"/>
+                            <field name="check_list_id" domain="[('state_active','=', True),('company_id','=',parent.company_id), ('type','=','sale')]" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_id_sequence" invisible="1" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check_list_type" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="check" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="description" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                            <field name="date_due" attrs="{'invisible': [('check_list_type','!=','sale')]}"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
