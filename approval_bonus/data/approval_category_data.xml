@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="approval_category_data_bonus" model="approval.category">
+            <field name="name">Solicitud de bono</field>
+            <field name="sequence">500</field>
+            <field name="has_date">required</field>
+            <field name="has_period">no</field>
+            <field name="has_product">no</field>
+            <field name="has_quantity">no</field>
+            <field name="has_amount">no</field>
+            <field name="has_reference">no</field>
+            <field name="has_partner">no</field>
+            <field name="has_payment_method">no</field>
+            <field name="has_location">no</field>
+            <field name="requirer_document">optional</field>
+            <field name="automated_sequence">True</field>
+            <field name="sequence_code">SB/</field>
+            <field name="approval_minimum">1</field>
+            <field name="approval_type">salary</field>
+        </record>
+    </data>
+</odoo>

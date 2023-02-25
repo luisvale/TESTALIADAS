@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="approval_salary_attachment_request_view_form_inherit" model="ir.ui.view">
+        <field name="name">approval.salary.attachment.request.view.form.inherit</field>
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_request_view_form"/>
+        <field name="arch" type="xml">
+            <group name="request_main" position="after">
+                <group attrs="{'invisible': [('approval_type', '!=', 'salary')]}">
+                    <field name="employee_id"/>
+                    <field name="deduction_type"/>
+                    <field name="date_start"/>
+                    <field name="monthly_amount"/>
+                    <field name="total_amount"/>
+                    <field name="salary_att_id" invisible="1"/>
+                </group>
+            </group>
+            <!-- <xpath expr="//button[@name='action_get_attachment_view']" position="after">
+                <button name="action_open_purchase_orders" type="object"
+                    class="oe_stat_button" icon="fa-credit-card"
+                    attrs="{'invisible': [('purchase_order_count', '=', 0)]}">
+                    <field name="purchase_order_count" string="Purchase Orders" widget="statinfo"/>
+                </button>
+            </xpath>-->
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <button name="action_create_salary_attachment" type="object"
+                    groups="hr_payroll.group_hr_payroll_user"
+                    string="Create Salary attachment" class="btn-primary"
+                    data-hotkey="g" attrs="{'invisible': [
+                        '|', '|',
+                            ('approval_type', '!=', 'salary'),
+                            ('request_status', '!=', 'approved'),
+                            ('salary_att_id', '!=', False)
+                    ]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
