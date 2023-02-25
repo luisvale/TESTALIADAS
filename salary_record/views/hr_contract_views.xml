@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <record id="inherited_hr_contract_view_form" model="ir.ui.view">
+        <field name="name">inherited.hr.contract.view.form</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook/page[@name='information']" position="inside">
+                <field name="salary_record_ids" context="{'default_contract_id': active_id}" no_label="1">
+                    <tree editable="bottom" default_order="start_date asc">
+                        <field name="contract_id" invisible="1"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="salary" widget="monetary"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
